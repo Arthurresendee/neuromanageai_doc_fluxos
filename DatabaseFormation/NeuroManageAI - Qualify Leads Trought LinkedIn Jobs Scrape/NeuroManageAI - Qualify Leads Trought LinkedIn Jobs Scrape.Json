@@ -1,0 +1,698 @@
+{
+   "nodes": [
+     {
+       "parameters": {
+         "operation": "Run actor and get dataset",
+         "actorId": {
+           "__rl": true,
+           "value": "https://console.apify.com/actors/zn01OAlzP853oqn4Z/input",
+           "mode": "url"
+         },
+         "customBody": "={{ $json }}",
+         "authentication": "apifyOAuth2Api"
+       },
+       "id": "ef379ce0-5bfd-4a9f-b104-bc6d2bce3cf4",
+       "name": "Scrape Jobs",
+       "type": "@apify/n8n-nodes-apify.apify",
+       "position": [
+         -4144,
+         64
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "apifyOAuth2Api": {
+           "id": "ekINpf0jTe8qrqgm",
+           "name": "Apify account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "Run actor and get dataset",
+         "actorId": {
+           "__rl": true,
+           "value": "https://console.apify.com/actors/AjfNXEI9qTA2IdaAX/input",
+           "mode": "url",
+           "__regex": "https://console.apify.com/actors/([a-zA-Z0-9]+).*"
+         },
+         "customBody": "={\n    \"profileUrls\": [\n        \"{{ $json.company.linkedinUrl }}\"\n    ]\n}",
+         "authentication": "apifyOAuth2Api"
+       },
+       "id": "85ac7dc7-ea7c-447c-baf7-36804f7cee26",
+       "name": "Scrape Companies",
+       "type": "@apify/n8n-nodes-apify.apify",
+       "position": [
+         -3728,
+         48
+       ],
+       "typeVersion": 1,
+       "executeOnce": false,
+       "retryOnFail": true,
+       "credentials": {
+         "apifyOAuth2Api": {
+           "id": "ekINpf0jTe8qrqgm",
+           "name": "Apify account"
+         }
+       },
+       "onError": "continueErrorOutput"
+     },
+     {
+       "parameters": {
+         "operation": "Run actor and get dataset",
+         "actorId": {
+           "__rl": true,
+           "value": "https://console.apify.com/actors/Vb6LZkh4EqRlR0Ka9/input",
+           "mode": "url",
+           "__regex": "https://console.apify.com/actors/([a-zA-Z0-9]+).*"
+         },
+         "customBody": "={\n    \"companies\": {{ JSON.stringify($json.url) }},\n    \"maxItems\": 70,\n    \"profileScraperMode\": \"Full + email search ($12 per 1k)\",\n    \"recentlyChangedJobs\": false\n}",
+         "authentication": "apifyOAuth2Api"
+       },
+       "id": "bffb3b62-f781-40de-98f4-98843c68fa67",
+       "name": "Scrape Employees",
+       "type": "@apify/n8n-nodes-apify.apify",
+       "position": [
+         -2864,
+         32
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "apifyOAuth2Api": {
+           "id": "ekINpf0jTe8qrqgm",
+           "name": "Apify account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "fieldsToAggregate": {
+           "fieldToAggregate": [
+             {
+               "fieldToAggregate": "url"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "44f0cd11-7d71-45f2-9cfe-ebfa37c58297",
+       "name": "Aggregate",
+       "type": "n8n-nodes-base.aggregate",
+       "position": [
+         -3072,
+         32
+       ],
+       "typeVersion": 1
+     },
+     {
+       "parameters": {
+         "batchSize": 10,
+         "options": {}
+       },
+       "id": "73c44222-e9cb-4252-831e-e08753f7c2dc",
+       "name": "Loop Over Items",
+       "type": "n8n-nodes-base.splitInBatches",
+       "position": [
+         -3280,
+         16
+       ],
+       "typeVersion": 3
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 3
+           },
+           "conditions": [
+             {
+               "id": "2c8db302-0fec-4c44-8653-8817d0044bc0",
+               "leftValue": "={{ $json.company.employeeCount }}",
+               "rightValue": 10,
+               "operator": {
+                 "type": "number",
+                 "operation": "gte"
+               }
+             },
+             {
+               "id": "c5f59286-9911-4594-878d-422dcd9a4beb",
+               "leftValue": "={{ $json.company.employeeCount }}",
+               "rightValue": 100,
+               "operator": {
+                 "type": "number",
+                 "operation": "lte"
+               }
+             },
+             {
+               "id": "1061a65a-ea32-4d28-a0ed-342dd0b514ce",
+               "leftValue": "={{ $json.company.website }}",
+               "rightValue": "={{ $json.company.website }}",
+               "operator": {
+                 "type": "string",
+                 "operation": "notEmpty",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "3dd5b2bc-c5df-4bd8-b00d-ca0159e1d92a",
+       "name": "Initial Employee Filter",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         -3936,
+         64
+       ],
+       "typeVersion": 2.3
+     },
+     {
+       "parameters": {
+         "jsCode": "// =============================================================\n// Code Node - Pronto para usar no n8n\n// Retorna JSON formatado para o customBody do Apify\n// Inserir ANTES do node \"Scrape Jobs\"\n// =============================================================\n\n// Vagas para Clínicas Odontológicas\nconst jobTitles = [\n  \"Dentista\",\n  \"Odontólogo Especialista\",\n  \"Consultor Odontológico\",  \n  \"Cirurgião Dentista\",\n  // CRC - Relacionamento com Cliente (Clínicas)\n  \"CRC Odontológico\",\n  \"Customer Success Odontológico\",\n  \"Relacionamento com Paciente\", \n  \"Coordenador de Pacientes\",\n  \"Coordenador Odontológico\",\n  \"Analista de Relacionamento Clínica\",\n  // SDR - Vendas (Clínicas Odontológicas)\n  \"SDR Odontológico\",\n  // Gestor Financeiro (Clínicas)\n  \"Gestor Financeiro Clínica Odontológica\", \n  \"Gerente Financeiro Odontológico\",\n  \"Supervisor Financeiro Odontológico\",\n  \"Recepcionista Odontológica\"\n];\n\n// GeoID Brasil\nconst geoIds = [\"106057199\"];\n\n// Industry IDs (Saúde / Odontologia / Clínicas)\nconst industryIds = [\n  \"14\",   // Medical Practice (Prática Médica/Clínicas)\n  \"13\",   // Hospital & Health Care\n  \"12\",   // Health, Wellness and Fitness\n  \"124\"   // Medical Devices (Dispositivos Médicos/Odontológicos)\n];\n\n// Níveis de experiência válidos\nconst experienceLevels = [\"internship\", \"entry\", \"associate\", \"mid-senior\", \"director\", \"executive\"];\n\n// Função de seleção aleatória\nconst shuffle = arr => [...arr].sort(() => Math.random() - 0.5);\n\n// Gerar query conforme especificações do cliente\nconst output = {\n  company: [\"\"],\n  easyApply: false,\n  experienceLevel: shuffle(experienceLevels).slice(0, 6),\n  geoIds: geoIds,\n  industryIds: shuffle(industryIds).slice(0, 4),\n  jobTitles: shuffle(jobTitles).slice(0, 20),\n  locations: [\"Brasil\"],\n  maxItems: 50,\n  page: 1,\n  postedAt: \"past-month\",\n  sortBy: \"relevance\",\n  under10Applicants: false,\n  companySize: [\"B\", \"C\"]\n};\n\nreturn [{ json: output }];"
+       },
+       "id": "2e033657-cef1-4fcc-b183-25b88b489817",
+       "name": "Generate Semi-Random Query",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         -4320,
+         64
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "httpMethod": "POST",
+         "path": "executor/PLACEHOLDER",
+         "options": {}
+       },
+       "id": "4d32e905-5f16-40cf-9ddf-c7c0383b600a",
+       "name": "Executor Webhook",
+       "type": "n8n-nodes-base.webhook",
+       "position": [
+         -4944,
+         64
+       ],
+       "typeVersion": 2,
+       "webhookId": "6561ca3e-0041-4105-bcd5-c931ea47a0ee"
+     },
+     {
+       "parameters": {
+         "amount": "={{ $json.random_numb }}",
+         "unit": "minutes"
+       },
+       "id": "ba273a5b-adf3-4a92-ba26-0955841f4f25",
+       "name": "Wait",
+       "type": "n8n-nodes-base.wait",
+       "position": [
+         -4528,
+         64
+       ],
+       "typeVersion": 1.1,
+       "webhookId": "294e1ec7-b325-4c71-94cc-c9978bac455c"
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "f1cdbef4-4dea-4112-bb20-e2e89c002b57",
+               "name": "random_numb",
+               "value": "={{ Math.floor(Math.random() * 10) }}",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "f4ab5db6-41d2-4bfd-9cf2-99514c4f09c3",
+       "name": "Edit Fields2",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         -4736,
+         64
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "method": "POST",
+         "url": "https://yvigfurdahgkskbskhzv.supabase.co/rest/v1/neuromanageai_qualified_leads_jobs_offers",
+         "sendHeaders": true,
+         "headerParameters": {
+           "parameters": [
+             {
+               "name": "apikey",
+               "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2aWdmdXJkYWhna3NrYnNraHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MTQ0OTYsImV4cCI6MjA4MzE5MDQ5Nn0.0FF9ZMNbJKG7YKQvKgPDZYlP2522hCROJapZxvadULg"
+             },
+             {
+               "name": "Authorization",
+               "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2aWdmdXJkYWhna3NrYnNraHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MTQ0OTYsImV4cCI6MjA4MzE5MDQ5Nn0.0FF9ZMNbJKG7YKQvKgPDZYlP2522hCROJapZxvadULg"
+             },
+             {
+               "name": "Prefer",
+               "value": "return=representation,resolution=merge-duplicates"
+             },
+             {
+               "name": "Conten-Type",
+               "value": "application/json"
+             }
+           ]
+         },
+         "sendBody": true,
+         "bodyParameters": {
+           "parameters": [
+             {
+               "name": "Nome",
+               "value": "={{ $json.firstName + \" \" + $json.lastName }}"
+             },
+             {
+               "name": "Cargo",
+               "value": "={{ $json.experience[0]?.position ?? null}}"
+             },
+             {
+               "name": "URL Linkedin",
+               "value": "={{ $json.linkedinUrl.replace('www.', '') }}"
+             },
+             {
+               "name": "Sobre",
+               "value": "={{ $json.about ?? null }}"
+             },
+             {
+               "name": "Sobre",
+               "value": "={{ $json.about ?? null}}"
+             },
+             {
+               "name": "Localidade",
+               "value": "={{ $json.location?.linkedinText ?? null }}"
+             },
+             {
+               "name": "Empresa",
+               "value": "={{ $json.experience[0]?.companyName ?? null }}"
+             },
+             {
+               "name": "URL Linkedin Empresa",
+               "value": "={{ $json.experience[0]?.companyLinkedinUrl ?? null }}"
+             },
+             {
+               "name": "Tempo na Empresa Atual",
+               "value": "={{ $json.experience[0]?.duration ?? null }}"
+             },
+             {
+               "name": "Colaboradores",
+               "value": "={{ $json.employeeCount ?? null}}"
+             },
+             {
+               "name": "Descript da Empresa",
+               "value": "={{ $json.description ?? null }}"
+             },
+             {
+               "name": "Seguidores"
+             },
+             {
+               "name": "URL Empresa",
+               "value": "={{ $json.websiteUrl || $json.companyWebsites[0].url || null }}"
+             },
+             {
+               "name": "Adress",
+               "value": "={{ $json.headquarter.city + \", \" +  $json.headquarter.country}}"
+             },
+             {
+               "name": "Email",
+               "value": "={{ $json.emails[0]?.email ?? null }}"
+             },
+             {
+               "name": "Seguidores",
+               "value": "={{ $json.connectionsCount ?? null }}"
+             },
+             {
+               "name": "Especialidades",
+               "value": "={{ $json.topSkills ?? null }}"
+             },
+             {
+               "name": "Setor",
+               "value": "={{ $json.industry || $json.industryV2Taxonomy || null }}"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "type": "n8n-nodes-base.httpRequest",
+       "typeVersion": 4.3,
+       "position": [
+         -2800,
+         256
+       ],
+       "id": "006a617f-ba1e-4443-972f-ee92eee13557",
+       "name": "Upsert Supabase"
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "ff554b11-9438-4897-820e-124abc2c8f99",
+               "name": "linkedinUrl",
+               "value": "={{ $json.linkedinUrl.replace('www.', '') }}",
+               "type": "string"
+             }
+           ]
+         },
+         "includeOtherFields": true,
+         "options": {}
+       },
+       "id": "158a73fd-8511-44bd-acbf-7ffca016a41f",
+       "name": "Edit Fields",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         -2192,
+         0
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "mode": "combine",
+         "advanced": true,
+         "mergeByFields": {
+           "values": [
+             {
+               "field1": "experience[0].companyUniversalName",
+               "field2": "universalName"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "type": "n8n-nodes-base.merge",
+       "typeVersion": 3.2,
+       "position": [
+         -3056,
+         256
+       ],
+       "id": "8a8e4ed5-6686-45c6-bcba-6aa80024b88c",
+       "name": "Merge"
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 3
+           },
+           "conditions": [
+             {
+               "id": "832dc83a-3428-4d1d-879f-588fd65b5b42",
+               "leftValue": "={{ $json.location.countryCode }}",
+               "rightValue": "BR",
+               "operator": {
+                 "type": "string",
+                 "operation": "equals",
+                 "name": "filter.operator.equals"
+               }
+             },
+             {
+               "id": "08729a23-32b4-4c88-97bc-20e17240d8b6",
+               "leftValue": "={{ $json.location.parsed.country }}",
+               "rightValue": "Brazil",
+               "operator": {
+                 "type": "string",
+                 "operation": "equals",
+                 "name": "filter.operator.equals"
+               }
+             }
+           ],
+           "combinator": "or"
+         },
+         "options": {}
+       },
+       "type": "n8n-nodes-base.if",
+       "typeVersion": 2.3,
+       "position": [
+         -2688,
+         32
+       ],
+       "id": "7b5dcedb-2cab-47dc-8485-47fa7e30c51b",
+       "name": "Location Filter"
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 3
+           },
+           "conditions": [
+             {
+               "id": "93c8159a-6ca3-4346-9cd3-cb296cdbda81",
+               "leftValue": "={{ $json.experience[0].companyUniversalName }}",
+               "rightValue": "",
+               "operator": {
+                 "type": "string",
+                 "operation": "notEmpty",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "type": "n8n-nodes-base.if",
+       "typeVersion": 2.3,
+       "position": [
+         -2448,
+         16
+       ],
+       "id": "169eec0a-2797-48ac-89b8-9870dd6b3d6a",
+       "name": "Filter Only Profiles that have company Linkedin"
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 3
+           },
+           "conditions": [
+             {
+               "id": "bb9b05ff-281d-44d7-8389-4e68b89fa653",
+               "leftValue": "={{ $json.industry }}",
+               "rightValue": "Staffing & Recruiting",
+               "operator": {
+                 "type": "string",
+                 "operation": "notEquals"
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "7193220f-f61c-4d1a-bbdd-d1ad7f2d3190",
+       "name": "Filter Recruting Companies",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         -3488,
+         32
+       ],
+       "typeVersion": 2.3
+     }
+   ],
+   "connections": {
+     "Scrape Jobs": {
+       "main": [
+         [
+           {
+             "node": "Initial Employee Filter",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Scrape Companies": {
+       "main": [
+         [
+           {
+             "node": "Filter Recruting Companies",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Scrape Employees": {
+       "main": [
+         [
+           {
+             "node": "Location Filter",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Aggregate": {
+       "main": [
+         [
+           {
+             "node": "Scrape Employees",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Loop Over Items": {
+       "main": [
+         [
+           {
+             "node": "Merge",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "Aggregate",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Initial Employee Filter": {
+       "main": [
+         [
+           {
+             "node": "Scrape Companies",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Generate Semi-Random Query": {
+       "main": [
+         [
+           {
+             "node": "Scrape Jobs",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Executor Webhook": {
+       "main": [
+         [
+           {
+             "node": "Edit Fields2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Wait": {
+       "main": [
+         [
+           {
+             "node": "Generate Semi-Random Query",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Edit Fields2": {
+       "main": [
+         [
+           {
+             "node": "Wait",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Upsert Supabase": {
+       "main": [
+         []
+       ]
+     },
+     "Edit Fields": {
+       "main": [
+         [
+           {
+             "node": "Loop Over Items",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Merge": {
+       "main": [
+         [
+           {
+             "node": "Upsert Supabase",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Location Filter": {
+       "main": [
+         [
+           {
+             "node": "Filter Only Profiles that have company Linkedin",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Filter Only Profiles that have company Linkedin": {
+       "main": [
+         [
+           {
+             "node": "Edit Fields",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Filter Recruting Companies": {
+       "main": [
+         [
+           {
+             "node": "Loop Over Items",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "Merge",
+             "type": "main",
+             "index": 1
+           }
+         ]
+       ]
+     }
+   },
+   "pinData": {},
+   "meta": {
+     "instanceId": "a0f7a305da35e849bafdb639b90f9c75f57bc77027e416642bf74993eb8cfaee"
+   }
+ }

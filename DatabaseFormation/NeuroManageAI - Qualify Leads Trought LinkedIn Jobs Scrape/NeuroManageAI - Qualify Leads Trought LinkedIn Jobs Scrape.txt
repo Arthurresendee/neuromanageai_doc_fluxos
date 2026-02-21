@@ -1,0 +1,316 @@
+NeuroManageAI - Qualify Leads Trought LinkedIn Jobs Scrape
+
+Esta documentacao explica o workflow em ordem sequencial, detalhando o que cada node faz e por que cada etapa existe.
+
+====================================================================
+1) VISAO GERAL DO WORKFLOW
+====================================================================
+
+Objetivo geral:
+Gerar e qualificar leads a partir de vagas do LinkedIn (contexto de jobs), enriquecendo dados de empresas e funcionarios, aplicando filtros de ICP e persistindo os leads no Supabase por upsert.
+
+Resumo funcional:
+1. Dispara por webhook.
+2. Monta query semi-aleatoria para buscar vagas.
+3. Faz scraping de vagas no Apify.
+4. Filtra empresas por tamanho/site.
+5. Faz scraping das empresas encontradas.
+6. Remove empresas de recrutamento.
+7. Faz scraping de funcionarios dessas empresas.
+8. Filtra localizacao BR e perfis com empresa vinculada.
+9. Cruza dados de funcionario + empresa.
+10. Faz upsert na tabela de leads qualificados de jobs.
+
+====================================================================
+2) SEQUENCIA EXECUTIVA (DO INICIO AO FIM)
+====================================================================
+
+Fluxo principal (alto nivel):
+Executor Webhook -> Edit Fields2 -> Wait -> Generate Semi-Random Query -> Scrape Jobs -> Initial Employee Filter -> Scrape Companies -> Filter Recruting Companies -> Loop Over Items -> Aggregate -> Scrape Employees -> Location Filter -> Filter Only Profiles that have company Linkedin -> Edit Fields -> Loop Over Items -> Merge -> Upsert Supabase
+
+Observacao:
+O fluxo usa ramos paralelos e um ciclo de lote (Loop Over Items) para controlar processamento em blocos.
+
+====================================================================
+3) DETALHAMENTO NODE POR NODE (COM O PORQUE)
+====================================================================
+
+--------------------------------------------------
+ETAPA 1 - NODE: Executor Webhook
+Tipo: n8n-nodes-base.webhook
+--------------------------------------------------
+O que faz:
+- Recebe requisicao HTTP POST em executor/PLACEHOLDER.
+- Inicia todo o workflow.
+
+Por que existe:
+- Permite execucao sob demanda por outro sistema/rotina.
+
+
+--------------------------------------------------
+ETAPA 2 - NODE: Edit Fields2
+Tipo: n8n-nodes-base.set
+--------------------------------------------------
+O que faz:
+- Cria random_numb = Math.floor(Math.random() * 10)
+- Valor entre 0 e 9.
+
+Por que existe:
+- Aleatoriza o atraso para distribuir carga e reduzir picos.
+
+
+--------------------------------------------------
+ETAPA 3 - NODE: Wait
+Tipo: n8n-nodes-base.wait
+--------------------------------------------------
+O que faz:
+- Aguarda random_numb minutos.
+
+Por que existe:
+- Evita disparos sincronizados e reduz risco de rate limit.
+
+
+--------------------------------------------------
+ETAPA 4 - NODE: Generate Semi-Random Query
+Tipo: n8n-nodes-base.code
+--------------------------------------------------
+O que faz:
+- Monta o payload de busca de jobs para o actor do Apify.
+- Define filtros de vagas e mercado:
+  - jobTitles (dentista, CRC, SDR odontologico, financeiro clinica etc.)
+  - locations: Brasil
+  - industryIds de saude/clinicas
+  - companySize: B e C
+  - postedAt: past-month
+  - maxItems: 50
+- Aplica embaralhamento para variar combinacoes.
+
+Por que existe:
+- Gera input dinamico para reduzir padrao repetitivo e aumentar cobertura de captacao.
+
+
+--------------------------------------------------
+ETAPA 5 - NODE: Scrape Jobs
+Tipo: @apify/n8n-nodes-apify.apify
+Actor ID: zn01OAlzP853oqn4Z
+--------------------------------------------------
+O que faz:
+- Executa actor Apify de scraping de vagas usando o JSON da etapa anterior.
+- Retorna dataset de vagas e dados de empresa vinculada.
+
+Por que existe:
+- E a fonte inicial de leads potenciais orientados por oportunidade de contratacao.
+
+
+--------------------------------------------------
+ETAPA 6 - NODE: Initial Employee Filter
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regra:
+- company.employeeCount >= 10
+- company.employeeCount <= 100
+- company.website nao vazio
+
+O que faz:
+- Mantem apenas empresas no intervalo de tamanho definido e com website.
+
+Por que existe:
+- Filtro de ICP inicial para qualidade da base e foco em PMEs com sinais minimos de maturidade.
+
+
+--------------------------------------------------
+ETAPA 7 - NODE: Scrape Companies
+Tipo: @apify/n8n-nodes-apify.apify
+Actor ID: AjfNXEI9qTA2IdaAX
+--------------------------------------------------
+O que faz:
+- Recebe profileUrls de empresa (company.linkedinUrl)
+- Retorna dados detalhados das empresas.
+
+Por que existe:
+- Enriquece contexto da empresa antes de buscar funcionarios.
+
+
+--------------------------------------------------
+ETAPA 8 - NODE: Filter Recruting Companies
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regra:
+- industry != "Staffing & Recruiting"
+
+O que faz:
+- Remove empresas de recrutamento.
+
+Por que existe:
+- Evita leads fora do ICP alvo e reduz ruido comercial.
+
+Saida:
+- Segue para Loop Over Items e tambem alimenta o Merge (entrada 1) no desenho atual.
+
+
+--------------------------------------------------
+ETAPA 9 - NODE: Loop Over Items
+Tipo: n8n-nodes-base.splitInBatches
+--------------------------------------------------
+Configuracao:
+- batchSize: 10
+
+O que faz:
+- Processa itens em blocos de 10.
+- Encaminha dados para Aggregate.
+
+Por que existe:
+- Controle de volume e estabilidade operacional em etapas de scraping/enriquecimento.
+
+
+--------------------------------------------------
+ETAPA 10 - NODE: Aggregate
+Tipo: n8n-nodes-base.aggregate
+--------------------------------------------------
+O que faz:
+- Agrega campo url.
+- Prepara lista consolidada para scraping de funcionarios.
+
+Por que existe:
+- Reduz redundancia e organiza payload para proxima consulta.
+
+
+--------------------------------------------------
+ETAPA 11 - NODE: Scrape Employees
+Tipo: @apify/n8n-nodes-apify.apify
+Actor ID: Vb6LZkh4EqRlR0Ka9
+--------------------------------------------------
+O que faz:
+- Faz scraping de funcionarios das empresas agregadas.
+- Configurado com:
+  - maxItems: 70
+  - profileScraperMode: Full + email search
+  - recentlyChangedJobs: false
+
+Por que existe:
+- Gera os leads pessoa (tomadores de decisao/contatos) a partir das empresas filtradas.
+
+
+--------------------------------------------------
+ETAPA 12 - NODE: Location Filter
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regra:
+- location.countryCode == BR
+OU
+- location.parsed.country == Brazil
+
+O que faz:
+- Mantem apenas perfis brasileiros.
+
+Por que existe:
+- Alinhamento geografico com estrategia comercial local.
+
+
+--------------------------------------------------
+ETAPA 13 - NODE: Filter Only Profiles that have company Linkedin
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regra:
+- experience[0].companyUniversalName nao vazio
+
+O que faz:
+- Descarta perfis sem vinculo de empresa identificavel no LinkedIn.
+
+Por que existe:
+- Necessario para cruzamento consistente com dados de empresa no Merge.
+
+
+--------------------------------------------------
+ETAPA 14 - NODE: Edit Fields
+Tipo: n8n-nodes-base.set
+--------------------------------------------------
+O que faz:
+- Cria campo linkedinUrl normalizado:
+  $json.linkedinUrl.replace('www.', '')
+- Mantem demais campos (includeOtherFields = true).
+
+Por que existe:
+- Padroniza URL para melhorar match e evitar divergencia de formato.
+
+
+--------------------------------------------------
+ETAPA 15 - NODE: Merge
+Tipo: n8n-nodes-base.merge (combine)
+--------------------------------------------------
+Regra de combinacao:
+- field1: experience[0].companyUniversalName
+- field2: universalName
+
+O que faz:
+- Cruza perfil de funcionario com dados da empresa correspondente.
+
+Por que existe:
+- Unifica dados pessoa + empresa no mesmo item para persistencia final.
+
+
+--------------------------------------------------
+ETAPA 16 - NODE: Upsert Supabase
+Tipo: n8n-nodes-base.httpRequest (POST)
+Endpoint:
+https://yvigfurdahgkskbskhzv.supabase.co/rest/v1/neuromanageai_qualified_leads_jobs_offers
+--------------------------------------------------
+O que faz:
+- Envia payload para upsert de leads no Supabase.
+- Usa header Prefer: return=representation,resolution=merge-duplicates
+- Mapeia campos de perfil e empresa:
+  Nome, Cargo, URL Linkedin, Sobre, Localidade, Empresa, URL Linkedin Empresa,
+  Tempo na Empresa Atual, Colaboradores, Descript da Empresa, URL Empresa, Adress,
+  Email, Seguidores, Especialidades, Setor.
+
+Por que existe:
+- Persistir os leads qualificados com atualizacao sem duplicar registros.
+
+Observacoes tecnicas relevantes:
+- Header aparece como "Conten-Type" (possivel typo; esperado "Content-Type").
+- Campo "Sobre" aparece duplicado no body.
+- Campo "Seguidores" e atribuido duas vezes (uma sem valor, outra com connectionsCount).
+
+====================================================================
+4) REGRAS DE QUALIFICACAO APLICADAS
+====================================================================
+
+Este fluxo qualifica por:
+1. Perfil de vagas (titulos/categorias/periodo).
+2. Tamanho de empresa (10 a 100 colaboradores).
+3. Presenca de website.
+4. Exclusao de empresas de recrutamento.
+5. Localizacao BR de funcionarios.
+6. Perfil com empresa vinculada no LinkedIn.
+
+====================================================================
+5) PONTOS DE ATENCAO E MELHORIAS
+====================================================================
+
+1. Credenciais expostas
+- API key/Bearer do Supabase estao hardcoded.
+- Ideal: credenciais seguras no n8n.
+
+2. Typos de header
+- "Conten-Type" pode comprometer comportamento em alguns cenarios.
+
+3. Campos duplicados no body
+- "Sobre" repetido.
+- "Seguidores" declarado duas vezes.
+- Revisar para evitar sobrescrita silenciosa.
+
+4. Risco de acoplamento em merge
+- Merge depende de companyUniversalName/universalName consistentes.
+- Se os valores vierem ausentes/inconsistentes, pode perder matches.
+
+5. Nome da tabela de destino
+- Endpoint usa neuromanageai_qualified_leads_jobs_offers.
+- Validar consistencia com esquema de banco do ambiente atual.
+
+====================================================================
+6) RESUMO FINAL
+====================================================================
+
+Este workflow automatiza a qualificacao de leads a partir de vagas do LinkedIn, enriquecendo dados de empresa e colaboradores, aplicando filtros de ICP e gravando os resultados no Supabase com estrategia de upsert.
+
+E um pipeline de prospeccao orientado por sinais de contratacao (job openings), com foco em qualidade e segmentacao.

@@ -1,0 +1,125 @@
+Dúvidas
+- Não entendi o motivo do wait... lembro da reunião que era algo para burlar o gmail, para não banir ou restringir
+- Não entendi sobre esses parâmetros no node "Generate Semi-Random Query"
+"industryIds: ["2045", "13", "17", "14"],
+seniorityLevelIds: ["120", "320", "300", "310"],
+yearsAtCurrentCompanyIds: ["3", "4", "5"],
+yearsOfExperienceIds: ["3", "4", "5"]"
+- Os heafer Prefer e resolution é isso mesmo que coloquei lá embaixo? Dei uma pesquisada aqui.
+
+- Por que no upsert supabase, usamos a chama http request da tabela e não usamos o node do supabase direto?
+- Quando esse fluxo é executado???
+
+Possíveis correções/ melhorias
+Credenciais expostas:
+   - API keys do Supabase e Apify estão no workflow. Ideal: usar credenciais do n8n ou variáveis de ambiente.
+   - - O body tem duas entradas para URL da Empresa (companyLinkedinUrl e companyWebsites)
+   {{ $json.currentPosition[0]?.companyLinkedinUrl ?? null }} Primeiro campo
+   {{ $json.companyWebsites[0]?.url ?? null }} Segundo campo
+
+Objetivo
+Montar uma lista de leads qualificados (ICP) a partir de scraped do LinkedIn. 
+O fluxo busca perfis que se encaixam em critérios e grava os dados na base.
+
+webhook
+- Início do fluxo, gatilhos para o restantes dos nodes serem executados
+
+edit Fields
+O que faz:
+- Cria o campo random_numb com valor:
+  Math.floor(Math.random() * 10)
+- Gera inteiro entre 0 e 9.
+
+
+wait 
+- O fluxo trava e vai esperar a quantidade de tempo gerado em minutos.
+- Evita pico de carga e ajuda a respeitar limites da API/LinkedIn. (Próximo Node)
+- Reduz chance de bloqueio em requisições consecutivas.
+
+Semi-Random Query
+O que faz:
+- Executa JavaScript que monta o corpo da consulta para o LinkedIn Scraper do Apify.
+- Critérios fixos: indústria dentistas (2045), cargos (Cirurgião Dentista, Dentista, Ortodontista, etc.), localidades (São Paulo, Campinas, Curitiba, etc.).
+- Seleciona aleatoriamente 5 cargos e 3 localidades.
+Esses filtros servem para evitar o padrão repetitivo de busca de leads
+
+Scrape ICP LinkedIn Profiles
+O que faz:
+- Chama o Apify para executar o ator de scraped de perfis LinkedIn.
+- Envia o JSON gerado no Code como customBody.
+Por que essa etapa existe:
+- É a fonte principal de dados: perfis reais que batem com o ICP.
+- O Apify abstrai a complexidade do scraped e rate limiting.
+
+O que é API Fy? O que é Ator? O que é o Id que fica na URL da requisição? 
+
+O que é a Apify?
+A Apify é uma plataforma que hospeda "robôs" prontos de scraping. Em vez de você desenvolver e manter scrapers para cada site (LinkedIn, Google, etc.), você usa esses robôs pela API, passando parâmetros e recebendo os dados estruturados.
+
+O que é um Actor (ator)
+Um Actor é um desses robôs na Apify: um script pronto para extrair dados de um site ou serviço.
+LinkedIn Profile Scraper – busca perfis por cargo, indústria, localização
+LinkedIn Company Scraper – extrai dados de páginas de empresas
+Google Maps Scraper – extrai estabelecimentos do Google Maps
+Cada Actor tem um ID único que a Apify usa para identificar qual robô executar. É parecido com o ID de um pacote no npm ou de uma biblioteca em um repositório: é o que identifica exatamente qual Actor você está chamando.
+
+Por que usamos o “Request Actor” (passamos o ID)
+Quem executa? → A Apify.
+O que executar? → O Actor indicado pelo ID.
+Com quais parâmetros? → O que vem do node anterior (o customBody = JSON da query).
+Quando configuramos actorId: M2FMdjRVeF1HPGFcc, estamos dizendo ao n8n:
+> "Chame a Apify e peça para ela rodar o Actor com ID M2FMdjRVeF1HPGFcc."
+
+If
+Verifica se o Json da pesquisa não está vazio. 
+Se não estiver vazio, ou seja, se existir, continua o fluxo. Se não, não faz nada.
+
+Upsert Supabase
+- Envia POST para Supabase REST:
+  https://yvigfurdahgkskbskhzv .supabase.co/rest/v1/neuromanageai_qualified_leads_icp
+- O upsert evita duplicatas e permite atualizar dados existentes.
+
+
+yvigfurdahgkskbskhzv → ID do projeto Supabase
+/rest/v1/ → prefixo da API REST do projeto
+neuromanageai_qualified_leads_icp → nome da tabela
+
+Mapeia todos os campos necessários.
+
+Além dos parâmetros APIKEY, AUTHORIZATION e Content-Type, temos também o "Prefer" e "resolution"
+
+return=representation
+Retorna os registros criados ou atualizados no corpo da resposta.
+
+resolution=merge-duplicates
+Define o que fazer em conflito de chave única: em vez de erro, atualiza o registro existente (merge).
+
+Ou seja: o POST com esse header se comporta como um upsert. Se o registro já existir (por exemplo em uma coluna única como URL do LinkedIn), ele é atualizado; senão, é inserido.
+
+Aggregate1
+- Agrupa os itens pelo campo "Linkedin da Empresa".
+- Gera um item por empresa única (deduplicação por URL da empresa).
+- Evita chamar o scraper de empresas múltiplas vezes para a mesma empresa.
+- Reduz custo e tempo de processamento no Apify.
+- Foca o enriquecimento em uma execução por empresa.
+
+Scrape Companies of Profiles Found
+- Chama o Apify para scraped de empresas LinkedIn.
+- Body: { "companies": [array de URLs de empresas] }
+- Usa o campo Linkedin da Empresa agregado como input.
+
+Então vamos buscar apenas as empresas que vierem do scrap anterior.
+Os outros detalhes de do node é o mesmo que eu disse no scrap anterior, a diferenca é que agora é filtrado por empresa.
+
+Update a row1
+Atualiza os dados colhidos com o filtro da url do linkhedin. Sem risco de atualizar registros errados.
+
+Em cada execução, o workflow:
+1. Recebe o gatilho por webhook.
+2. Espera 0 a 9 minutos (aleatório).
+3. Gera query semi-aleatória para dentistas em regiões brasileiras.
+4. Scrapeda até 10 perfis LinkedIn no Apify.
+5. Filtra apenas perfis com empresa atual válida.
+6. Faz upsert dos leads na neuromanageai_qualified_leads_icp.
+7. Agrupa por empresa e scrapeda dados das empresas.
+8. Atualiza os leads com informações da empresa (setor, tamanho, endereço, etc.).

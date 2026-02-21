@@ -1,0 +1,697 @@
+{
+   "nodes": [
+     {
+       "parameters": {
+         "httpMethod": "POST",
+         "path": "executor/PLACEHOLDER",
+         "options": {}
+       },
+       "id": "15daf6b3-1a54-40c0-95cf-af76206a762c",
+       "name": "Webhook",
+       "type": "n8n-nodes-base.webhook",
+       "position": [
+         -464,
+         -16
+       ],
+       "typeVersion": 2.1,
+       "webhookId": "574906b6-1388-4f99-9db8-d83d0e40449f"
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "f1cdbef4-4dea-4112-bb20-e2e89c002b57",
+               "name": "random_numb",
+               "value": "={{ Math.floor(Math.random() * 20) }}",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "d82920af-627f-4e00-86c5-05b4eb718614",
+       "name": "Edit Fields",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         -256,
+         -16
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "amount": "={{ $json.random_numb }}",
+         "unit": "minutes"
+       },
+       "id": "93f470ec-ff70-459f-ad4c-19f9784a2fc3",
+       "name": "Wait",
+       "type": "n8n-nodes-base.wait",
+       "position": [
+         -48,
+         -16
+       ],
+       "typeVersion": 1.1,
+       "webhookId": "294e1ec7-b325-4c71-94cc-c9978bac455c"
+     },
+     {
+       "parameters": {
+         "operation": "getAll",
+         "tableId": "qualified_leads_icp",
+         "limit": 200,
+         "matchType": "allFilters",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "Telefone",
+               "condition": "is",
+               "keyValue": "null"
+             }
+           ]
+         }
+       },
+       "id": "368fd424-0156-47dc-a75a-59b5e4b47ac7",
+       "name": "Get many rows - ICP",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         256,
+         -304
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "getAll",
+         "tableId": "qualified_leads_comments",
+         "limit": 200,
+         "matchType": "allFilters",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "Telefone",
+               "condition": "is",
+               "keyValue": "null"
+             }
+           ]
+         }
+       },
+       "id": "97a73e0c-3206-40c8-815f-ea5675eb35d0",
+       "name": "Get many rows - Comments",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         256,
+         -144
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "getAll",
+         "tableId": "qualified_leads_google_maps",
+         "limit": 200,
+         "matchType": "allFilters",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "Telefone",
+               "condition": "is",
+               "keyValue": "null"
+             }
+           ]
+         }
+       },
+       "id": "f10cac3e-bc7f-49a7-8436-ba996e92f640",
+       "name": "Get many rows - Maps",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         256,
+         48
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "getAll",
+         "tableId": "qualified_leads_jobs_offers",
+         "limit": 200,
+         "matchType": "allFilters",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "Telefone",
+               "condition": "is",
+               "keyValue": "null"
+             }
+           ]
+         }
+       },
+       "id": "4929a785-53c4-43c3-8e16-2ba159945949",
+       "name": "Get many rows - Jobs",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         256,
+         208
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "numberInputs": 4
+       },
+       "id": "76cd9598-4f26-466a-9def-a1f92ec0faa6",
+       "name": "Merge",
+       "type": "n8n-nodes-base.merge",
+       "position": [
+         528,
+         -64
+       ],
+       "typeVersion": 3.2
+     },
+     {
+       "parameters": {
+         "url": "https://api-public.salesql.com/v1/persons/enrich",
+         "sendQuery": true,
+         "queryParameters": {
+           "parameters": [
+             {
+               "name": "linkedin_url",
+               "value": "={{ $json[\"URL Linkedin\"] }}"
+             }
+           ]
+         },
+         "sendHeaders": true,
+         "headerParameters": {
+           "parameters": [
+             {
+               "name": "Authorization",
+               "value": "Bearer x5yB0Pk3PXa00TzY8j0TnpdOb7857buC"
+             },
+             {
+               "name": "accept",
+               "value": "application/json"
+             }
+           ]
+         },
+         "options": {
+           "batching": {
+             "batch": {
+               "batchSize": 5
+             }
+           }
+         }
+       },
+       "id": "952a955a-e34c-4762-adcf-df17c19ac730",
+       "name": "Sales SQL Person Enrich",
+       "type": "n8n-nodes-base.httpRequest",
+       "position": [
+         1152,
+         -32
+       ],
+       "typeVersion": 4.2,
+       "onError": "continueErrorOutput"
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 3
+           },
+           "conditions": [
+             {
+               "id": "d5819c9b-63de-4ee3-ad75-706e1421940d",
+               "leftValue": "={{ $json.emails }}",
+               "rightValue": "",
+               "operator": {
+                 "type": "array",
+                 "operation": "notEmpty",
+                 "singleValue": true
+               }
+             },
+             {
+               "id": "3e6307d6-8ea5-429b-bb3f-f86e56a39720",
+               "leftValue": "={{ $json.phones[0].phone }}",
+               "rightValue": "",
+               "operator": {
+                 "type": "string",
+                 "operation": "notEmpty",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "or"
+         },
+         "options": {}
+       },
+       "id": "cd9c894a-e943-442d-8741-3d6de460a367",
+       "name": "If1",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         1424,
+         -48
+       ],
+       "typeVersion": 2.3
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "qualified_leads_icp",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "URL Linkedin",
+               "condition": "eq",
+               "keyValue": "={{ $json.linkedin_url.replaceAll('https://', 'https://www.') }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "Email",
+               "fieldValue": "={{ $json.emails[0]?.email ?? null }}"
+             },
+             {
+               "fieldId": "Telefone",
+               "fieldValue": "={{ $json.phones[0]?.phone ?? null }}"
+             },
+             {
+               "fieldId": "Outros Telefones",
+               "fieldValue": "={{ JSON.stringify($json.emails) ?? null }}"
+             },
+             {
+               "fieldId": "Outros Telefones",
+               "fieldValue": "={{ JSON.stringify($json.phones) ?? null }}"
+             }
+           ]
+         }
+       },
+       "id": "a8b4d430-2e12-4849-8bee-c1e57bf91239",
+       "name": "Update ICP",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         1872,
+         -320
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "qualified_leads_comments",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "URL Linkedin",
+               "condition": "eq",
+               "keyValue": "={{ $json.linkedin_url.replaceAll('https://', 'https://www.') }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "Email",
+               "fieldValue": "={{ $json.emails[0]?.email ?? null }}"
+             },
+             {
+               "fieldId": "Telefone",
+               "fieldValue": "={{ $json.phones[0]?.phone ?? null }}"
+             },
+             {
+               "fieldId": "Outros Telefones",
+               "fieldValue": "={{ JSON.stringify($json.emails) ?? null }}"
+             },
+             {
+               "fieldId": "Outros Telefones",
+               "fieldValue": "={{ JSON.stringify($json.phones) ?? null }}"
+             }
+           ]
+         }
+       },
+       "id": "063feedd-8b84-4bbc-bc33-59a1ee62170d",
+       "name": "Update Comments",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         1872,
+         -176
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "qualified_leads_google_maps",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "URL Linkedin",
+               "condition": "eq",
+               "keyValue": "={{ $json.linkedin_url.replaceAll('https://', 'https://www.') }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "Email",
+               "fieldValue": "={{ $json.emails[0]?.email ?? null }}"
+             },
+             {
+               "fieldId": "Telefone",
+               "fieldValue": "={{ $json.phones[0]?.phone ?? null }}"
+             },
+             {
+               "fieldId": "Outros Telefones",
+               "fieldValue": "={{ JSON.stringify($json.emails) ?? null }}"
+             },
+             {
+               "fieldId": "Outros Telefones",
+               "fieldValue": "={{ JSON.stringify($json.phones) ?? null }}"
+             }
+           ]
+         }
+       },
+       "id": "75204761-49bb-4807-88a6-64567cc0d30e",
+       "name": "Update Maps",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         1872,
+         -32
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "qualified_leads_jobs_offers",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "URL Linkedin",
+               "condition": "eq",
+               "keyValue": "={{ $json.linkedin_url.replaceAll('https://', 'https://www.') }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "Email",
+               "fieldValue": "={{ $json.emails[0]?.email ?? null }}"
+             },
+             {
+               "fieldId": "Telefone",
+               "fieldValue": "={{ $json.phones[0]?.phone ?? null }}"
+             },
+             {
+               "fieldId": "Outros Telefones",
+               "fieldValue": "={{ JSON.stringify($json.emails) ?? null }}"
+             },
+             {
+               "fieldId": "Outros Telefones",
+               "fieldValue": "={{ JSON.stringify($json.phones) ?? null }}"
+             }
+           ]
+         }
+       },
+       "id": "9c388f5f-cf70-4daa-aba5-38e3e0629f3f",
+       "name": "Update Jobs",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         1872,
+         112
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "sortFieldsUi": {
+           "sortField": [
+             {
+               "fieldName": "lead_score",
+               "order": "descending"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "type": "n8n-nodes-base.sort",
+       "typeVersion": 1,
+       "position": [
+         752,
+         -32
+       ],
+       "id": "66582e7c-561b-4b50-a351-885523afec9e",
+       "name": "Sort"
+     },
+     {
+       "parameters": {
+         "maxItems": 100
+       },
+       "type": "n8n-nodes-base.limit",
+       "typeVersion": 1,
+       "position": [
+         944,
+         -32
+       ],
+       "id": "17186938-068c-44ad-bd67-ae41eb5041bd",
+       "name": "Limit"
+     },
+     {
+       "parameters": {},
+       "type": "n8n-nodes-base.manualTrigger",
+       "typeVersion": 1,
+       "position": [
+         -384,
+         192
+       ],
+       "id": "08ef96e8-ea51-4940-82d5-6879cb172292",
+       "name": "When clicking ‘Execute workflow’"
+     }
+   ],
+   "connections": {
+     "Webhook": {
+       "main": [
+         [
+           {
+             "node": "Edit Fields",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Edit Fields": {
+       "main": [
+         [
+           {
+             "node": "Wait",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Wait": {
+       "main": [
+         [
+           {
+             "node": "Get many rows - ICP",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "Get many rows - Comments",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "Get many rows - Maps",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "Get many rows - Jobs",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Get many rows - ICP": {
+       "main": [
+         [
+           {
+             "node": "Merge",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Get many rows - Comments": {
+       "main": [
+         [
+           {
+             "node": "Merge",
+             "type": "main",
+             "index": 1
+           }
+         ]
+       ]
+     },
+     "Get many rows - Maps": {
+       "main": [
+         [
+           {
+             "node": "Merge",
+             "type": "main",
+             "index": 2
+           }
+         ]
+       ]
+     },
+     "Get many rows - Jobs": {
+       "main": [
+         [
+           {
+             "node": "Merge",
+             "type": "main",
+             "index": 3
+           }
+         ]
+       ]
+     },
+     "Merge": {
+       "main": [
+         [
+           {
+             "node": "Sort",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Sales SQL Person Enrich": {
+       "main": [
+         [
+           {
+             "node": "If1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "If1": {
+       "main": [
+         [
+           {
+             "node": "Update ICP",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "Update Comments",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "Update Maps",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "Update Jobs",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Sort": {
+       "main": [
+         [
+           {
+             "node": "Limit",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Limit": {
+       "main": [
+         [
+           {
+             "node": "Sales SQL Person Enrich",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "When clicking ‘Execute workflow’": {
+       "main": [
+         []
+       ]
+     }
+   },
+   "pinData": {},
+   "meta": {
+     "templateCredsSetupCompleted": true,
+     "instanceId": "a0f7a305da35e849bafdb639b90f9c75f57bc77027e416642bf74993eb8cfaee"
+   }
+ }

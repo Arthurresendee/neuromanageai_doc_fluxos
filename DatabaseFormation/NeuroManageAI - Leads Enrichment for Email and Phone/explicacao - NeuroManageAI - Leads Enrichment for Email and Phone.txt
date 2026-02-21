@@ -1,0 +1,110 @@
+Dúvidas
+- Qual o gatilho para esse workflow ser ativado?
+- Qual o objetivo do campo lead_score das tabelas de leads qualificados? Pois todos os valores estão persistidos com valor 0. em que momento é definido
+
+Possíveis correções/ melhorias
+- Outros Telefones" esta recebendo tambem JSON de e-mails.
+- O token Bearer esta fixo no node HTTP Request. Ideal mover para credencial segura do n8n/variavel de ambiente
+
+
+Objetivo
+- basicamente enriquecer as tabela de leads com informações do tipo email e telefone, com base busca do perfil de alguém utilizando a url do linkhedin.
+
+webhook
+- Início do fluxo, gatilhos para o restantes dos nodes serem executados
+
+edit Fields
+- Gera um número random inteiro de 0 a 20, usado posteriormente.
+
+wait 
+- O fluxo trava e vai esperar a quantidade de tempo gerado anteriormente de forma aleatória.
+
+Get many rows - Comments
+- Busca ate 200 registros onde "Telefone" is null na tabela qualified_leads_comments.
+
+Get many rows - Maps
+- Busca ate 200 registros onde "Telefone" is null na tabela qualified_leads_google_maps.
+
+Get many rows - Jobs
+- Busca ate 200 registros onde "Telefone" is null qualified_leads_jobs_offers
+
+Merge
+- Junta os dados de todos os Gets em um único fluxo de itens
+
+Sort
+- ordena os leads a partir do campo lead_score em ordem crescente
+Por que essa etapa existe:
+- Controle de custo e tempo por rodada.
+- Evita execucoes muito longas.
+
+Limit
+- Limita a execucao para no maximo 100 itens.
+
+Sales SQL Person Enrich (http request)
+O que faz:
+- Chama a API:
+  GET https://api-public.salesql.com/v1/persons/enrich
+- Envia query param:
+  linkedin_url = {{$json["URL Linkedin"]}}
+- Header:
+  Authorization: Bearer ...
+  accept: application/json
+Saida:
+- Resposta de enriquecimento com possiveis arrays de emails e phones.
+
+If1
+O que faz:
+- Condicao 1: `emails` nao vazio
+- OU
+- Condicao 2: `phones[0].phone` nao vazio
+- Combinador: OR
+Saida:
+- Verdadeiro: segue para updates nas tabelas.
+- Falso: nao atualiza.
+Por que essa etapa existe:
+- Impede gravacao vazia/inutil no banco.
+- Garante update apenas quando houve enriquecimento valido.
+
+Update ICP
+Tabela: qualified_leads_icp
+Condição de update:
+- link do linkhedin ser o mesmo que vem do banco, assim, alterando apenas os registros da tabela que correspondem ao link correto.
+- URL Linkedin = linkedin_url normalizado para https://www., que é o correto.
+
+Update Comments
+Tabela: qualified_leads_comments
+Mesma logica do Update ICP, aplicada na base de comments.
+
+Update Maps
+Tabela: qualified_leads_google_maps
+Mesma logica de filtro e campos de update.
+
+Update Jobs
+Tabela: qualified_leads_jobs_offers
+Mesma logica de filtro e campos de update. 
+
+========================
+
+O QUE ACONTECE COM DADOS SEM RETORNO DA API? 
+
+Se a SalesQL nao retornar e-mail nem telefone:
+- o item nao passa no If1;
+- nenhum update e executado;
+- o registro permanece sem contato para uma tentativa futura.
+
+Motivo dessa estrategia:
+- evita gravar lixo;
+- preserva qualidade da base;
+- mantem rastreabilidade do que foi realmente enriquecido.
+
+========================
+Visão Geral
+
+Em cada execucao, o workflow:
+1. Recebe o gatilho por webhook.
+2. Cria um atraso aleatorio para distribuir carga.
+3. Busca leads sem telefone nas 4 bases.
+4. Junta tudo, prioriza por lead_score e corta em 100.
+5. Envia cada LinkedIn para enriquecimento na SalesQL.
+6. So aceita itens com retorno util (email ou telefone).
+7. Grava os contatos encontrados nas tabelas do Supabase.

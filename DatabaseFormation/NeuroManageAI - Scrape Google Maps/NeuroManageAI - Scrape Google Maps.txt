@@ -1,0 +1,414 @@
+NeuroManageAI - Scrape Google Maps
+
+Esta documentacao detalha o workflow em ordem sequencial, explicando o que cada node faz e, principalmente, como cada etapa contribui para o objetivo macro do processo de geracao e qualificacao de leads.
+
+====================================================================
+1) VISAO GERAL DO WORKFLOW
+====================================================================
+
+Objetivo geral:
+Construir uma esteira automatizada de prospeccao que parte de buscas no Google Maps, passa por enriquecimento no LinkedIn (empresa e pessoas), aplica filtros de ICP e grava os leads qualificados na base do Supabase com estrategia de upsert.
+
+Em termos de estrategia:
+1. O Google Maps e usado para descobrir empresas locais por setor e cidade.
+2. Essas empresas viram entradas para buscar perfis empresariais no LinkedIn.
+3. A partir das empresas, o fluxo busca colaboradores (pessoas) e padroniza os dados.
+4. Os dados sao cruzados com informacoes da empresa para montar um registro rico.
+5. O resultado final e persistido no banco para uso em fluxos posteriores (ex.: outreach, enriquecimento, qualificacao adicional).
+
+Tabela de destino principal:
+- neuromanageai_qualified_leads_google_maps
+
+Ferramentas externas:
+- Apify (3 actors diferentes em cadeia)
+- Supabase REST API (upsert com merge-duplicates)
+
+====================================================================
+2) LEITURA ESTRATEGICA DO PIPELINE (ALTO NIVEL)
+====================================================================
+
+Esse workflow nao e apenas "scrape de Google Maps". Ele e um pipeline de 4 camadas:
+
+Camada A - Descoberta:
+- Busca estabelecimentos por setor e local no Google Maps.
+
+Camada B - Conversao para entidade empresarial:
+- A partir de titulos/nomes, encontra empresas no LinkedIn e aplica filtros de ICP.
+
+Camada C - Conversao para entidade pessoa:
+- Para as empresas aprovadas, busca funcionarios (com foco em dados de contato/perfil).
+
+Camada D - Persistencia e reaproveitamento:
+- Normaliza campos, cruza pessoa + empresa e salva em base estruturada com deduplicacao.
+
+Contribuicao de contexto:
+- Cada node prepara o dado para a proxima camada, reduzindo ruido e custo.
+- O fluxo foi desenhado para evitar gravar lixo no banco e para facilitar reprocessamento.
+
+====================================================================
+3) SEQUENCIA EXECUTIVA (DO INICIO AO FIM)
+====================================================================
+
+Fluxo principal:
+Executor Webhook -> Edit Fields2 -> Wait -> Edit Fields -> Segreggate Input -> Google Maps Scrape -> If3 -> Aggregate -> Scrape Companies -> Location, Employees and HR filter -> (ramo A) Merge -> Upsert Supabase
+                                                                                                                                            \-> (ramo B) Loop Over Items -> Aggregate1 -> Scrape Employees -> Filter empty outputs -> Filter companies that have Linkedin profiles -> Parse Output -> Loop Over Items -> Merge -> Upsert Supabase
+
+Observacao:
+- O node Merge recebe dois lados: dados de empresa (ramo A) e dados de pessoa (ramo B), criando o registro final completo.
+
+====================================================================
+4) DETALHAMENTO NODE POR NODE (COM PAPEL NO CONTEXTO)
+====================================================================
+
+--------------------------------------------------
+ETAPA 1 - NODE: Executor Webhook
+Tipo: n8n-nodes-base.webhook
+--------------------------------------------------
+O que faz:
+- Recebe requisicao POST em executor/PLACEHOLDER.
+- Inicia toda a execucao.
+
+Contribuicao no contexto:
+- Funciona como "porta de entrada operacional" do pipeline, permitindo disparo por outro sistema, cron externo ou orquestrador.
+- Sem ele, o fluxo nao estaria pronto para automacao sob demanda.
+
+
+--------------------------------------------------
+ETAPA 2 - NODE: Edit Fields2
+Tipo: n8n-nodes-base.set
+--------------------------------------------------
+O que faz:
+- Cria random_numb com Math.floor(Math.random() * 10), gerando valor de 0 a 9.
+
+Contribuicao no contexto:
+- Introduz jitter no inicio para evitar que multiplas execucoes concorrentes pressionem APIs externas ao mesmo tempo.
+- Isso reduz risco de rate limit e melhora estabilidade em ambiente de producao.
+
+
+--------------------------------------------------
+ETAPA 3 - NODE: Wait
+Tipo: n8n-nodes-base.wait
+--------------------------------------------------
+O que faz:
+- Aguarda random_numb minutos.
+
+Contribuicao no contexto:
+- Atua como amortecedor de carga da esteira.
+- Em pipelines com Apify/LinkedIn, controlar cadencia e tao importante quanto o scrape em si.
+
+
+--------------------------------------------------
+ETAPA 4 - NODE: Edit Fields
+Tipo: n8n-nodes-base.set
+--------------------------------------------------
+O que faz:
+- Define os parametros-base da campanha:
+  - Setor: "Supermercados, Atacados, Shoppings, Dentista, Loja"
+  - Numero de Leads: 1
+  - Local: "Sao Paulo, Belo Horizonte, Rio de Janeiro"
+
+Contribuicao no contexto:
+- Este node transforma um disparo generico em uma "campanha parametrizada".
+- Centraliza variaveis de negocio sem alterar os nodes de scraping.
+
+
+--------------------------------------------------
+ETAPA 5 - NODE: Segreggate Input
+Tipo: n8n-nodes-base.code
+--------------------------------------------------
+O que faz:
+- Quebra campos de entrada por virgula (setores e locais).
+- Remove duplicatas de setores com Set.
+- Gera 1 item por local, mantendo array de setores e numero de leads.
+
+Contribuicao no contexto:
+- Converte uma entrada compacta em lotes operacionais.
+- Permite varrer varias cidades com a mesma configuracao de setores sem duplicar workflow.
+
+Logica-chave do codigo:
+1. Parse de listas texto -> arrays limpos.
+2. Dedupe de setores.
+3. Expansao por local (fan-out controlado).
+
+--------------------------------------------------
+ETAPA 6 - NODE: Google Maps Scrape
+Tipo: @apify/n8n-nodes-apify.apify
+--------------------------------------------------
+Actor:
+- https://console.apify.com/actors/nwua9Gu5YrADL7ZDj/input
+
+O que faz:
+- Busca estabelecimentos no Google Maps usando:
+  - locationQuery = Local
+  - searchStringsArray = Setor[]
+  - maxCrawledPlacesPerSearch = Numero de Leads
+  - linguagem pt-BR
+- Retorna resultados de empresas/locais encontrados.
+
+Contribuicao no contexto:
+- E o ponto de aquisicao de mercado local (origem de demanda).
+- Define o universo inicial de empresas que sera refinado nas proximas camadas.
+
+
+--------------------------------------------------
+ETAPA 7 - NODE: If3
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regra:
+- phoneUnformatted existe.
+
+O que faz:
+- Permite seguir apenas itens com telefone presente.
+
+Contribuicao no contexto:
+- Este filtro melhora qualidade minima de lead antes de consumir mais custo em APIs de enriquecimento.
+- Evita gastar chamadas em registros fracos para contato comercial.
+
+
+--------------------------------------------------
+ETAPA 8 - NODE: Aggregate
+Tipo: n8n-nodes-base.aggregate
+--------------------------------------------------
+Campo agregado:
+- title
+
+O que faz:
+- Consolida titulos coletados para envio ao proximo actor.
+
+Contribuicao no contexto:
+- Funciona como ponte entre "resultado de lugar" e "busca empresarial no LinkedIn".
+- Reduz fragmentacao e organiza input para consulta seguinte.
+
+
+--------------------------------------------------
+ETAPA 9 - NODE: Scrape Companies
+Tipo: @apify/n8n-nodes-apify.apify
+--------------------------------------------------
+Actor:
+- https://console.apify.com/actors/UwSdACBp7ymaGUJjS/input
+
+O que faz:
+- Recebe os titulos agregados e busca empresas correlatas no LinkedIn.
+
+Contribuicao no contexto:
+- Faz a translacao de mundo local (Google Maps) para mundo B2B estruturado (LinkedIn company graph).
+- Sem essa etapa, nao haveria como evoluir para decisao de ICP e busca de funcionarios.
+
+
+--------------------------------------------------
+ETAPA 10 - NODE: Location, Employees and HR filter
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regras:
+1. locations[0].country == BR
+2. industries[0].name != Human Resources
+3. employeeCount <= 100
+
+O que faz:
+- Filtra empresas por geografia, setor indesejado e tamanho.
+
+Contribuicao no contexto:
+- E o filtro de ICP principal no nivel empresa.
+- Reduz drasticamente ruido e custo downstream (especialmente scrape de funcionarios).
+
+Leitura de negocio:
+- Mantem empresas brasileiras, exclui nicho nao desejado (HR) e prioriza PMEs.
+
+
+--------------------------------------------------
+ETAPA 11 - NODE: Loop Over Items
+Tipo: n8n-nodes-base.splitInBatches
+--------------------------------------------------
+Configuracao:
+- batchSize = 10
+
+O que faz:
+- Processa empresas em lotes de 10.
+
+Contribuicao no contexto:
+- Controla throughput da etapa mais cara (busca de funcionarios).
+- Protege contra estouro de cota e melhora recuperacao em caso de falhas parciais.
+
+
+--------------------------------------------------
+ETAPA 12 - NODE: Aggregate1
+Tipo: n8n-nodes-base.aggregate
+--------------------------------------------------
+Campo agregado:
+- linkedinUrl
+
+O que faz:
+- Junta URLs de empresas para alimentar scrape de funcionarios.
+
+Contribuicao no contexto:
+- Prepara um payload enxuto e orientado para o actor de employees.
+- Mantem coesao entre lote processado e consulta externa.
+
+
+--------------------------------------------------
+ETAPA 13 - NODE: Scrape Employees
+Tipo: @apify/n8n-nodes-apify.apify
+--------------------------------------------------
+Actor:
+- https://console.apify.com/actors/Vb6LZkh4EqRlR0Ka9/input
+
+Payload principal:
+- companies = array de linkedinUrl
+- maxItems = 70
+- profileScraperMode = Full + email search
+
+O que faz:
+- Busca perfis de colaboradores associados as empresas filtradas.
+
+Contribuicao no contexto:
+- E a transicao de "empresa alvo" para "contato acionavel".
+- Gera o insumo principal para outreach futuro (nome, cargo, linkedin, email etc.).
+
+Resiliencia:
+- retryOnFail = true
+- onError = continueErrorOutput
+- alwaysOutputData = true
+
+
+--------------------------------------------------
+ETAPA 14 - NODE: Filter empty outputs
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regra:
+- JSON serializado do item nao esta vazio.
+
+O que faz:
+- Descarta outputs vazios/invalidos do scrape de funcionarios.
+
+Contribuicao no contexto:
+- Impede que itens sem dados contaminem parse, merge e upsert.
+- Mantem qualidade tecnica da esteira.
+
+
+--------------------------------------------------
+ETAPA 15 - NODE: Filter companies that have Linkedin profiles
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regra:
+- companyWebsites[0].url notEmpty
+
+O que faz:
+- Filtra itens com website de empresa preenchido.
+
+Contribuicao no contexto:
+- Cria um criterio minimo para cruzamento com dados da empresa no Merge posterior (website x company_website).
+- Aumenta chance de join correto no registro final.
+
+
+--------------------------------------------------
+ETAPA 16 - NODE: Parse Output
+Tipo: n8n-nodes-base.code
+--------------------------------------------------
+O que faz:
+- Normaliza o retorno bruto de pessoas em schema padrao:
+  - identificadores (linkedin_id, public_identifier, linkedin_url)
+  - dados pessoais (first_name, last_name, headline, title, about)
+  - localizacao (city/state/country)
+  - sinais (connections_count, follower_count, verified, open_to_work)
+  - dados da empresa associada (company_name, company_website, company_linkedin)
+
+Contribuicao no contexto:
+- E a camada de "data contract" do pipeline.
+- Padroniza estrutura para integracao com banco e com outros workflows.
+
+
+--------------------------------------------------
+ETAPA 17 - NODE: Merge
+Tipo: n8n-nodes-base.merge (combine, advanced)
+--------------------------------------------------
+Regra de join:
+- website (ramo empresa) == company_website (ramo pessoa)
+
+O que faz:
+- Une contexto empresarial e contexto pessoal num unico item.
+
+Contribuicao no contexto:
+- E o ponto de composicao do lead enriquecido.
+- Sem merge, voce teria duas metades de informacao desconectadas.
+
+
+--------------------------------------------------
+ETAPA 18 - NODE: Upsert Supabase
+Tipo: n8n-nodes-base.httpRequest (POST REST Supabase)
+--------------------------------------------------
+Endpoint:
+- /rest/v1/neuromanageai_qualified_leads_google_maps
+
+Headers:
+- apikey
+- Authorization Bearer
+- Prefer: return=representation,resolution=merge-duplicates
+- Content-Type: application/json
+
+O que faz:
+- Persiste o registro final no banco com estrategia de upsert.
+- Mapeia campos de pessoa + empresa para colunas da tabela.
+
+Contribuicao no contexto:
+- Converte enriquecimento em ativo reutilizavel de dados.
+- Evita duplicacao e permite reprocessar sem inflar tabela.
+
+====================================================================
+5) COMO CADA BLOCO CONTRIBUI PARA O OBJETIVO FINAL
+====================================================================
+
+Bloco 1 - Orquestracao e controle:
+- Executor Webhook, Edit Fields2, Wait
+- Contribui com governanca operacional (disparo, cadencia, estabilidade).
+
+Bloco 2 - Descoberta de mercado:
+- Edit Fields, Segreggate Input, Google Maps Scrape
+- Contribui com cobertura geografica e segmentacao por setor.
+
+Bloco 3 - Qualificacao de empresa:
+- If3, Aggregate, Scrape Companies, Location filter
+- Contribui para transformar volume bruto em empresas aderentes ao ICP.
+
+Bloco 4 - Descoberta de contatos:
+- Loop Over Items, Aggregate1, Scrape Employees
+- Contribui para gerar pessoas reais dentro das empresas aprovadas.
+
+Bloco 5 - Higiene e normalizacao:
+- Filter empty outputs, Filter companies..., Parse Output
+- Contribui com qualidade de dado e padrao consistente.
+
+Bloco 6 - Persistencia:
+- Merge, Upsert Supabase
+- Contribui com consolidacao final e armazenamento deduplicado.
+
+====================================================================
+6) PONTOS DE ATENCAO (TECNICO + NEGOCIO)
+====================================================================
+
+1. Credenciais expostas no node HTTP:
+- apikey e bearer estao hardcoded.
+- Recomendacao: mover para credenciais/variaveis seguras no n8n.
+
+2. Criterio If3 pode filtrar cedo demais:
+- Exigir telefone antes do enriquecimento pode descartar empresas boas.
+- Avaliar se o filtro deveria ocorrer apos consolidacao.
+
+3. Join por website pode perder match:
+- website e company_website podem divergir por formato (http/https, www, barra final).
+- Recomendado normalizar URL antes do Merge.
+
+4. Numero de leads muito baixo no exemplo:
+- Numero de Leads = 1 limita cobertura por busca.
+- Em producao, revisar conforme meta de volume.
+
+5. Dependencia forte de atores externos:
+- Falhas no Apify impactam todo pipeline.
+- Ja existe retry/continue em alguns nodes; pode ampliar monitoramento por bloco.
+
+====================================================================
+7) RESUMO FINAL
+====================================================================
+
+O fluxo "NeuroManageAI - Scrape Google Maps" e uma esteira de prospeccao e enriquecimento em varias camadas: descobre empresas no Google Maps, valida no LinkedIn, busca funcionarios, normaliza os dados e grava no Supabase com deduplicacao.
+
+O diferencial dele nao esta em um node isolado, mas na composicao entre nodes para transformar dado bruto em lead operacional com contexto comercial.

@@ -1,0 +1,434 @@
+{
+   "nodes": [
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "neuromanageai_qualified_leads_icp",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "Linkedin da Empresa",
+               "condition": "eq",
+               "keyValue": "={{ $json.linkedinUrl }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "Setor",
+               "fieldValue": "={{ $json.industries[0]?.name ?? null }}"
+             },
+             {
+               "fieldId": "Número de Colaboradores",
+               "fieldValue": "={{ $json.employeeCount ?? null}}"
+             },
+             {
+               "fieldId": "Especialidades Empresa",
+               "fieldValue": "={{ JSON.stringify($json.specialities) ?? null }}"
+             },
+             {
+               "fieldId": "Descricao da Empresa",
+               "fieldValue": "={{ $json.description ?? null}}"
+             },
+             {
+               "fieldId": "Seguidores Empresa",
+               "fieldValue": "={{ $json.followerCount ?? null }}"
+             },
+             {
+               "fieldId": "Endereço Empresa",
+               "fieldValue": "={{ $json.locations[0]?.line1 + \", \" + $json.locations[0]?.geographicArea + \", \" + $json.locations[0]?.parsed?.countryFull + \" - \" + $json.locations[0].postalCode}}"
+             }
+           ]
+         }
+       },
+       "id": "59c1a96e-4da4-456b-aee1-c64c1b26039e",
+       "name": "Update a row1",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         640,
+         1104
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "TRASwAHaBAQNAIOs",
+           "name": "Production"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "jsCode": "// ============================================\n// n8n Code Node - Dentistas (Versão Simplificada)\n// Indústria: 2045 (Dentists)\n// ============================================\n\n// Dados armazenados\nconst data = {\n  currentJobTitles: [\n    \"Cirurgião Dentista\", \"Dentista\", \"Ortodontista\", \"Implantodontista\",\n    \"Endodontista\", \"Periodontista\", \"Odontopediatra\", \"Proprietário\",\n    \"Sócio\", \"Sócio Proprietário\", \"Diretor Clínico\", \"Diretor\",\n    \"CEO\", \"Founder\", \"Co-founder\", \"Fundador\", \"Co-fundador\",\n    \"Gestor\", \"Administrador\", \"Owner\", \"Partner\"\n  ],\n  locations: [\n    \"São Paulo\", \"São Caetano do Sul\", \"São Bernardo do Campo\", \"Santo André\",\n    \"Indaiatuba\", \"Campinas\", \"Barueri\", \"Santana de Parnaíba\", \"Curitiba\",\n    \"Belo Horizonte\", \"Ribeirão Preto\", \"Florianópolis\", \"Brasília\", \"Goiânia\"\n  ],\n  industryIds: [\"2045\", \"13\", \"17\", \"14\"],\n  seniorityLevelIds: [\"120\", \"320\", \"300\", \"310\"],\n  yearsAtCurrentCompanyIds: [\"3\", \"4\", \"5\"],\n  yearsOfExperienceIds: [\"3\", \"4\", \"5\"]\n};\n\n// Função de seleção randômica\nconst getRandom = (arr, n) => [...arr].sort(() => Math.random() - 0.5).slice(0, Math.min(n, arr.length));\n\n// Query final\nreturn {\n  json: {\n    autoQuerySegmentation: false,\n    currentJobTitles: getRandom(data.currentJobTitles, 5),\n    industryIds: data.industryIds,\n    locations: getRandom(data.locations, 3),\n    maxItems: 10,\n    profileLanguages: [\"Portuguese\"],\n    profileScraperMode: \"Full + email search\",\n    recentlyChangedJobs: false,\n    seniorityLevelIds: data.seniorityLevelIds,\n    yearsAtCurrentCompanyIds: data.yearsAtCurrentCompanyIds,\n    yearsOfExperienceIds: data.yearsOfExperienceIds\n  }\n};"
+       },
+       "id": "4209c34c-069b-476f-969a-674cd70e5dc5",
+       "name": "Generate Semi-Random Query",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         -784,
+         1152
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "amount": "={{ $json.random_numb }}",
+         "unit": "minutes"
+       },
+       "id": "4a9e47fb-2c9c-47c0-928f-06861d191287",
+       "name": "Wait",
+       "type": "n8n-nodes-base.wait",
+       "position": [
+         -992,
+         1152
+       ],
+       "typeVersion": 1.1,
+       "webhookId": "294e1ec7-b325-4c71-94cc-c9978bac455c"
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "f1cdbef4-4dea-4112-bb20-e2e89c002b57",
+               "name": "random_numb",
+               "value": "={{ Math.floor(Math.random() * 10) }}",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "85f62a6c-cdaf-4a99-b8ba-89e6d30ca5a5",
+       "name": "Edit Fields2",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         -1232,
+         1152
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "httpMethod": "POST",
+         "path": "executor/PLACEHOLDER",
+         "options": {}
+       },
+       "id": "61c9d7db-ca96-435a-8fdc-4cc49da05e0e",
+       "name": "Webhook",
+       "type": "n8n-nodes-base.webhook",
+       "position": [
+         -1472,
+         1152
+       ],
+       "typeVersion": 2.1,
+       "webhookId": "574906b6-1388-4f99-9db8-d83d0e40449f"
+     },
+     {
+       "parameters": {
+         "method": "POST",
+         "url": "https://yvigfurdahgkskbskhzv.supabase.co/rest/v1/neuromanageai_qualified_leads_icp",
+         "sendHeaders": true,
+         "headerParameters": {
+           "parameters": [
+             {
+               "name": "apikey",
+               "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2aWdmdXJkYWhna3NrYnNraHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MTQ0OTYsImV4cCI6MjA4MzE5MDQ5Nn0.0FF9ZMNbJKG7YKQvKgPDZYlP2522hCROJapZxvadULg"
+             },
+             {
+               "name": "Authorization",
+               "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2aWdmdXJkYWhna3NrYnNraHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MTQ0OTYsImV4cCI6MjA4MzE5MDQ5Nn0.0FF9ZMNbJKG7YKQvKgPDZYlP2522hCROJapZxvadULg"
+             },
+             {
+               "name": "Prefer",
+               "value": "return=representation,resolution=merge-duplicates"
+             },
+             {
+               "name": "Content-Type",
+               "value": "application/json"
+             }
+           ]
+         },
+         "sendBody": true,
+         "bodyParameters": {
+           "parameters": [
+             {
+               "name": "Nome",
+               "value": "={{ $json.firstName + \" \" + $json.lastName}}"
+             },
+             {
+               "name": "Cargo",
+               "value": "={{ $json.experience[0]?.position ?? null }}"
+             },
+             {
+               "name": "Email",
+               "value": "={{ $json.emails[0]?.email ?? null }}"
+             },
+             {
+               "name": "URL Linkedin",
+               "value": "={{ $json.linkedinUrl ?? null}}"
+             },
+             {
+               "name": "Identificador LinkedIn",
+               "value": "={{ $json.publicIdentifier ?? null}}"
+             },
+             {
+               "name": "Empresa",
+               "value": "={{ $json.currentPosition[0]?.companyName ?? null}}"
+             },
+             {
+               "name": "Conectado LinkedIn",
+               "value": "false"
+             },
+             {
+               "name": "URL da Empresa",
+               "value": "={{ $json.currentPosition[0]?.companyLinkedinUrl ?? null }}"
+             },
+             {
+               "name": "Endereco",
+               "value": "={{ $json.location?.linkedinText ?? null }}"
+             },
+             {
+               "name": "Sobre Lead",
+               "value": "={{ $json.about ?? null }}"
+             },
+             {
+               "name": "Habilidades",
+               "value": "={{ $json.skills ? $json.skills.toJsonString() : null }}"
+             },
+             {
+               "name": "Conexões",
+               "value": "={{ $json.connectionsCount ?? null }}"
+             },
+             {
+               "name": "Tempo na Empresa",
+               "value": "={{ $json.experience?.[0]?.duration ?? null }}"
+             },
+             {
+               "name": "Linkedin da Empresa",
+               "value": "={{ $json.experience[0]?.companyLinkedinUrl ?? null }}"
+             },
+             {
+               "name": "URL da Empresa",
+               "value": "={{ $json.companyWebsites[0]?.url ?? null }}"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "d7e8ddeb-b4a1-4a7d-9453-f8d68225940e",
+       "name": "Upsert Supabase",
+       "type": "n8n-nodes-base.httpRequest",
+       "position": [
+         -48,
+         1120
+       ],
+       "typeVersion": 4.3
+     },
+     {
+       "parameters": {
+         "operation": "Run actor and get dataset",
+         "actorId": {
+           "__rl": true,
+           "value": "https://console.apify.com/actors/M2FMdjRVeF1HPGFcc/input",
+           "mode": "url"
+         },
+         "customBody": "={{ $json }}",
+         "authentication": "apifyOAuth2Api"
+       },
+       "id": "86cfb84f-7bee-4c35-acc6-b6a7101ac9cc",
+       "name": "Scrape ICP LinkedIn Profiles",
+       "type": "@apify/n8n-nodes-apify.apify",
+       "position": [
+         -544,
+         1152
+       ],
+       "typeVersion": 1,
+       "executeOnce": false,
+       "retryOnFail": true,
+       "onError": "continueErrorOutput"
+     },
+     {
+       "parameters": {
+         "operation": "Run actor and get dataset",
+         "actorId": {
+           "__rl": true,
+           "value": "https://console.apify.com/actors/UwSdACBp7ymaGUJjS/input",
+           "mode": "url"
+         },
+         "customBody": "={\n    \"companies\": {{ JSON.stringify($json['Linkedin da Empresa']) }}\n}",
+         "authentication": "apifyOAuth2Api"
+       },
+       "id": "2af2d832-9d56-4b7c-8229-0a4e12912c63",
+       "name": "Scrape Companies of Profiles Found",
+       "type": "@apify/n8n-nodes-apify.apify",
+       "position": [
+         400,
+         1120
+       ],
+       "typeVersion": 1,
+       "executeOnce": false,
+       "retryOnFail": true,
+       "onError": "continueErrorOutput"
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 3
+           },
+           "conditions": [
+             {
+               "id": "c658ac42-af3a-4c46-96f7-2dfa74ba6f8a",
+               "leftValue": "={{ $json.currentPosition[0].companyLinkedinUrl }}",
+               "rightValue": "",
+               "operator": {
+                 "type": "string",
+                 "operation": "notEmpty",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "a4d1b3fd-1d3a-4afa-ae8e-58ef5f466b8b",
+       "name": "If",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         -288,
+         1136
+       ],
+       "typeVersion": 2.3
+     },
+     {
+       "parameters": {
+         "fieldsToAggregate": {
+           "fieldToAggregate": [
+             {
+               "fieldToAggregate": "Linkedin da Empresa"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "9f504034-8672-459a-aef7-fb67a63f31f0",
+       "name": "Aggregate1",
+       "type": "n8n-nodes-base.aggregate",
+       "position": [
+         192,
+         1120
+       ],
+       "typeVersion": 1
+     }
+   ],
+   "connections": {
+     "Generate Semi-Random Query": {
+       "main": [
+         [
+           {
+             "node": "Scrape ICP LinkedIn Profiles",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Wait": {
+       "main": [
+         [
+           {
+             "node": "Generate Semi-Random Query",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Edit Fields2": {
+       "main": [
+         [
+           {
+             "node": "Wait",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Webhook": {
+       "main": [
+         [
+           {
+             "node": "Edit Fields2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Upsert Supabase": {
+       "main": [
+         [
+           {
+             "node": "Aggregate1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Scrape ICP LinkedIn Profiles": {
+       "main": [
+         [
+           {
+             "node": "If",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Scrape Companies of Profiles Found": {
+       "main": [
+         [
+           {
+             "node": "Update a row1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "If": {
+       "main": [
+         [
+           {
+             "node": "Upsert Supabase",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Aggregate1": {
+       "main": [
+         [
+           {
+             "node": "Scrape Companies of Profiles Found",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     }
+   },
+   "pinData": {},
+   "meta": {
+     "instanceId": "a0f7a305da35e849bafdb639b90f9c75f57bc77027e416642bf74993eb8cfaee"
+   }
+ }

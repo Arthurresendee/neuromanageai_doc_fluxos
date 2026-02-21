@@ -1,0 +1,324 @@
+NeuroManageAI - Cold List by ICP Scrapper
+
+Esta documentação detalha o workflow em ordem sequencial, explicando exatamente o que cada node faz e 
+por que cada etapa existe no processo.
+
+====================================================================
+1) VISÃO GERAL DO WORKFLOW
+====================================================================
+
+Objetivo geral:
+Montar uma lista de leads qualificados (ICP) a partir de scraped do LinkedIn. 
+O fluxo busca perfis que se encaixam em critérios de persona (ex.: dentistas, cargos específicos, 
+localidades), grava os dados na base e em seguida enriquece as empresas associadas a esses perfis.
+
+Problema que resolve:
+- Geração automatizada de leads ICP sem intervenção manual.
+- Construção de base comercial segmentada por setor e localidade.
+- Enriquecimento posterior das empresas para uso em prospecção.
+
+Tabela envolvida:
+- neuromanageai_qualified_leads_icp
+
+Fluxo em alto nível:
+1. Webhook dispara o processo.
+2. Gera query semi-aleatória para o scraper de perfis LinkedIn.
+3. Scrapeda perfis no Apify (LinkedIn Scraper).
+4. Filtra perfis com empresa atual válida.
+5. Faz upsert dos leads no Supabase.
+6. Agrupa por empresa e scrapeda dados das empresas.
+7. Atualiza os registros com informações da empresa.
+
+====================================================================
+2) SEQUÊNCIA EXECUTIVA (DO INÍCIO AO FIM)
+====================================================================
+
+Webhook -> Edit Fields2 -> Wait -> Generate Semi-Random Query -> Scrape ICP LinkedIn Profiles -> If -> 
+Upsert Supabase -> Aggregate1 -> Scrape Companies of Profiles Found -> Update a row1
+
+Observação:
+- O If tem apenas o ramo "verdadeiro" conectado. Perfis sem empresa atual (ramo falso) são descartados.
+
+====================================================================
+3) DETALHAMENTO NODE POR NODE (COM O PORQUÊ)
+====================================================================
+
+--------------------------------------------------
+ETAPA 1 - NODE: Webhook
+Tipo: n8n-nodes-base.webhook
+--------------------------------------------------
+O que faz:
+- Recebe requisições HTTP POST na rota executor/PLACEHOLDER.
+- É o gatilho de entrada do workflow.
+
+Entrada:
+- Requisição HTTP externa (qualquer sistema que chame a URL).
+
+Saída:
+- Payload da requisição repassado ao próximo node.
+
+Por que essa etapa existe:
+- Permite disparar a coleta de leads sob demanda (cron, painel, outro workflow).
+- Automatiza o início do processo sem execução manual.
+
+
+--------------------------------------------------
+ETAPA 2 - NODE: Edit Fields2
+Tipo: n8n-nodes-base.set
+--------------------------------------------------
+O que faz:
+- Cria o campo random_numb com valor:
+  Math.floor(Math.random() * 10)
+- Gera inteiro entre 0 e 9.
+
+Entrada:
+- Dados vindos do Webhook.
+
+Saída:
+- Mesmo item + campo random_numb.
+
+Por que essa etapa existe:
+- Introduz atraso aleatório antes da consulta ao Apify.
+- Evita pico de carga e ajuda a respeitar limites da API/LinkedIn.
+- Distribui as execuções no tempo.
+
+
+--------------------------------------------------
+ETAPA 3 - NODE: Wait
+Tipo: n8n-nodes-base.wait
+--------------------------------------------------
+O que faz:
+- Aguarda random_numb minutos antes de seguir.
+
+Entrada:
+- Campo random_numb do Set.
+
+Saída:
+- Libera o fluxo após o tempo de espera.
+
+Por que essa etapa existe:
+- Amortecedor de carga.
+- Reduz chance de throttling ou bloqueio em chamadas consecutivas.
+
+
+--------------------------------------------------
+ETAPA 4 - NODE: Generate Semi-Random Query
+Tipo: n8n-nodes-base.code
+--------------------------------------------------
+O que faz:
+- Executa JavaScript que monta o corpo da query para o LinkedIn Scraper do Apify.
+- Critérios fixos: indústria dentistas (2045), cargos (Cirurgião Dentista, Dentista, Ortodontista, etc.), localidades (São Paulo, Campinas, Curitiba, etc.).
+- Seleciona aleatoriamente 5 cargos e 3 localidades.
+- Configura:
+  - maxItems: 10
+  - profileScraperMode: "Full + email search"
+  - profileLanguages: ["Portuguese"]
+  - seniorityLevelIds, yearsAtCurrentCompanyIds, yearsOfExperienceIds
+
+Entrada:
+- Sinal de continuação após o Wait (não usa dados do item).
+
+Saída:
+- Um único item JSON com a query pronta para o Apify.
+
+Por que essa etapa existe:
+- Variar a busca entre execuções evita padrão repetitivo.
+- Mantém segmentação (dentistas, regiões) mas com combinações diferentes.
+- Garante que o scraper sempre receba um corpo válido e parametrizado.
+
+
+--------------------------------------------------
+ETAPA 5 - NODE: Scrape ICP LinkedIn Profiles
+Tipo: @apify/n8n-nodes-apify.apify
+Actor: M2FMdjRVeF1HPGFcc (LinkedIn Profile Scraper)
+--------------------------------------------------
+O que faz:
+- Chama o Apify para executar o ator de scraped de perfis LinkedIn.
+- Envia o JSON gerado no Code como customBody.
+- Modo: "Run actor and get dataset".
+- Configurado com retry em falha e continueErrorOutput.
+
+Entrada:
+- Query completa do Generate Semi-Random Query.
+
+Saída:
+- Dataset de perfis LinkedIn (firstName, lastName, experience, emails, linkedinUrl, publicIdentifier, currentPosition, location, about, skills, connectionsCount, etc.).
+
+Por que essa etapa existe:
+- É a fonte principal de dados: perfis reais que batem com o ICP.
+- O Apify abstrai a complexidade do scraped e rate limiting.
+
+
+--------------------------------------------------
+ETAPA 6 - NODE: If
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+O que faz:
+- Verifica se currentPosition[0].companyLinkedinUrl não está vazio.
+- Condição: o perfil precisa ter posição atual com URL da empresa no LinkedIn.
+
+Saída:
+- Verdadeiro: perfil tem empresa atual → segue para Upsert.
+- Falso: perfil sem empresa → fluxo encerra para esse item.
+
+Por que essa etapa existe:
+- Evita gravar leads sem empresa identificável.
+- O enriquecimento posterior de empresas só faz sentido quando há URL da empresa.
+- Filtra perfis inativos, desempregados ou com dados incompletos.
+
+
+--------------------------------------------------
+ETAPA 7 - NODE: Upsert Supabase
+Tipo: n8n-nodes-base.httpRequest (POST)
+--------------------------------------------------
+O que faz:
+- Envia POST para Supabase REST:
+  https://[projeto].supabase.co/rest/v1/neuromanageai_qualified_leads_icp
+- Header Prefer: return=representation,resolution=merge-duplicates (comportamento de upsert).
+- Mapeamento de campos (corpo JSON):
+  - Nome = firstName + " " + lastName
+  - Cargo = experience[0]?.position
+  - Email = emails[0]?.email
+  - URL Linkedin = linkedinUrl
+  - Identificador LinkedIn = publicIdentifier
+  - Empresa = currentPosition[0]?.companyName
+  - Conectado LinkedIn = false
+  - URL da Empresa = currentPosition[0]?.companyLinkedinUrl (ou companyWebsites[0]?.url)
+  - Endereco = location?.linkedinText
+  - Sobre Lead = about
+  - Habilidades = skills (serializado)
+  - Conexões = connectionsCount
+  - Tempo na Empresa = experience[0]?.duration
+  - Linkedin da Empresa = experience[0]?.companyLinkedinUrl
+
+Entrada:
+- Perfis aprovados pelo If.
+
+Saída:
+- Representação dos registros gravados (conforme Prefer).
+
+Por que essa etapa existe:
+- Persiste os leads ICP na base para uso em outreach e enriquecimento.
+- O upsert evita duplicatas e permite atualizar dados existentes.
+
+
+--------------------------------------------------
+ETAPA 8 - NODE: Aggregate1
+Tipo: n8n-nodes-base.aggregate
+--------------------------------------------------
+O que faz:
+- Agrupa os itens pelo campo "Linkedin da Empresa".
+- Gera um item por empresa única (deduplicação por URL da empresa).
+
+Entrada:
+- Registros retornados do Upsert (com Linkedin da Empresa).
+
+Saída:
+- Lista de empresas únicas para serem enriquecidas.
+
+Por que essa etapa existe:
+- Evita chamar o scraper de empresas múltiplas vezes para a mesma empresa.
+- Reduz custo e tempo de processamento no Apify.
+- Foca o enriquecimento em uma execução por empresa.
+
+
+--------------------------------------------------
+ETAPA 9 - NODE: Scrape Companies of Profiles Found
+Tipo: @apify/n8n-nodes-apify.apify
+Actor: UwSdACBp7ymaGUJjS (LinkedIn Company Scraper)
+--------------------------------------------------
+O que faz:
+- Chama o Apify para scraped de empresas LinkedIn.
+- Body: { "companies": [array de URLs de empresas] }
+- Usa o campo Linkedin da Empresa agregado como input.
+
+Entrada:
+- Empresas únicas vindas do Aggregate1.
+
+Saída:
+- Dataset com dados das empresas: linkedinUrl, industries, employeeCount, specialities, description, followerCount, locations, etc.
+
+Por que essa etapa existe:
+- Enriquece a base com informações da empresa (setor, tamanho, especialidades, endereço).
+- Melhora a qualidade do lead para segmentação e copy de prospecção.
+
+
+--------------------------------------------------
+ETAPA 10 - NODE: Update a row1
+Tipo: n8n-nodes-base.supabase (update)
+Tabela: neuromanageai_qualified_leads_icp
+--------------------------------------------------
+O que faz:
+- Atualiza registros onde Linkedin da Empresa = linkedinUrl (da resposta do scraper de empresas).
+- Campos atualizados:
+  - Setor = industries[0]?.name
+  - Número de Colaboradores = employeeCount
+  - Especialidades Empresa = JSON.stringify(specialities)
+  - Descricao da Empresa = description
+  - Seguidores Empresa = followerCount
+  - Endereço Empresa = concatenação de locations[0] (line1, geographicArea, countryFull, postalCode)
+
+Entrada:
+- Resposta do Scrape Companies of Profiles Found.
+
+Saída:
+- Registros atualizados no Supabase.
+
+Por que essa etapa existe:
+- Completa a ficha dos leads com dados corporativos.
+- Permite filtrar e priorizar por tamanho, setor e localidade da empresa.
+
+====================================================================
+4) ESTRUTURA DA TABELA neuromanageai_qualified_leads_icp (resumo)
+====================================================================
+
+Campos principais:
+- Nome, Email, Cargo, Empresa
+- URL Linkedin, Identificador LinkedIn
+- URL da Empresa, Linkedin da Empresa
+- Endereco, Endereço Empresa
+- Setor, Especialidades Empresa, Descricao da Empresa
+- Número de Colaboradores, Seguidores Empresa
+- Sobre Lead, Habilidades (jsonb)
+- Conexões, Tempo na Empresa
+- Conectado LinkedIn, Provider ID, Chat ID
+- Telefone, Outros Telefones, Outros Emails
+- Mensagem Enviada Email/LinkedIn/Whatsapp e datas
+- resposta_email, resposta_whatsapp, resposta_linkedin, resposta_instagram
+- created_at
+
+====================================================================
+5) PONTOS DE ATENÇÃO E MELHORIAS
+====================================================================
+
+1. Credenciais expostas:
+   - API keys do Supabase e Apify estão no workflow. Ideal: usar credenciais do n8n ou variáveis de ambiente.
+
+2. Duplicidade de "URL da Empresa" no Upsert:
+   - O body tem duas entradas para URL da Empresa (companyLinkedinUrl e companyWebsites). A segunda sobrescreve a primeira. Vale definir regra clara (priorizar website ou LinkedIn).
+
+3. Segmentação fixa:
+   - O Code node está hardcoded para dentistas. Para outros ICPs, é necessário alterar o código (industryIds, currentJobTitles, locations).
+
+4. Falso do If:
+   - Perfis sem empresa são descartados. Se quiser manter para tentativa posterior, pode gravar em outra tabela ou marcar com flag.
+
+5. Risco de rate limit:
+   - LinkedIn e Apify têm limites. O Wait aleatório ajuda, mas em alto volume pode ser necessário aumentar o delay ou reduzir maxItems.
+
+====================================================================
+6) RESUMO FUNCIONAL
+====================================================================
+
+Em cada execução, o workflow:
+1. Recebe o gatilho por webhook.
+2. Espera 0 a 9 minutos (aleatório).
+3. Gera query semi-aleatória para dentistas em regiões brasileiras.
+4. Scrapeda até 10 perfis LinkedIn no Apify.
+5. Filtra apenas perfis com empresa atual válida.
+6. Faz upsert dos leads na neuromanageai_qualified_leads_icp.
+7. Agrupa por empresa e scrapeda dados das empresas.
+8. Atualiza os leads com informações da empresa (setor, tamanho, endereço, etc.).
+
+Resultado final:
+Base de leads ICP enriquecida, pronta para etapas de outreach e priorização comercial.

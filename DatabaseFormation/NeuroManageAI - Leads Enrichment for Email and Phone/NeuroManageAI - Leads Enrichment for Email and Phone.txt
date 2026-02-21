@@ -1,0 +1,377 @@
+NeuroManageAI - Leads Enrichment for Email and Phone
+
+Esta documentacao detalha o workflow em ordem sequencial, explicando exatamente o que cada node faz e por que cada etapa existe no processo.
+
+====================================================================
+1) VISAO GERAL DO WORKFLOW
+====================================================================
+
+Objetivo geral:
+Enriquecer leads com dados de contato (e-mail e telefone) com base na URL do LinkedIn, consultando a API da SalesQL e gravando o resultado nas tabelas de leads no Supabase.
+
+Problema que ele resolve:
+As bases possuem leads com informacoes incompletas, principalmente telefone vazio. O workflow automatiza o preenchimento para acelerar outreach e priorizacao comercial.
+
+Tabelas envolvidas:
+1. qualified_leads_icp
+2. qualified_leads_comments
+3. qualified_leads_google_maps
+4. qualified_leads_jobs_offers
+
+Critico para negocio:
+- aumenta a taxa de contatos validos;
+- melhora qualidade da base para prospeccao;
+- reduz trabalho manual de pesquisa de contato.
+
+====================================================================
+2) SEQUENCIA EXECUTIVA (DO INICIO AO FIM)
+====================================================================
+
+Fluxo real conectado no JSON:
+Webhook -> Edit Fields -> Wait -> (4 consultas Supabase em paralelo) -> Merge -> Sort -> Limit -> Sales SQL Person Enrich -> If1 -> (4 updates Supabase em paralelo)
+
+Observacao:
+Existe um node de gatilho manual ("When clicking 'Execute workflow'"), mas ele esta desconectado e nao participa da execucao atual.
+
+====================================================================
+3) DETALHAMENTO NODE POR NODE (COM O PORQUE)
+====================================================================
+
+--------------------------------------------------
+ETAPA 1 - NODE: Webhook
+Tipo: n8n-nodes-base.webhook
+--------------------------------------------------
+O que faz:
+- Abre a porta de entrada HTTP do workflow.
+- Metodo: POST
+- Rota: executor/PLACEHOLDER
+
+Entrada esperada:
+- Requisicao HTTP externa.
+
+Saida:
+- Encaminha o payload recebido para o proximo node.
+
+Por que essa etapa existe:
+- Permite disparar o enriquecimento sob demanda por outro sistema (ex.: backend, scheduler externo, painel de operacao).
+- E o gatilho de automacao do fluxo de producao.
+
+
+--------------------------------------------------
+ETAPA 2 - NODE: Edit Fields
+Tipo: n8n-nodes-base.set
+--------------------------------------------------
+O que faz:
+- Cria o campo `random_numb` com valor:
+  Math.floor(Math.random() * 20)
+- Na pratica gera inteiro de 0 a 19.
+
+Entrada:
+- Dados vindos do Webhook.
+
+Saida:
+- Mesmo item de entrada + campo `random_numb`.
+
+Por que essa etapa existe:
+- Introduz um atraso aleatorio antes das consultas externas.
+- Evita que multiplas execucoes simultaneas disparem exatamente no mesmo instante.
+- Reduz picos de carga no banco e na API externa.
+
+
+--------------------------------------------------
+ETAPA 3 - NODE: Wait
+Tipo: n8n-nodes-base.wait
+--------------------------------------------------
+O que faz:
+- Aguarda `random_numb` minutos.
+- Tempo dinamico por execucao.
+
+Entrada:
+- Campo `random_numb` vindo do Set.
+
+Saida:
+- Libera o fluxo apos o tempo de espera.
+
+Por que essa etapa existe:
+- Funciona como amortecedor de carga.
+- Ajuda a mitigar throttling/rate limit.
+- Evita padrao de chamadas previsiveis e concentradas.
+
+
+--------------------------------------------------
+ETAPA 4A - NODE: Get many rows - ICP
+Tipo: n8n-nodes-base.supabase (getAll)
+Tabela: qualified_leads_icp
+--------------------------------------------------
+O que faz:
+- Busca ate 200 registros onde `Telefone is null`.
+
+Entrada:
+- Sinal de continuacao apos o Wait.
+
+Saida:
+- Colecao de leads ICP sem telefone.
+
+Por que essa etapa existe:
+- Seleciona apenas quem ainda precisa de enriquecimento.
+- Evita processar leads ja completos.
+
+
+--------------------------------------------------
+ETAPA 4B - NODE: Get many rows - Comments
+Tipo: n8n-nodes-base.supabase (getAll)
+Tabela: qualified_leads_comments
+--------------------------------------------------
+O que faz:
+- Busca ate 200 registros onde `Telefone is null`.
+
+Por que existe:
+- Aplica o mesmo criterio de enriquecimento para a origem "comments".
+
+
+--------------------------------------------------
+ETAPA 4C - NODE: Get many rows - Maps
+Tipo: n8n-nodes-base.supabase (getAll)
+Tabela: qualified_leads_google_maps
+--------------------------------------------------
+O que faz:
+- Busca ate 200 registros onde `Telefone is null`.
+
+Por que existe:
+- Inclui a origem "google maps" no mesmo pipeline.
+
+
+--------------------------------------------------
+ETAPA 4D - NODE: Get many rows - Jobs
+Tipo: n8n-nodes-base.supabase (getAll)
+Tabela: qualified_leads_jobs_offers
+--------------------------------------------------
+O que faz:
+- Busca ate 200 registros onde `Telefone is null`.
+
+Por que existe:
+- Garante enriquecimento tambem para leads capturados no contexto de vagas/jobs.
+
+
+--------------------------------------------------
+ETAPA 5 - NODE: Merge
+Tipo: n8n-nodes-base.merge (4 inputs)
+--------------------------------------------------
+O que faz:
+- Unifica os resultados dos 4 nodes de consulta em um unico fluxo de itens.
+
+Entrada:
+- 4 streams de dados (ICP, Comments, Maps, Jobs).
+
+Saida:
+- Lista consolidada de leads pendentes de enriquecimento.
+
+Por que essa etapa existe:
+- Centraliza o processamento para aplicar a mesma logica de priorizacao e enriquecimento em todas as origens.
+
+
+--------------------------------------------------
+ETAPA 6 - NODE: Sort
+Tipo: n8n-nodes-base.sort
+--------------------------------------------------
+O que faz:
+- Ordena por `lead_score` em ordem decrescente.
+
+Entrada:
+- Lista consolidada do Merge.
+
+Saida:
+- Lista priorizada do score maior para o menor.
+
+Por que essa etapa existe:
+- Processa primeiro os leads de maior valor potencial.
+- Otimiza uso de credito/chamada da API externa.
+
+
+--------------------------------------------------
+ETAPA 7 - NODE: Limit
+Tipo: n8n-nodes-base.limit
+--------------------------------------------------
+O que faz:
+- Limita a execucao para no maximo 100 itens.
+
+Por que essa etapa existe:
+- Controle de custo e tempo por rodada.
+- Evita execucoes muito longas.
+- Mantem previsibilidade operacional.
+
+
+--------------------------------------------------
+ETAPA 8 - NODE: Sales SQL Person Enrich
+Tipo: n8n-nodes-base.httpRequest
+--------------------------------------------------
+O que faz:
+- Chama a API:
+  GET https://api-public.salesql.com/v1/persons/enrich
+- Envia query param:
+  linkedin_url = {{$json["URL Linkedin"]}}
+- Header:
+  Authorization: Bearer ...
+  accept: application/json
+- Batching:
+  batchSize = 5
+- onError:
+  continueErrorOutput
+
+Entrada:
+- Itens priorizados e limitados.
+
+Saida:
+- Resposta de enriquecimento com possiveis arrays de `emails` e `phones`.
+
+Por que essa etapa existe:
+- E a etapa central do enriquecimento.
+- Transforma dado basico (URL LinkedIn) em contato acionavel (email/telefone).
+- O `continueErrorOutput` evita perda de lote por falha pontual.
+
+
+--------------------------------------------------
+ETAPA 9 - NODE: If1
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+O que faz:
+- Condicao 1: `emails` nao vazio
+- OU
+- Condicao 2: `phones[0].phone` nao vazio
+- Combinador: OR
+
+Saida:
+- Verdadeiro: segue para updates nas tabelas.
+- Falso: nao atualiza.
+
+Por que essa etapa existe:
+- Impede gravacao vazia/inutil no banco.
+- Garante update apenas quando houve enriquecimento valido.
+
+
+--------------------------------------------------
+ETAPA 10A - NODE: Update ICP
+Tipo: n8n-nodes-base.supabase (update)
+Tabela: qualified_leads_icp
+--------------------------------------------------
+Filtro de update:
+- URL Linkedin = linkedin_url normalizado para https://www.
+
+Campos gravados:
+- Email = emails[0]?.email
+- Telefone = phones[0]?.phone
+- Outros Telefones = JSON.stringify(emails)
+- Outros Telefones = JSON.stringify(phones)
+
+Por que essa etapa existe:
+- Persiste o enriquecimento na tabela de origem ICP para uso comercial posterior.
+
+
+--------------------------------------------------
+ETAPA 10B - NODE: Update Comments
+Tipo: n8n-nodes-base.supabase (update)
+Tabela: qualified_leads_comments
+--------------------------------------------------
+Mesma logica do Update ICP, aplicada na base de comments.
+
+Por que existe:
+- Mantem consistencia de enriquecimento entre origens diferentes.
+
+
+--------------------------------------------------
+ETAPA 10C - NODE: Update Maps
+Tipo: n8n-nodes-base.supabase (update)
+Tabela: qualified_leads_google_maps
+--------------------------------------------------
+Mesma logica de filtro e campos de update.
+
+Por que existe:
+- Garante que leads originados do Google Maps tambem recebam dados enriquecidos.
+
+
+--------------------------------------------------
+ETAPA 10D - NODE: Update Jobs
+Tipo: n8n-nodes-base.supabase (update)
+Tabela: qualified_leads_jobs_offers
+--------------------------------------------------
+Mesma logica de filtro e campos de update.
+
+Por que existe:
+- Fecha o ciclo de enriquecimento para a origem jobs/vagas.
+
+
+====================================================================
+4) O QUE ACONTECE COM DADOS SEM RETORNO DA API
+====================================================================
+
+Se a SalesQL nao retornar e-mail nem telefone:
+- o item nao passa no If1;
+- nenhum update e executado;
+- o registro permanece sem contato para uma tentativa futura.
+
+Motivo dessa estrategia:
+- evita gravar lixo;
+- preserva qualidade da base;
+- mantem rastreabilidade do que foi realmente enriquecido.
+
+====================================================================
+5) CAMPOS E REGRAS IMPORTANTES DE BANCO
+====================================================================
+
+Padrao comum nas tabelas:
+- Email
+- Telefone
+- Outros Emails
+- Outros Telefones
+- lead_score
+- created_at
+
+Regra de selecao:
+- somente `Telefone is null` entra no processamento.
+
+Regra de priorizacao:
+- `lead_score desc`.
+
+Regra de correspondencia para update:
+- match por `URL Linkedin` (com normalizacao de dominio para incluir `www`).
+
+====================================================================
+6) PONTOS CRITICOS (TECNICOS E DE GOVERNANCA)
+====================================================================
+
+1. Seguranca de credencial:
+- O token Bearer esta fixo no node HTTP Request.
+- Ideal: mover para credencial segura do n8n/variavel de ambiente.
+
+2. Mapeamento de campo possivelmente incorreto:
+- `Outros Telefones` esta recebendo tambem JSON de e-mails.
+- Risco: sobrescrita/perda semantica.
+- Ajuste recomendado:
+  - `Outros Emails` <- JSON.stringify(emails)
+  - `Outros Telefones` <- JSON.stringify(phones)
+
+3. Update em 4 tabelas ao mesmo tempo:
+- A resposta da API passa para os 4 nodes de update em paralelo.
+- Dependendo do dado, pode haver update em multiplas tabelas com mesmo LinkedIn.
+- Esse comportamento pode ser desejado (sincronizacao ampla), mas precisa estar alinhado com regra de negocio.
+
+4. Escalabilidade:
+- Hoje: ate 100 itens por rodada, batch 5.
+- Bom para controle de carga.
+- Se aumentar volume, revisar paralelismo, janela de execucao e monitoramento.
+
+====================================================================
+7) RESUMO FUNCIONAL EM LINGUAGEM DE OPERACAO
+====================================================================
+
+Em cada execucao, o workflow:
+1. Recebe o gatilho por webhook.
+2. Cria um atraso aleatorio para distribuir carga.
+3. Busca leads sem telefone nas 4 bases.
+4. Junta tudo, prioriza por lead_score e corta em 100.
+5. Envia cada LinkedIn para enriquecimento na SalesQL.
+6. So aceita itens com retorno util (email ou telefone).
+7. Grava os contatos encontrados nas tabelas do Supabase.
+
+Resultado final esperado:
+Base mais completa, mais acionavel para outreach e com melhor aproveitamento dos leads prioritarios.

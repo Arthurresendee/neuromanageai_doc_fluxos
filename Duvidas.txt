@@ -1,0 +1,8 @@
+Database Formation
+
+Por que tem tabelas que usamos em desenvolvimento e em produção?
+Quando eu sei quando criar em um ambiente ou em outro? Sei que eu seguir o padrão é 
+de boa descobrir, mas e quando fo algo novo? 
+
+Esses fluxos são específicos de alguns clientes?? Pois eles possuem dados 
+pré-definidos, ex, na formação das consultas nos code nodes.

@@ -1,0 +1,754 @@
+{
+   "nodes": [
+     {
+       "parameters": {
+         "jsCode": "// Obtém os itens de entrada\nconst items = $input.all();\nconst output = [];\n\nfor (const item of items) {\n  const data = item.json;\n  \n  // Separa tanto os setores quanto os locais por vírgula\n  const setores = (data.Setor || \"\").split(\",\").map(s => s.trim()).filter(s => s);\n  const locais = (data.Local || \"\").split(\",\").map(s => s.trim()).filter(s => s);\n  const num_leads = data['Numero de Leads'];\n  \n  // Remove duplicatas dos setores (caso existam)\n  const setoresUnicos = [...new Set(setores)];\n  \n  // Cria um item para cada Local, com todos os Setores como array\n  for (const local of locais) {\n    output.push({\n      json: {\n        Setor: setoresUnicos,\n        \"Número de Leads\": num_leads,\n        Local: local,\n        submittedAt: data.submittedAt,\n        formMode: data.formMode\n      }\n    });\n  }\n}\n\nreturn output;"
+       },
+       "id": "4cb23a0b-fbbb-4cd4-aeb0-ea00aee3db2c",
+       "name": "Segreggate Input",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         -3008,
+         464
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "version": 2,
+             "leftValue": "",
+             "caseSensitive": true,
+             "typeValidation": "strict"
+           },
+           "conditions": [
+             {
+               "id": "569d6e5b-e792-43c6-9892-b19f57da2e1b",
+               "leftValue": "={{ $json.phoneUnformatted}}",
+               "rightValue": "",
+               "operator": {
+                 "type": "string",
+                 "operation": "exists"
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "0eaf40a9-0007-482b-91f2-0b6094e52058",
+       "name": "If3",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         -2608,
+         464
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "fieldsToAggregate": {
+           "fieldToAggregate": [
+             {
+               "fieldToAggregate": "title"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "998e51ef-c3b0-4e1b-b904-3e4fc83d1d0c",
+       "name": "Aggregate",
+       "type": "n8n-nodes-base.aggregate",
+       "position": [
+         -2384,
+         448
+       ],
+       "typeVersion": 1
+     },
+     {
+       "parameters": {
+         "operation": "Run actor and get dataset",
+         "actorId": {
+           "__rl": true,
+           "value": "https://console.apify.com/actors/Vb6LZkh4EqRlR0Ka9/input",
+           "mode": "url"
+         },
+         "customBody": "={\n    \"companies\": {{ JSON.stringify($json.linkedinUrl) }},\n    \"maxItems\": 70,\n    \"profileScraperMode\": \"Full + email search ($12 per 1k)\",\n    \"recentlyChangedJobs\": false\n}",
+         "build": "latest",
+         "authentication": "apifyOAuth2Api"
+       },
+       "id": "2ad0cfd5-ff5d-415e-8576-c885cd454931",
+       "name": "Scrape Employees",
+       "type": "@apify/n8n-nodes-apify.apify",
+       "position": [
+         -2688,
+         656
+       ],
+       "typeVersion": 1,
+       "retryOnFail": true,
+       "alwaysOutputData": true,
+       "credentials": {
+         "apifyOAuth2Api": {
+           "id": "ekINpf0jTe8qrqgm",
+           "name": "Apify account"
+         }
+       },
+       "onError": "continueErrorOutput"
+     },
+     {
+       "parameters": {
+         "batchSize": 10,
+         "options": {}
+       },
+       "id": "a2423b94-1b81-4973-b106-17bd23849634",
+       "name": "Loop Over Items",
+       "type": "n8n-nodes-base.splitInBatches",
+       "position": [
+         -3184,
+         640
+       ],
+       "typeVersion": 3
+     },
+     {
+       "parameters": {
+         "fieldsToAggregate": {
+           "fieldToAggregate": [
+             {
+               "fieldToAggregate": "linkedinUrl"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "e9bebec1-1fbb-4bdc-9181-8c87663756ef",
+       "name": "Aggregate1",
+       "type": "n8n-nodes-base.aggregate",
+       "position": [
+         -2944,
+         656
+       ],
+       "typeVersion": 1
+     },
+     {
+       "parameters": {
+         "operation": "Run actor and get dataset",
+         "actorSource": "store",
+         "actorId": {
+           "__rl": true,
+           "value": "https://console.apify.com/actors/nwua9Gu5YrADL7ZDj/input",
+           "mode": "url",
+           "__regex": "https://console.apify.com/actors/([a-zA-Z0-9]+).*"
+         },
+         "customBody": "={\n    \"includeWebResults\": false,\n    \"language\": \"pt-BR\",\n    \"locationQuery\": \"{{$json.Local}}\",\n    \"maxCrawledPlacesPerSearch\": {{ $json['Número de Leads'] }},\n    \"maxImages\": 0,\n    \"scrapeContacts\": false,\n    \"scrapeDirectories\": false,\n    \"scrapeImageAuthors\": false,\n    \"scrapePlaceDetailPage\": false,\n    \"scrapeReviewsPersonalData\": false,\n    \"scrapeTableReservationProvider\": false,\n    \"searchStringsArray\": {{ JSON.stringify($json.Setor) }},\n    \"skipClosedPlaces\": false\n}",
+         "timeout": 300,
+         "memory": 8192,
+         "build": "latest",
+         "authentication": "apifyOAuth2Api"
+       },
+       "id": "68c37d4e-7fab-4ef7-8e22-3762b94471e0",
+       "name": "Google Maps Scrape",
+       "type": "@apify/n8n-nodes-apify.apify",
+       "position": [
+         -2816,
+         464
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "apifyOAuth2Api": {
+           "id": "ekINpf0jTe8qrqgm",
+           "name": "Apify account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "246f1352-82d0-44a6-a816-e5f2c4901220",
+               "name": "Setor",
+               "value": "Supermercados, Atacados, Shoppings, Dentista, Loja",
+               "type": "string"
+             },
+             {
+               "id": "d1897b22-6422-48b3-8cbc-3d3be8575a56",
+               "name": "Numero de Leads",
+               "value": 1,
+               "type": "number"
+             },
+             {
+               "id": "9cd3e01a-515e-4b47-812a-dfeccd3c044f",
+               "name": "Local",
+               "value": "São Paulo, Belo Horizonte, Rio de Janeiro",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "a17a5d41-4fdb-464b-a360-56256902be2e",
+       "name": "Edit Fields",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         -3216,
+         464
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "httpMethod": "POST",
+         "path": "executor/PLACEHOLDER",
+         "options": {}
+       },
+       "id": "fa66906c-ed16-4d35-baac-9079a7623d2e",
+       "name": "Executor Webhook",
+       "type": "n8n-nodes-base.webhook",
+       "position": [
+         -3824,
+         464
+       ],
+       "typeVersion": 2,
+       "webhookId": "2febd468-3470-43c6-8ded-81c842ee5843"
+     },
+     {
+       "parameters": {
+         "operation": "Run actor and get dataset",
+         "actorId": {
+           "__rl": true,
+           "value": "https://console.apify.com/actors/UwSdACBp7ymaGUJjS/input",
+           "mode": "url"
+         },
+         "customBody": "={\n    \"searches\": {{ JSON.stringify($json.title) }}\n}",
+         "timeout": 300,
+         "build": "latest",
+         "authentication": "apifyOAuth2Api"
+       },
+       "id": "c273933f-b060-409a-a686-7d0bec70fe09",
+       "name": "Scrape Companies",
+       "type": "@apify/n8n-nodes-apify.apify",
+       "position": [
+         -2176,
+         448
+       ],
+       "typeVersion": 1,
+       "retryOnFail": true,
+       "credentials": {
+         "apifyOAuth2Api": {
+           "id": "ekINpf0jTe8qrqgm",
+           "name": "Apify account"
+         }
+       },
+       "onError": "continueErrorOutput"
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": false,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 2
+           },
+           "conditions": [
+             {
+               "id": "da9a0f50-fffa-4824-ad36-a8adc48fd9e6",
+               "leftValue": "={{ $json.locations[0].country }}",
+               "rightValue": "BR",
+               "operator": {
+                 "type": "string",
+                 "operation": "equals"
+               }
+             },
+             {
+               "id": "c850ebd0-e830-47f2-8795-eca2dcd8f1ab",
+               "leftValue": "={{ $json.industries[0].name }}",
+               "rightValue": "Human Resources",
+               "operator": {
+                 "type": "string",
+                 "operation": "notEquals"
+               }
+             },
+             {
+               "id": "39aad963-2ebc-42e9-8246-50209f385ca6",
+               "leftValue": "={{ $json.employeeCount }}",
+               "rightValue": 100,
+               "operator": {
+                 "type": "number",
+                 "operation": "lte"
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {
+           "ignoreCase": true
+         }
+       },
+       "id": "ae35e7ba-4544-474d-816c-dc856444d958",
+       "name": "Location, Employees and HR filter",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         -1904,
+         432
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "amount": "={{ $json.random_numb }}",
+         "unit": "minutes"
+       },
+       "id": "01d09d4c-2cbe-45e2-a987-dd07995df339",
+       "name": "Wait",
+       "type": "n8n-nodes-base.wait",
+       "position": [
+         -3408,
+         464
+       ],
+       "typeVersion": 1.1,
+       "webhookId": "294e1ec7-b325-4c71-94cc-c9978bac455c"
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "f1cdbef4-4dea-4112-bb20-e2e89c002b57",
+               "name": "random_numb",
+               "value": "={{ Math.floor(Math.random() * 10) }}",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "69c6ecf7-10fc-47e7-a8e4-555771041f87",
+       "name": "Edit Fields2",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         -3616,
+         464
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "method": "POST",
+         "url": "https://yvigfurdahgkskbskhzv.supabase.co/rest/v1/neuromanageai_qualified_leads_google_maps",
+         "sendHeaders": true,
+         "headerParameters": {
+           "parameters": [
+             {
+               "name": "apikey",
+               "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2aWdmdXJkYWhna3NrYnNraHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MTQ0OTYsImV4cCI6MjA4MzE5MDQ5Nn0.0FF9ZMNbJKG7YKQvKgPDZYlP2522hCROJapZxvadULg"
+             },
+             {
+               "name": "Authorization",
+               "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2aWdmdXJkYWhna3NrYnNraHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MTQ0OTYsImV4cCI6MjA4MzE5MDQ5Nn0.0FF9ZMNbJKG7YKQvKgPDZYlP2522hCROJapZxvadULg"
+             },
+             {
+               "name": "Prefer",
+               "value": "return=representation,resolution=merge-duplicates"
+             },
+             {
+               "name": "Content-Type",
+               "value": "application/json"
+             }
+           ]
+         },
+         "sendBody": true,
+         "bodyParameters": {
+           "parameters": [
+             {
+               "name": "URL Linkedin",
+               "value": "={{ $json.linkedin_url.replace('www.', '').replace(/\\/$/, '') ?? '' }}"
+             },
+             {
+               "name": "Localidade",
+               "value": "={{ $json.location ?? null }}"
+             },
+             {
+               "name": "Sobre",
+               "value": "={{ $json.about ?? null}}"
+             },
+             {
+               "name": "Empresa",
+               "value": "={{ $json.name ?? null}}"
+             },
+             {
+               "name": "URL Linkedin Empresa",
+               "value": "={{ $json.linkedinUrl ?? null }}"
+             },
+             {
+               "name": "Tempo na Empresa Atual",
+               "value": "={{ $json.duration ?? null }}"
+             },
+             {
+               "name": "Nome",
+               "value": "={{ $json.first_name + \" \" + $json.last_name}}"
+             },
+             {
+               "name": "Cargo",
+               "value": "={{ $json.title ?? null }}"
+             },
+             {
+               "name": "Colaboradores",
+               "value": "={{ $json.employeeCount ?? null }}"
+             },
+             {
+               "name": "Conexões",
+               "value": "={{ $json.connections_count ?? null }}"
+             },
+             {
+               "name": "Descript da Empresa",
+               "value": "={{ $json.similarOrganizations[0]?.description ?? null }}"
+             },
+             {
+               "name": "Adress",
+               "value": "={{ $json.locations[0]?.line1 + \", \" + $json.locations[0]?.parsed.city + \", \" + $json.locations[0].parsed.state + \", \" + $json.locations[0]?.parsed.countryFull + \" - \" + $json.locations[0].postalCode}}"
+             },
+             {
+               "name": "Especialidades",
+               "value": "={{ JSON.stringify($json.specialities) ?? null }}"
+             },
+             {
+               "name": "Website Empresa",
+               "value": "={{ $json.website ?? null }}"
+             },
+             {
+               "name": "Setor",
+               "value": "={{ $json.industries[0]?.name || $json.industries[0]?.title || null}}"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "type": "n8n-nodes-base.httpRequest",
+       "typeVersion": 4.3,
+       "position": [
+         -1408,
+         608
+       ],
+       "id": "74f67d58-c0ec-4198-823b-1e721fab6fbe",
+       "name": "Upsert Supabase"
+     },
+     {
+       "parameters": {
+         "mode": "combine",
+         "advanced": true,
+         "mergeByFields": {
+           "values": [
+             {
+               "field1": "website",
+               "field2": "company_website"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "type": "n8n-nodes-base.merge",
+       "typeVersion": 3.2,
+       "position": [
+         -1616,
+         608
+       ],
+       "id": "2b8dd9a0-b3bc-482e-a723-705421ff2c80",
+       "name": "Merge"
+     },
+     {
+       "parameters": {
+         "jsCode": "return items.map(item => {\n  const data = item.json;\n  \n  return {\n    json: {\n      linkedin_id: data.id || null,\n      public_identifier: data.publicIdentifier || null,\n      linkedin_url: data.linkedinUrl || null,\n      first_name: data.firstName || null,\n      last_name: data.lastName || null,\n      email: data.emails?.[0]?.email || null,\n      headline: data.headline || null,\n      title: data.experience?.[0]?.position || null,\n      duration: data.experience?.[0]?.duration || null,\n      location: data.location?.linkedinText || null,\n      city: data.location?.parsed?.city || null,\n      state: data.location?.parsed?.state || null,\n      country: data.location?.parsed?.country || null,\n      connections_count: data.connectionsCount || 0,\n      follower_count: data.followerCount || 0,\n      about: data.about || null,\n      company_name: data.currentPosition?.[0]?.companyName || null,\n      company_website: data.companyWebsites?.[0]?.url || null,\n      company_linkedin: data.currentPosition?.[0]?.companyLinkedinUrl || null,\n      profile_picture: data.photo || null,\n      verified: data.verified || false,\n      open_to_work: data.openToWork || false,\n      registered_at: data.registeredAt || null\n    }\n  };\n});"
+       },
+       "id": "43f0757a-3dd7-498a-a113-ccce6c3df5c9",
+       "name": "Parse Output",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         -1904,
+         608
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 2
+           },
+           "conditions": [
+             {
+               "id": "16dc9a21-8b10-4210-aff1-b2555ecc89b9",
+               "leftValue": "={{ JSON.stringify($json) }}",
+               "rightValue": "",
+               "operator": {
+                 "type": "string",
+                 "operation": "notEmpty",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "dd05bcd0-cfd0-4186-b05d-263480c992f3",
+       "name": "Filter empty outputs",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         -2416,
+         640
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 2
+           },
+           "conditions": [
+             {
+               "id": "16dc9a21-8b10-4210-aff1-b2555ecc89b9",
+               "leftValue": "={{ $json.companyWebsites[0].url }}",
+               "rightValue": "",
+               "operator": {
+                 "type": "string",
+                 "operation": "notEmpty",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "9a6bd2c6-4df7-4733-9320-265388700139",
+       "name": "Filter companies that have Linkedin profiles",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         -2176,
+         624
+       ],
+       "typeVersion": 2.2
+     }
+   ],
+   "connections": {
+     "Segreggate Input": {
+       "main": [
+         [
+           {
+             "node": "Google Maps Scrape",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "If3": {
+       "main": [
+         [
+           {
+             "node": "Aggregate",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Aggregate": {
+       "main": [
+         [
+           {
+             "node": "Scrape Companies",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Scrape Employees": {
+       "main": [
+         [
+           {
+             "node": "Filter empty outputs",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Loop Over Items": {
+       "main": [
+         [
+           {
+             "node": "Merge",
+             "type": "main",
+             "index": 1
+           }
+         ],
+         [
+           {
+             "node": "Aggregate1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Aggregate1": {
+       "main": [
+         [
+           {
+             "node": "Scrape Employees",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Google Maps Scrape": {
+       "main": [
+         [
+           {
+             "node": "If3",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Edit Fields": {
+       "main": [
+         [
+           {
+             "node": "Segreggate Input",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Executor Webhook": {
+       "main": [
+         [
+           {
+             "node": "Edit Fields2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Scrape Companies": {
+       "main": [
+         [
+           {
+             "node": "Location, Employees and HR filter",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Location, Employees and HR filter": {
+       "main": [
+         [
+           {
+             "node": "Loop Over Items",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "Merge",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Wait": {
+       "main": [
+         [
+           {
+             "node": "Edit Fields",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Edit Fields2": {
+       "main": [
+         [
+           {
+             "node": "Wait",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Merge": {
+       "main": [
+         [
+           {
+             "node": "Upsert Supabase",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Parse Output": {
+       "main": [
+         [
+           {
+             "node": "Loop Over Items",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Filter empty outputs": {
+       "main": [
+         [
+           {
+             "node": "Filter companies that have Linkedin profiles",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "Loop Over Items",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Filter companies that have Linkedin profiles": {
+       "main": [
+         [
+           {
+             "node": "Parse Output",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     }
+   },
+   "pinData": {},
+   "meta": {
+     "instanceId": "a0f7a305da35e849bafdb639b90f9c75f57bc77027e416642bf74993eb8cfaee"
+   }
+ }

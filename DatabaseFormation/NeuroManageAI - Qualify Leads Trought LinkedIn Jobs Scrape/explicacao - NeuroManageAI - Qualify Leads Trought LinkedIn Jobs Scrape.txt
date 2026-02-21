@@ -1,0 +1,131 @@
+Dúvidas
+- Qual o gatilho de disparo desse fluxo? Onde chamam?
+
+
+Possíveis correções/ melhorias
+- Header aparece como "Conten-Type", creio que o correto seria "Content-Type".
+- Campo "Sobre" aparece duplicado no body.
+- Campo "Seguidores" e atribuido duas vezes, uma sem valor, outra com connectionsCount.
+
+
+Objetivo
+Gerar e qualificar leads a partir de vagas do LinkedIn
+
+webhook
+- Início do fluxo, gatilhos para o restantes dos nodes serem executados
+
+edit Fields
+- Gera um número random inteiro de 0 a 10,  usado posteriormente.
+
+wait 
+- O fluxo trava e vai esperar a quantidade de tempo em minutos gerado anteriormente de forma aleatória.
+Por que existe:
+- Introduz variacao de tempo para nao concentrar execucoes no mesmo momento.
+
+Generate Semi-Random Query
+O que faz:
+
+- Monta um objeto JSON usado como customBody pelo "Scrape Jobs (Apify)", que é o próximo node, então precisamos preparar o que será buscado.
+- Definimos critérios de busca de vagas (cargos, setor, local, porte de empresa etc.)
+- Usamos o "shuffle" para variar parte dos parâmetros a cada execução, reduzindo repetição de busca
+
+Scrape Jobs
+O que faz:
+
+O node chama um ator da Apify que faz scraping de vagas do LinkedIn. Ele usa o JSON gerado pelo node anterior (Generate Semi-Random Query) como customBody e retorna o dataset com as vagas encontradas.
+
+O que é API Fy? O que é Ator? O que é o Id que fica na URL da requisição? 
+
+O que é a Apify?
+A Apify é uma plataforma que hospeda "robôs" prontos de scraping. Em vez de você desenvolver e manter scrapers para cada site (LinkedIn, Google, etc.), você usa esses robôs pela API, passando parâmetros e recebendo os dados estruturados.
+
+O que é um Actor (ator)
+Um Actor é um desses robôs na Apify: um script pronto para extrair dados de um site ou serviço.
+LinkedIn Profile Scraper – busca perfis por cargo, indústria, localização
+LinkedIn Company Scraper – extrai dados de páginas de empresas
+Google Maps Scraper – extrai estabelecimentos do Google Maps
+Cada Actor tem um ID único que a Apify usa para identificar qual robô executar. É parecido com o ID de um pacote no npm ou de uma biblioteca em um repositório: é o que identifica exatamente qual Actor você está chamando.
+
+Por que usamos o “Request Actor” (passamos o ID)
+Quem executa? → A Apify.
+O que executar? → O Actor indicado pelo ID.
+Com quais parâmetros? → O que vem do node anterior (o customBody = JSON da query).
+Quando configuramos actorId: zn01OAlzP853oqn4Z, estamos dizendo ao n8n:
+> "Chame a Apify e peça para ela rodar o Actor com ID zn01OAlzP853oqn4Z."
+
+Initial Employee Filter
+
+Regra:
+- company.employeeCount >= 10
+- company.employeeCount <= 100
+- company.website nao vazio
+
+- Mantem apenas empresas no intervalo de tamanho definido e com website.
+
+Scrape Companies
+O que faz:
+- Recebe profileUrls de empresa (company.linkedinUrl)
+- Retorna dados detalhados das empresas.
+- Enriquece contexto da empresa antes de buscar funcionários no próximo scrap.
+
+Filter Recruting Companies
+
+O que faz:
+- Remove empresas que setor é "Staffing & Recruiting" (empresas de recrutamento e contratação de pessoal)
+
+Loop Over Items
+- Esse é como se fosse um laço de repeticação while, for. Nós recebemos uma lista de empresas no scrap anterior. Então para cada empresa dessa lista, vamos executar um acão, que no nosso caso, terá como foco principal a busca de funcionários.
+
+Aggregate
+
+Agrupa itens pelo campo url, produzindo itens onde cada um representa um valor único de url.
+
+Scrape Employees
+O que faz
+Chama um actor da Apify que faz scraping de funcionários de empresas do LinkedIn com base em uma lista de URLs de empresas.
+
+Location Filter
+Regra:
+- location.countryCode == BR
+OU
+- location.parsed.country == Brazil
+
+O que faz:
+- Mantem apenas perfis brasileiros.
+
+Filter Only Profiles that have company Linkedin
+
+O que faz:
+- Descarta perfis sem vinculo de empresa identificavel no LinkedIn.
+Isso acontece por conta do filtro {{ $json.experience[0].companyUniversalName }} is not empty
+
+Descartamos pois precisamos desse dado no merge, para assim, persistir com upserte corretamente.
+
+Edit Fields
+O que faz:
+- Cria campo linkedinUrl normalizado:
+  $json.linkedinUrl.replace('www.', '')
+- Padroniza URL para evitar formatos diferentes.
+
+Merge
+- Unifica dados pessoa + empresa no mesmo item para persistencia final
+
+Upsert Supabase
+
+- Envia dados para upsert de leads no Supabase.
+- Usa header Prefer: return=representation,resolution=merge-duplicates
+- Mapeia campos de perfil e empresa:
+
+Além dos parâmetros APIKEY, AUTHORIZATION e Content-Type, temos também o "Prefer" e "resolution"
+
+return=representation
+Retorna os registros criados ou atualizados no corpo da resposta.
+
+resolution=merge-duplicates
+Define o que fazer em conflito de chave única: em vez de erro, atualiza o registro existente (merge).
+
+- Persistimos os leads qualificados com atualizacao sem duplicar registros.
+
+
+
+
