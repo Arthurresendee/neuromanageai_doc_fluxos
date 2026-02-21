@@ -1,0 +1,447 @@
+NeuroManageAI - LinkedIn Comments Leads Qualifier
+
+Esta documentacao explica o workflow em ordem sequencial, com foco no papel de cada node dentro do contexto completo da esteira (nao apenas na funcao isolada).
+
+====================================================================
+1) OBJETIVO DO FLUXO
+====================================================================
+
+Objetivo macro:
+Encontrar leads qualificados no LinkedIn a partir de posts com comentarios, enriquecer os perfis (pessoa + empresa), aplicar filtros de ICP e gravar o resultado na tabela qualified_leads_comments no Supabase.
+
+Em termos praticos, o fluxo faz 5 coisas:
+1. Gera e randomiza palavras-chave de nicho.
+2. Busca posts recentes por keyword no LinkedIn.
+3. Coleta comentaristas desses posts (sinal de interesse/comportamento ativo).
+4. Enriquece os perfis dos comentaristas e das empresas deles.
+5. Filtra e grava os leads no banco.
+
+Tabela de destino:
+- public.qualified_leads_comments
+
+====================================================================
+2) CONTEXTO ESTRATEGICO (POR QUE ESSE FLUXO EXISTE)
+====================================================================
+
+A logica de negocio aqui e:
+- quem comenta em post de um tema tem maior chance de estar engajado no assunto;
+- esse engajamento vira um "sinal de intencao";
+- o fluxo transforma esse sinal em lead comercial estruturado.
+
+Diferencial do processo:
+- nao depende so de lista fria;
+- parte de comportamento real (comentario em conteudo);
+- cruza dados de pessoa e empresa para melhorar priorizacao.
+
+====================================================================
+3) SEQUENCIA EXECUTIVA (VISAO GERAL)
+====================================================================
+
+Caminho principal:
+Executor Webhook -> Edit Fields2 -> Wait -> Users Keywords -> Random Selector -> Split Out1 -> Scrape For Posts URL -> Filter Commented Posts -> Remove Duplicates -> Aggregate -> Scrape For Posts Comments -> Edit Fields -> Remove Duplicates1 -> Aggregate1 -> Scrape Profiles1 -> Filter Empty spaces -> Remove Duplicates2 -> Aggregate3 -> Scrape Companies -> Filter Employees Count -> Loop Over Items4 -> Filter BR located Leads -> Merge4 -> Create a row1
+
+Ramo adicional de merge:
+- Scrape Companies tambem alimenta o Merge4 por um segundo caminho para combinar contexto de empresa e contexto do lead.
+
+====================================================================
+4) ETAPA A ETAPA (NODE POR NODE)
+====================================================================
+
+--------------------------------------------------
+ETAPA 1 - Executor Webhook
+Tipo: n8n-nodes-base.webhook
+--------------------------------------------------
+O que faz:
+- Recebe requisicao POST em executor/PLACEHOLDER.
+- Inicia o workflow.
+
+Contribuicao no contexto:
+- Permite disparo externo (orquestrador, cron externo, chamada manual/API).
+- Sem esse ponto de entrada, nao ha automacao operacional.
+
+
+--------------------------------------------------
+ETAPA 2 - Edit Fields2
+Tipo: n8n-nodes-base.set
+--------------------------------------------------
+O que faz:
+- Gera random_numb = Math.floor(Math.random() * 60), valor de 0 a 59.
+
+Contribuicao no contexto:
+- Cria jitter temporal para evitar execucoes simultaneas no mesmo minuto.
+- Reduz risco de rate limit nas chamadas externas (Apify/LinkedIn).
+
+
+--------------------------------------------------
+ETAPA 3 - Wait
+Tipo: n8n-nodes-base.wait
+--------------------------------------------------
+O que faz:
+- Aguarda random_numb minutos antes de seguir.
+
+Contribuicao no contexto:
+- Distribui carga ao longo do tempo.
+- Melhora resiliencia operacional do pipeline.
+
+
+--------------------------------------------------
+ETAPA 4 - Users Keywords
+Tipo: n8n-nodes-base.set
+--------------------------------------------------
+O que faz:
+- Define array de keywords (foco odontologia/saude oral e variacoes).
+
+Contribuicao no contexto:
+- Centraliza a tese de prospeccao (tema e nicho) em um unico ponto.
+- Facilita ajustar segmentacao sem mexer nos nodes de scrape.
+
+
+--------------------------------------------------
+ETAPA 5 - Random Selector
+Tipo: n8n-nodes-base.code
+--------------------------------------------------
+O que faz:
+- Embaralha a lista de keywords com Fisher-Yates.
+- Seleciona 15 termos aleatorios.
+- Retorna selectedKeywords + contadores.
+
+Contribuicao no contexto:
+- Evita sempre buscar os mesmos termos na mesma ordem.
+- Aumenta cobertura de variacoes sem expandir custo linearmente.
+
+
+--------------------------------------------------
+ETAPA 6 - Split Out1
+Tipo: n8n-nodes-base.splitOut
+--------------------------------------------------
+O que faz:
+- Quebra selectedKeywords em itens individuais (1 item por keyword).
+
+Contribuicao no contexto:
+- Permite executar busca de posts por termo, de forma controlada.
+
+
+--------------------------------------------------
+ETAPA 7 - Scrape For Posts URL
+Tipo: Apify actor
+Actor: 5QnEH5N71IK2mFLrP
+--------------------------------------------------
+Payload:
+- date_filter: past-week
+- keyword: selectedKeywords
+- total_posts: 30
+
+O que faz:
+- Busca URLs de posts recentes do LinkedIn por palavra-chave.
+
+Contribuicao no contexto:
+- Construi o universo inicial de conteudo para capturar comentaristas.
+- Move de "tema" para "posts concretos com audiencia real".
+
+
+--------------------------------------------------
+ETAPA 8 - Filter Commented Posts
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regra:
+- stats.comments >= 1
+
+O que faz:
+- Mantem apenas posts que realmente tiveram comentarios.
+
+Contribuicao no contexto:
+- Remove ruido de posts sem interacao.
+- Prioriza fontes com prova de engajamento.
+
+
+--------------------------------------------------
+ETAPA 9 - Remove Duplicates
+Tipo: n8n-nodes-base.removeDuplicates
+--------------------------------------------------
+Campo:
+- post_url
+
+O que faz:
+- Elimina URLs de posts repetidas.
+
+Contribuicao no contexto:
+- Evita reprocessamento do mesmo post.
+- Economiza chamadas no scrape de comentarios.
+
+
+--------------------------------------------------
+ETAPA 10 - Aggregate
+Tipo: n8n-nodes-base.aggregate
+--------------------------------------------------
+Mapeamento:
+- post_url -> url_post
+
+O que faz:
+- Consolida links para envio em lote ao proximo actor.
+
+Contribuicao no contexto:
+- Prepara payload limpo para coleta massiva de comentarios.
+
+
+--------------------------------------------------
+ETAPA 11 - Scrape For Posts Comments
+Tipo: Apify actor
+Actor: 2XnpwxfhSW1fAWElp
+--------------------------------------------------
+Payload:
+- limit: 99
+- postIds: url_post
+
+O que faz:
+- Coleta os comentarios e metadados dos autores dos comentarios.
+
+Contribuicao no contexto:
+- E o coracao do fluxo: transforma post em lista de potenciais leads (autores).
+
+
+--------------------------------------------------
+ETAPA 12 - Edit Fields
+Tipo: n8n-nodes-base.set
+--------------------------------------------------
+Mapeamentos principais:
+- comment = text
+- author_name = author.name
+- author_headline = author.headline
+- author_linkedin_profile = author.profile_url
+- comment_date = posted_at.date
+- post_input_url = post_input
+
+O que faz:
+- Padroniza os campos que vieram dos comentarios.
+
+Contribuicao no contexto:
+- Cria contrato de dados para os proximos filtros/deduplicacoes.
+
+
+--------------------------------------------------
+ETAPA 13 - Remove Duplicates1
+Tipo: n8n-nodes-base.removeDuplicates
+--------------------------------------------------
+Campo:
+- author_linkedin_profile
+
+O que faz:
+- Remove perfis repetidos de comentaristas.
+
+Contribuicao no contexto:
+- Evita enriquecer e gravar o mesmo lead varias vezes na mesma execucao.
+
+
+--------------------------------------------------
+ETAPA 14 - Aggregate1
+Tipo: n8n-nodes-base.aggregate
+--------------------------------------------------
+Mapeamento:
+- author_linkedin_profile -> url_linkedin
+
+O que faz:
+- Consolida URLs de perfil para scrape em lote.
+
+Contribuicao no contexto:
+- Conecta bloco de comentarios ao bloco de enriquecimento de perfil.
+
+
+--------------------------------------------------
+ETAPA 15 - Scrape Profiles1
+Tipo: Apify actor
+Actor: GOvL4O4RwFqsdIqXF
+--------------------------------------------------
+Payload:
+- includeEmail: false
+- usernames: url_linkedin
+
+O que faz:
+- Enriquece dados dos perfis pessoais (experiencia, empresa atual, localizacao etc.).
+
+Contribuicao no contexto:
+- Transforma "autor do comentario" em lead com contexto profissional.
+
+
+--------------------------------------------------
+ETAPA 16 - Filter Empty spaces
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regras:
+- basic_info.profile_url notEmpty
+- experience[0].company_linkedin_url notEmpty
+
+O que faz:
+- Filtra perfis incompletos sem URL valida ou sem empresa vinculada.
+
+Contribuicao no contexto:
+- Garante qualidade minima antes de enriquecer empresa e seguir para merge.
+
+
+--------------------------------------------------
+ETAPA 17 - Remove Duplicates2
+Tipo: n8n-nodes-base.removeDuplicates
+--------------------------------------------------
+Campo:
+- basic_info.profile_url
+
+O que faz:
+- Segunda camada de deduplicacao no nivel de perfil.
+
+Contribuicao no contexto:
+- Aumenta higiene dos dados antes da etapa empresarial.
+
+
+--------------------------------------------------
+ETAPA 18 - Aggregate3
+Tipo: n8n-nodes-base.aggregate
+--------------------------------------------------
+Mapeamento:
+- experience[0].company_linkedin_url -> company_linkedin
+
+O que faz:
+- Agrupa URLs de empresas dos leads para scrape de company.
+
+Contribuicao no contexto:
+- Leva o fluxo da pessoa para o contexto da empresa (B2B).
+
+
+--------------------------------------------------
+ETAPA 19 - Scrape Companies
+Tipo: Apify actor
+Actor: AjfNXEI9qTA2IdaAX
+--------------------------------------------------
+Payload:
+- profileUrls: company_linkedin
+
+O que faz:
+- Enriquece dados da empresa (website, descricao, headcount etc.).
+
+Contribuicao no contexto:
+- Gera os atributos que permitem filtro de ICP e merge com lead.
+
+
+--------------------------------------------------
+ETAPA 20 - Filter Employees Count
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regras:
+- employeeCount >= 10
+- employeeCount <= 100
+
+O que faz:
+- Mantem empresas no range de tamanho desejado.
+
+Contribuicao no contexto:
+- Aplica recorte de ICP por porte da empresa (foco em PMEs e mid-market).
+
+
+--------------------------------------------------
+ETAPA 21 - Loop Over Items4
+Tipo: n8n-nodes-base.splitInBatches
+--------------------------------------------------
+Configuracao:
+- batchSize = 10
+
+O que faz:
+- Processa em lotes de 10 para reduzir pressao em integracoes.
+
+Contribuicao no contexto:
+- Controle de throughput.
+- Melhor comportamento em ambientes com limite de API.
+
+
+--------------------------------------------------
+ETAPA 22 - Filter BR located Leads
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regras:
+- location.countryCode == BR
+- ou location.countryCode == br
+
+O que faz:
+- Mantem apenas leads/empresas localizados no Brasil.
+
+Contribuicao no contexto:
+- Alinha com estrategia geografica do funil comercial.
+
+
+--------------------------------------------------
+ETAPA 23 - Merge4
+Tipo: n8n-nodes-base.merge (combine / advanced)
+--------------------------------------------------
+Regra de merge:
+- companyWebsites[0].url (empresa) <-> websiteUrl (perfil/lead)
+- fuzzyCompare = true
+
+O que faz:
+- Une contexto da empresa com contexto da pessoa.
+
+Contribuicao no contexto:
+- Cria o lead final enriquecido, pronto para persistencia.
+
+
+--------------------------------------------------
+ETAPA 24 - Create a row1
+Tipo: n8n-nodes-base.supabase
+Tabela: qualified_leads_comments
+--------------------------------------------------
+Campos gravados no node:
+- Nome
+- Headline
+- URL Linkedin
+- Tipo (LinkedIn)
+- Empresa
+- Email
+- Sobre Lead
+- Setor
+- Colaboradores
+- Localidade Empresa
+- Descript Empresa
+- Cargo
+- Endereco
+
+Contribuicao no contexto:
+- Materializa o resultado do funil em base estruturada para uso posterior (outreach, scoring, cadencias e CRM).
+
+====================================================================
+5) RELACAO COM O SQL (qualified_leads_comments)
+====================================================================
+
+A tabela possui muitos campos (ex.: Comentario, Data Comentario, Input Post URL, mensagens por canal, Provider ID etc.), mas este workflow grava apenas um subconjunto.
+
+Leitura pratica:
+- o fluxo atual esta focado em qualificacao/enriquecimento inicial;
+- campos de execucao de outreach (mensagens, datas, provider/chat IDs) provavelmente sao preenchidos em fluxos posteriores.
+
+====================================================================
+6) PONTOS DE ATENCAO E MELHORIAS
+====================================================================
+
+1. Campos de comentario nao estao sendo persistidos no node final
+- Apesar de extrair comment, comment_date e post_input_url, o Create a row1 nao envia esses campos para a tabela.
+- Sugestao: mapear "Comentario", "Data Comentario" e "Input Post URL" no Supabase node.
+
+2. includeEmail = false no Scrape Profiles1
+- O fluxo tenta salvar Email, mas com includeEmail false a chance de null aumenta.
+- Sugestao: revisar custo x beneficio de habilitar email quando necessario.
+
+3. Join por website pode perder match
+- Mesmo com fuzzyCompare, variacoes de URL (http/https, www, slash final) podem gerar falhas.
+- Sugestao: normalizar URLs antes do Merge4.
+
+4. Lista de keywords contem repeticoes
+- Termos repetidos ("odontologia", "saude", "clinicas") diminuem diversidade.
+- Sugestao: deduplicar keywords antes do Random Selector.
+
+5. Resiliencia
+- Varios actors usam retry e continueErrorOutput (bom para robustez).
+- Sugestao: adicionar observabilidade de erro por etapa (logs por actor).
+
+====================================================================
+7) RESUMO FINAL
+====================================================================
+
+Este workflow implementa uma esteira de captacao por comportamento (comentarios em posts do LinkedIn), enriquecendo pessoa e empresa, filtrando por ICP (porte e Brasil) e gravando os leads em qualified_leads_comments.
+
+O valor principal nao esta em um node isolado, mas na orquestracao completa:
+keyword -> post -> comentario -> perfil -> empresa -> filtro ICP -> merge -> banco.

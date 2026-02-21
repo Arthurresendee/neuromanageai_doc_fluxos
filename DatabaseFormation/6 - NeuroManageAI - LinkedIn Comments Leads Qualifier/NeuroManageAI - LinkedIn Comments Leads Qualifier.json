@@ -1,0 +1,1012 @@
+{
+   "nodes": [
+     {
+       "parameters": {
+         "fieldsToAggregate": {
+           "fieldToAggregate": [
+             {
+               "fieldToAggregate": "post_url",
+               "renameField": true,
+               "outputFieldName": "url_post"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "81544911-62a5-44c3-b59c-759d532c98a1",
+       "name": "Aggregate",
+       "type": "n8n-nodes-base.aggregate",
+       "position": [
+         1104,
+         1792
+       ],
+       "typeVersion": 1
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "2427aa78-6636-4c99-af27-3255e5a1812f",
+               "name": "comment",
+               "value": "={{ $json.text }}",
+               "type": "string"
+             },
+             {
+               "id": "a2d0a412-4df4-4f00-a9bb-2bcc9bc9a704",
+               "name": "author_name",
+               "value": "={{ $json.author.name }}",
+               "type": "string"
+             },
+             {
+               "id": "9e13c3a4-4f4a-4f4e-898d-ccb81e0b36fa",
+               "name": "author_headline",
+               "value": "={{ $json.author.headline }}",
+               "type": "string"
+             },
+             {
+               "id": "8cadb325-0089-4265-9122-3bcd8be5b6c2",
+               "name": "author_linkedin_profile",
+               "value": "={{ $json.author.profile_url }}",
+               "type": "string"
+             },
+             {
+               "id": "05c7d845-78be-4c1f-ae55-0ce9af8999a9",
+               "name": "comment_date",
+               "value": "={{ $json.posted_at.date }}",
+               "type": "string"
+             },
+             {
+               "id": "90a18fc5-a838-4b11-a1fd-09a82d4900ce",
+               "name": "post_input_url",
+               "value": "={{ $json.post_input }}",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "b7a6ecba-bc36-412e-8c06-a24d3ec458aa",
+       "name": "Edit Fields",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         272,
+         2016
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "operation": "Run actor and get dataset",
+         "actorId": {
+           "__rl": true,
+           "value": "https://console.apify.com/actors/2XnpwxfhSW1fAWElp/input",
+           "mode": "url"
+         },
+         "customBody": "={{ \n  JSON.stringify({\n    limit: 99,\n    postIds: Array.isArray($json.url_post) ? $json.url_post : $json.url_post\n  })\n}}",
+         "timeout": {},
+         "authentication": "apifyOAuth2Api"
+       },
+       "id": "7e19d340-8e65-4467-a21e-758e3ad60bb5",
+       "name": "Scrape For Posts Comments",
+       "type": "@apify/n8n-nodes-apify.apify",
+       "position": [
+         -144,
+         2032
+       ],
+       "typeVersion": 1,
+       "retryOnFail": true,
+       "credentials": {
+         "apifyOAuth2Api": {
+           "id": "ekINpf0jTe8qrqgm",
+           "name": "Apify account"
+         }
+       },
+       "onError": "continueErrorOutput"
+     },
+     {
+       "parameters": {
+         "operation": "Run actor and get dataset",
+         "actorId": {
+           "__rl": true,
+           "value": "https://console.apify.com/actors/5QnEH5N71IK2mFLrP/input",
+           "mode": "url"
+         },
+         "customBody": "={\n    \"date_filter\": \"past-week\",\n    \"keyword\": \"{{ $json.selectedKeywords}}\",\n    \"total_posts\": 30\n}",
+         "authentication": "apifyOAuth2Api"
+       },
+       "id": "1c575c0a-4c20-4784-80ea-c8da8279856c",
+       "name": "Scrape For Posts URL",
+       "type": "@apify/n8n-nodes-apify.apify",
+       "position": [
+         -160,
+         1824
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "apifyOAuth2Api": {
+           "id": "ekINpf0jTe8qrqgm",
+           "name": "Apify account"
+         }
+       },
+       "onError": "continueErrorOutput"
+     },
+     {
+       "parameters": {
+         "operation": "Run actor and get dataset",
+         "actorId": {
+           "__rl": true,
+           "value": "https://console.apify.com/actors/GOvL4O4RwFqsdIqXF/input",
+           "mode": "url"
+         },
+         "customBody": "={\n    \"includeEmail\": false,\n    \"usernames\": {{ JSON.stringify($json.url_linkedin) }}\n}",
+         "timeout": {},
+         "authentication": "apifyOAuth2Api"
+       },
+       "id": "bfee055e-ed03-4792-93c9-8a3c55fb0cca",
+       "name": "Scrape Profiles1",
+       "type": "@apify/n8n-nodes-apify.apify",
+       "position": [
+         1104,
+         2016
+       ],
+       "typeVersion": 1,
+       "retryOnFail": true,
+       "credentials": {
+         "apifyOAuth2Api": {
+           "id": "ekINpf0jTe8qrqgm",
+           "name": "Apify account"
+         }
+       },
+       "onError": "continueErrorOutput"
+     },
+     {
+       "parameters": {
+         "tableId": "qualified_leads_comments",
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "Nome",
+               "fieldValue": "={{ $json.firstName + \" \" +   $json.lastName}}"
+             },
+             {
+               "fieldId": "Headline",
+               "fieldValue": "={{ $json.headline }}"
+             },
+             {
+               "fieldId": "URL Linkedin",
+               "fieldValue": "={{ $json.linkedinUrl.replace('www.', \"\") }}"
+             },
+             {
+               "fieldId": "Tipo",
+               "fieldValue": "LinkedIn"
+             },
+             {
+               "fieldId": "Empresa",
+               "fieldValue": "={{ $json.currentPosition[0]?.companyName ?? null}}"
+             },
+             {
+               "fieldId": "Email",
+               "fieldValue": "={{ $json.emails[0]?.email ?? null}}"
+             },
+             {
+               "fieldId": "Sobre Lead",
+               "fieldValue": "={{ $json.about ?? null}}"
+             },
+             {
+               "fieldId": "Setor",
+               "fieldValue": "={{ $json.industry ?? null}}"
+             },
+             {
+               "fieldId": "Colaboradores",
+               "fieldValue": "={{ $json.employeeCount ?? null}}"
+             },
+             {
+               "fieldId": "Localidade Empresa",
+               "fieldValue": "={{ $json.headquarter.line1 ?? null}}"
+             },
+             {
+               "fieldId": "Descript Empresa",
+               "fieldValue": "={{ $json.description ?? null}}"
+             },
+             {
+               "fieldId": "Cargo",
+               "fieldValue": "={{ $json.experience[0]?.position ?? null}}"
+             },
+             {
+               "fieldId": "Endereço",
+               "fieldValue": "={{ $json.location?.linkedinText ?? null}}"
+             }
+           ]
+         }
+       },
+       "id": "d8f9429c-0eaa-45a0-a372-fb9790fcdf11",
+       "name": "Create a row1",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         704,
+         2688
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       },
+       "onError": "continueErrorOutput"
+     },
+     {
+       "parameters": {
+         "compare": "selectedFields",
+         "fieldsToCompare": "post_url",
+         "options": {}
+       },
+       "id": "5e24a460-6af9-4a9e-af69-dbc7d70b333c",
+       "name": "Remove Duplicates",
+       "type": "n8n-nodes-base.removeDuplicates",
+       "position": [
+         672,
+         1792
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 3
+           },
+           "conditions": [
+             {
+               "id": "8f7b5519-cc4f-4569-a474-8912a8480f3b",
+               "leftValue": "={{ $json.stats.comments }}",
+               "rightValue": 1,
+               "operator": {
+                 "type": "number",
+                 "operation": "gte"
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "9f6b4138-b976-4f4f-b6d1-c91c38a42f2d",
+       "name": "Filter Commented Posts",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         272,
+         1808
+       ],
+       "typeVersion": 2.3
+     },
+     {
+       "parameters": {
+         "operation": "Run actor and get dataset",
+         "actorId": {
+           "__rl": true,
+           "value": "https://console.apify.com/actors/AjfNXEI9qTA2IdaAX/input",
+           "mode": "url",
+           "__regex": "https://console.apify.com/actors/([a-zA-Z0-9]+).*"
+         },
+         "customBody": "={\n    \"profileUrls\": {{ JSON.stringify($json.company_linkedin) }}\n}",
+         "timeout": {},
+         "authentication": "apifyOAuth2Api"
+       },
+       "id": "98cd5c33-4225-4315-a399-a4b514377d24",
+       "name": "Scrape Companies",
+       "type": "@apify/n8n-nodes-apify.apify",
+       "position": [
+         1104,
+         2240
+       ],
+       "typeVersion": 1,
+       "retryOnFail": true,
+       "credentials": {
+         "apifyOAuth2Api": {
+           "id": "ekINpf0jTe8qrqgm",
+           "name": "Apify account"
+         }
+       },
+       "onError": "continueErrorOutput"
+     },
+     {
+       "parameters": {
+         "fieldsToAggregate": {
+           "fieldToAggregate": [
+             {
+               "fieldToAggregate": "url"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "1020c3fc-5807-4baf-b721-1631c9d28cdb",
+       "name": "Aggregate2",
+       "type": "n8n-nodes-base.aggregate",
+       "position": [
+         704,
+         2496
+       ],
+       "typeVersion": 1
+     },
+     {
+       "parameters": {
+         "operation": "Run actor and get dataset",
+         "actorId": {
+           "__rl": true,
+           "value": "https://console.apify.com/actors/Vb6LZkh4EqRlR0Ka9/input",
+           "mode": "url"
+         },
+         "customBody": "={\n    \"companies\": {{ JSON.stringify($json.url) }},\n    \"jobTitles\": [\n        \"CEO\",\n        \"CFO\",\n        \"COO\",\n        \"Founder\",\n        \"Co-Founder\",\n        \"Diretor\",\n        \"Sócio\"\n    ],\n    \"maxItems\": 70,\n    \"profileScraperMode\": \"Full + email search ($12 per 1k)\",\n    \"recentlyChangedJobs\": false\n}",
+         "timeout": {},
+         "authentication": "apifyOAuth2Api"
+       },
+       "id": "768e1665-2f23-464f-8bbe-cdf50edfc6a7",
+       "name": "Scrape Employees",
+       "type": "@apify/n8n-nodes-apify.apify",
+       "position": [
+         1120,
+         2496
+       ],
+       "typeVersion": 1,
+       "retryOnFail": true,
+       "credentials": {
+         "apifyOAuth2Api": {
+           "id": "ekINpf0jTe8qrqgm",
+           "name": "Apify account"
+         }
+       },
+       "onError": "continueErrorOutput"
+     },
+     {
+       "parameters": {
+         "batchSize": 10,
+         "options": {}
+       },
+       "id": "742c0fc5-42ee-43be-8001-0f3ebb951ba4",
+       "name": "Loop Over Items4",
+       "type": "n8n-nodes-base.splitInBatches",
+       "position": [
+         256,
+         2480
+       ],
+       "typeVersion": 3
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 3
+           },
+           "conditions": [
+             {
+               "id": "35c75616-212a-4bfa-9973-29c58290157f",
+               "leftValue": "={{ $json.employeeCount }}",
+               "rightValue": 10,
+               "operator": {
+                 "type": "number",
+                 "operation": "gte"
+               }
+             },
+             {
+               "id": "6395b8c9-f34f-4fb4-aac1-e0a0f0023c97",
+               "leftValue": "={{ $json.employeeCount }}",
+               "rightValue": 100,
+               "operator": {
+                 "type": "number",
+                 "operation": "lte"
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "4ead3278-1582-4102-b3d3-bdb877f04cea",
+       "name": "Filter Employees Count",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         -160,
+         2496
+       ],
+       "typeVersion": 2.3
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 3
+           },
+           "conditions": [
+             {
+               "id": "528c7bc2-7dd8-48e3-9b3e-7a6fd808662e",
+               "leftValue": "={{ $json.location.countryCode }}",
+               "rightValue": "BR",
+               "operator": {
+                 "type": "string",
+                 "operation": "equals"
+               }
+             },
+             {
+               "id": "c04d4a62-3053-4973-acc7-0663df3dfda5",
+               "leftValue": "={{ $json.location.countryCode }}",
+               "rightValue": "br",
+               "operator": {
+                 "type": "string",
+                 "operation": "equals",
+                 "name": "filter.operator.equals"
+               }
+             }
+           ],
+           "combinator": "or"
+         },
+         "options": {}
+       },
+       "id": "de79e291-3f40-474d-ade8-7e95567869a0",
+       "name": "Filter BR located Leads",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         -144,
+         2688
+       ],
+       "typeVersion": 2.3
+     },
+     {
+       "parameters": {
+         "mode": "combine",
+         "advanced": true,
+         "mergeByFields": {
+           "values": [
+             {
+               "field1": "companyWebsites[0].url",
+               "field2": "websiteUrl"
+             }
+           ]
+         },
+         "options": {
+           "fuzzyCompare": true
+         }
+       },
+       "id": "dec99003-9dea-40d3-aa95-35330c3d57c0",
+       "name": "Merge4",
+       "type": "n8n-nodes-base.merge",
+       "position": [
+         256,
+         2688
+       ],
+       "typeVersion": 3.2
+     },
+     {
+       "parameters": {
+         "fieldToSplitOut": "selectedKeywords",
+         "options": {}
+       },
+       "id": "04e9c27d-5c8f-4778-a525-3acce8f84fb5",
+       "name": "Split Out1",
+       "type": "n8n-nodes-base.splitOut",
+       "position": [
+         1104,
+         1584
+       ],
+       "typeVersion": 1
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "20f6c922-f0d8-4b22-9fbe-200c0d239b4d",
+               "name": "keywords",
+               "value": "=[\"odontologia\", \"dentista\", \"clinica odontologica\", \"saude\", \"saude oral\", \"sorriso\", \"estetica\", \"bem estar\", \"tratamento\", \"atendimento\", \"implante\", \"ortodontia\", \"clareamento\", \"proteses\", \"cirurgiaoral\", \"canal\", \"limpeza\", \"aparelho\", \"harmonizacao\", \"esteticaoral\", \"harmonizacaofacial\", \"sorriso perfeito\", \"autoestima\", \"qualidade\", \"odontogram\", \"odontolovers\", \"vidadeodontista\", \"rotinaodontologica\", \"odontopost\", \"odontobrasil\", \"odontologia\", \"saude\", \"clinicas\"]",
+               "type": "array"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "fec4eeac-8d45-42b4-8ba1-c76358971e03",
+       "name": "Users Keywords",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         288,
+         1584
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "jsCode": "// Pega a lista de keywords do nó anterior\nconst keywords = $input.first().json.keywords;\n\n// Função para embaralhar array (Fisher-Yates shuffle)\nfunction shuffleArray(array) {\n  const shuffled = [...array];\n  for (let i = shuffled.length - 1; i > 0; i--) {\n    const j = Math.floor(Math.random() * (i + 1));\n    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];\n  }\n  return shuffled;\n}\n\n// Embaralha e seleciona os primeiros 15 itens\nconst shuffled = shuffleArray(keywords);\nconst selectedKeywords = shuffled.slice(0, 15);\n\n// Retorna a nova lista\nreturn [{\n  json: {\n    selectedKeywords: selectedKeywords,\n    totalOriginal: keywords.length,\n    totalSelected: selectedKeywords.length\n  }\n}];"
+       },
+       "id": "ad0e3974-e71f-4576-a1be-68b8aa6febd4",
+       "name": "Random Selector",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         672,
+         1584
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "fieldsToAggregate": {
+           "fieldToAggregate": [
+             {
+               "fieldToAggregate": "author_linkedin_profile",
+               "renameField": true,
+               "outputFieldName": "url_linkedin"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "d7264ed9-af26-4604-a6a6-8f6aeff936b1",
+       "name": "Aggregate1",
+       "type": "n8n-nodes-base.aggregate",
+       "position": [
+         800,
+         2016
+       ],
+       "typeVersion": 1
+     },
+     {
+       "parameters": {
+         "compare": "selectedFields",
+         "fieldsToCompare": "author_linkedin_profile",
+         "options": {}
+       },
+       "id": "47fe6835-cc61-4a74-b6e2-b9f94d4d470f",
+       "name": "Remove Duplicates1",
+       "type": "n8n-nodes-base.removeDuplicates",
+       "position": [
+         544,
+         2016
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "compare": "selectedFields",
+         "fieldsToCompare": "basic_info.profile_url",
+         "options": {}
+       },
+       "id": "7c25daf6-f512-4e10-a156-fe477490f4bb",
+       "name": "Remove Duplicates2",
+       "type": "n8n-nodes-base.removeDuplicates",
+       "position": [
+         352,
+         2240
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "fieldsToAggregate": {
+           "fieldToAggregate": [
+             {
+               "fieldToAggregate": "experience[0].company_linkedin_url",
+               "renameField": true,
+               "outputFieldName": "company_linkedin"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "5dbc135f-1c31-46f5-b945-4f091a1a4619",
+       "name": "Aggregate3",
+       "type": "n8n-nodes-base.aggregate",
+       "position": [
+         800,
+         2240
+       ],
+       "typeVersion": 1
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 3
+           },
+           "conditions": [
+             {
+               "id": "e332b059-0e04-4eb8-9407-85b944315d71",
+               "leftValue": "={{ $json.basic_info.profile_url }}",
+               "rightValue": "",
+               "operator": {
+                 "type": "string",
+                 "operation": "notEmpty",
+                 "singleValue": true
+               }
+             },
+             {
+               "id": "23b9418f-924f-4366-90e1-e7db5840687e",
+               "leftValue": "={{ $json.experience[0].company_linkedin_url }}",
+               "rightValue": "",
+               "operator": {
+                 "type": "string",
+                 "operation": "notEmpty",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "614941ad-c7bb-43c6-9a89-db9d6d3c219a",
+       "name": "Filter Empty spaces",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         -144,
+         2256
+       ],
+       "typeVersion": 2.3
+     },
+     {
+       "parameters": {
+         "httpMethod": "POST",
+         "path": "executor/PLACEHOLDER",
+         "options": {}
+       },
+       "id": "7bb008ab-d31e-4500-b06f-26a6f9cbd58d",
+       "name": "Executor Webhook",
+       "type": "n8n-nodes-base.webhook",
+       "position": [
+         -320,
+         1584
+       ],
+       "typeVersion": 2,
+       "webhookId": "f09ed0e0-5f65-44ea-8424-ffe02bee895f"
+     },
+     {
+       "parameters": {
+         "amount": "={{ $json.random_numb }}",
+         "unit": "minutes"
+       },
+       "id": "acf44a4d-fc50-40d6-bce7-6c6fc40e525d",
+       "name": "Wait",
+       "type": "n8n-nodes-base.wait",
+       "position": [
+         96,
+         1584
+       ],
+       "typeVersion": 1.1,
+       "webhookId": "294e1ec7-b325-4c71-94cc-c9978bac455c"
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "f1cdbef4-4dea-4112-bb20-e2e89c002b57",
+               "name": "random_numb",
+               "value": "={{ Math.floor(Math.random() * 60) }}",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "d55de239-fb39-4d91-85e4-e8e0692557a4",
+       "name": "Edit Fields2",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         -112,
+         1584
+       ],
+       "typeVersion": 3.4
+     }
+   ],
+   "connections": {
+     "Aggregate": {
+       "main": [
+         [
+           {
+             "node": "Scrape For Posts Comments",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Edit Fields": {
+       "main": [
+         [
+           {
+             "node": "Remove Duplicates1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Scrape For Posts Comments": {
+       "main": [
+         [
+           {
+             "node": "Edit Fields",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Scrape For Posts URL": {
+       "main": [
+         [
+           {
+             "node": "Filter Commented Posts",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         []
+       ]
+     },
+     "Scrape Profiles1": {
+       "main": [
+         [
+           {
+             "node": "Filter Empty spaces",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Create a row1": {
+       "main": [
+         []
+       ]
+     },
+     "Remove Duplicates": {
+       "main": [
+         [
+           {
+             "node": "Aggregate",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Filter Commented Posts": {
+       "main": [
+         [
+           {
+             "node": "Remove Duplicates",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Scrape Companies": {
+       "main": [
+         [
+           {
+             "node": "Merge4",
+             "type": "main",
+             "index": 1
+           },
+           {
+             "node": "Filter Employees Count",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Aggregate2": {
+       "main": [
+         [
+           {
+             "node": "Scrape Employees",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Scrape Employees": {
+       "main": [
+         [
+           {
+             "node": "Loop Over Items4",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Loop Over Items4": {
+       "main": [
+         [
+           {
+             "node": "Filter BR located Leads",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "Aggregate2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Filter Employees Count": {
+       "main": [
+         [
+           {
+             "node": "Loop Over Items4",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Filter BR located Leads": {
+       "main": [
+         [
+           {
+             "node": "Merge4",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Merge4": {
+       "main": [
+         [
+           {
+             "node": "Create a row1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Split Out1": {
+       "main": [
+         [
+           {
+             "node": "Scrape For Posts URL",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Users Keywords": {
+       "main": [
+         [
+           {
+             "node": "Random Selector",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Random Selector": {
+       "main": [
+         [
+           {
+             "node": "Split Out1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Aggregate1": {
+       "main": [
+         [
+           {
+             "node": "Scrape Profiles1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Remove Duplicates1": {
+       "main": [
+         [
+           {
+             "node": "Aggregate1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Remove Duplicates2": {
+       "main": [
+         [
+           {
+             "node": "Aggregate3",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Aggregate3": {
+       "main": [
+         [
+           {
+             "node": "Scrape Companies",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Filter Empty spaces": {
+       "main": [
+         [
+           {
+             "node": "Remove Duplicates2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Executor Webhook": {
+       "main": [
+         [
+           {
+             "node": "Edit Fields2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Wait": {
+       "main": [
+         [
+           {
+             "node": "Users Keywords",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Edit Fields2": {
+       "main": [
+         [
+           {
+             "node": "Wait",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     }
+   },
+   "pinData": {},
+   "meta": {
+     "instanceId": "a0f7a305da35e849bafdb639b90f9c75f57bc77027e416642bf74993eb8cfaee"
+   }
+ }
