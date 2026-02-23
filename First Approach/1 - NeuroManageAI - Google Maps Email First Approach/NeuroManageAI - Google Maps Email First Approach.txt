@@ -1,0 +1,415 @@
+NeuroManageAI - Google Maps Email First Approach
+
+Esta documentacao explica todo o fluxo em ordem de execucao, detalhando o papel tecnico de cada node e, principalmente, por que cada etapa existe no contexto da operacao comercial.
+
+====================================================================
+1) OBJETIVO DO FLUXO
+====================================================================
+
+Objetivo macro:
+Executar uma cadencia de first approach por e-mail para leads da base Google Maps, gerando mensagem personalizada com IA, enviando por contas rotativas de Gmail, registrando o que foi enviado no Supabase e respeitando intervalos de envio para reduzir risco de bloqueio/spam.
+
+Em termos praticos, o fluxo faz:
+1. Carrega leads com e-mail da tabela qualified_leads_google_maps.
+2. Mantem apenas leads sem "Mensagem Enviada Email" (nao abordados por e-mail ainda).
+3. Ordena e limita lote de envio.
+4. Distribui leads entre 5 "faixas" (switch por indice) para rotacionar contas de e-mail.
+5. Em cada faixa:
+   - valida novamente se ainda nao houve envio de e-mail;
+   - gera e-mail com agente IA + consulta ao script vetorial;
+   - formata quebras de linha para HTML;
+   - envia via Gmail da faixa;
+   - atualiza lead no Supabase com assunto, mensagem e data;
+   - espera alguns minutos e volta para o loop.
+
+====================================================================
+2) TABELA SQL ENVOLVIDA
+====================================================================
+
+Tabela alvo do processo:
+- public.qualified_leads_google_maps
+
+Campos mais usados pelo fluxo:
+- Email
+- Mensagem Enviada Email
+- Data Mensagem Email
+- Nome
+- Cargo
+- Empresa
+- URL Linkedin
+- Sobre / Sobre Lead
+- Setor
+- Conexões
+- Endereco/Adress
+- Especialidades
+
+Campos atualizados no fluxo:
+- Data Mensagem Email
+- Mensagem Enviada Email
+
+Leitura de negocio:
+- O fluxo transforma dados de lead em outreach efetivo e grava rastreabilidade da comunicacao no proprio registro.
+
+====================================================================
+3) SEQUENCIA EXECUTIVA COMPLETA (ALTO NIVEL)
+====================================================================
+
+Executor Webhook
+-> Edit Fields2 (random_numb)
+-> Wait1 (jitter inicial)
+-> Get many rows
+-> If5 (mensagem vazia)
+-> Sort (Data Mensagem LinkedIn desc)
+-> Limit5 (ultimos 25)
+-> Add index to each item (emailIndex 0..4)
+-> Loop Over Items1
+-> Switch (roteia para 5 ramos)
+   Ramo 0: If -> Email Agent1 -> Code JS -> Send message -> Update row -> Wait -> Loop
+   Ramo 1: If6 -> Email Agent -> Code JS1 -> Send message1 -> Update row1 -> Wait3 -> Loop
+   Ramo 2: If7 -> Email Agent2 -> Code JS2 -> Send message2 -> Update row3 -> Wait6 -> Loop
+   Ramo 3: If8 -> Email Agent3 -> Code JS3 -> Send message3 -> Update row2 -> Wait9 -> Loop
+   Ramo 4: If9 -> Email Agent4 -> Code JS4 -> Send message4 -> Update row4 -> Wait12 -> Loop
+
+Paralelamente (como tools dos agentes):
+- CONSULTA AO SCRIPT (x5) + Embeddings OpenAI (x5) + Reranker Cohere (x5)
+- OpenAI Chat Model / OpenRouter Chat Model / Structured Output Parser conectados a cada agente.
+
+====================================================================
+4) NODE POR NODE (DETALHAMENTO COM CONTEXTO)
+====================================================================
+
+--------------------------------------------------
+ETAPA 1 - Executor Webhook
+Tipo: n8n-nodes-base.webhook
+--------------------------------------------------
+O que faz:
+- Inicia o fluxo por chamada POST.
+
+Por que existe:
+- Permite disparo controlado (manual, externo, scheduler de outro sistema).
+
+
+--------------------------------------------------
+ETAPA 2 - Edit Fields2
+Tipo: n8n-nodes-base.set
+--------------------------------------------------
+O que faz:
+- Gera random_numb = Math.floor(Math.random() * 10).
+
+Por que existe:
+- Cria jitter inicial para nao concentrar multiplas execucoes no mesmo minuto.
+- Reduz padrao previsivel de envio em massa.
+
+
+--------------------------------------------------
+ETAPA 3 - Wait1
+Tipo: n8n-nodes-base.wait
+--------------------------------------------------
+O que faz:
+- Espera random_numb minutos.
+
+Por que existe:
+- Espalha inicio do lote no tempo e diminui burst.
+
+
+--------------------------------------------------
+ETAPA 4 - Get many rows
+Tipo: n8n-nodes-base.supabase (getAll)
+Tabela: qualified_leads_google_maps
+--------------------------------------------------
+Filtro:
+- Email != null
+
+O que faz:
+- Carrega leads com e-mail disponivel.
+
+Por que existe:
+- Esse fluxo e de first approach por e-mail; sem e-mail o lead nao e acionavel neste canal.
+
+
+--------------------------------------------------
+ETAPA 5 - If5
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regra:
+- Mensagem Enviada Email esta vazia.
+
+O que faz:
+- Mantem apenas leads ainda nao contactados por e-mail.
+
+Por que existe:
+- Evita duplicidade de disparo e reduz risco de spam/repeticao.
+
+
+--------------------------------------------------
+ETAPA 6 - Sort
+Tipo: n8n-nodes-base.sort
+--------------------------------------------------
+Ordenacao:
+- Data Mensagem LinkedIn desc
+
+O que faz:
+- Ordena o lote por recencia de interacao no LinkedIn.
+
+Por que existe:
+- Prioriza leads com sinal mais recente de atividade/contato.
+
+
+--------------------------------------------------
+ETAPA 7 - Limit5
+Tipo: n8n-nodes-base.limit
+--------------------------------------------------
+Configuracao:
+- maxItems: 25
+- keep: lastItems
+
+O que faz:
+- Limita o processamento a 25 leads por execucao.
+
+Por que existe:
+- Controle de volume e risco reputacional de envio.
+- Evita saturar contas SMTP/Gmail em um unico ciclo.
+
+
+--------------------------------------------------
+ETAPA 8 - Add index to each item
+Tipo: n8n-nodes-base.code
+--------------------------------------------------
+O que o codigo faz:
+- Atribui emailIndex = index % 5 (0,1,2,3,4...).
+- Atribui emailAccount (label de debug) para cada item.
+
+Por que existe:
+- Implementa round-robin de leads entre 5 trilhas de envio.
+- Distribui carga entre caixas para reduzir risco de bloqueio por volume em uma conta unica.
+
+
+--------------------------------------------------
+ETAPA 9 - Loop Over Items1
+Tipo: n8n-nodes-base.splitInBatches
+--------------------------------------------------
+O que faz:
+- Processa lote item a item (ou em batches) e fecha ciclo com retorno dos waits.
+
+Por que existe:
+- Funciona como motor de iteracao da cadencia.
+- Permite que cada envio retorne ao loop apos o intervalo correspondente.
+
+
+--------------------------------------------------
+ETAPA 10 - Switch
+Tipo: n8n-nodes-base.switch
+--------------------------------------------------
+Regras:
+- emailIndex = 0
+- emailIndex = 1
+- emailIndex = 2
+- emailIndex = 3
+- emailIndex = 4
+
+O que faz:
+- Roteia cada lead para uma faixa de envio.
+
+Por que existe:
+- Separa logicamente os 5 canais/contas de e-mail.
+
+====================================================================
+5) OS 5 RAMOS DE ENVIO (MESMA LÓGICA, CONTAS DIFERENTES)
+====================================================================
+
+Cada ramo tem:
+1. If (revalida "Mensagem Enviada Email" vazia)
+2. Email Agent (gera JSON to/subject/message)
+3. Code in JavaScript (formata paragrafo/quebras)
+4. Send a message (envia Gmail)
+5. Update a row (grava data+mensagem no Supabase)
+6. Wait (cadencia entre envios)
+7. Retorno ao Loop Over Items1
+
+Ramo emailIndex 0:
+- If -> Email Agent1 -> Code in JavaScript -> Send a message -> Update a row -> Wait (2 min)
+
+Ramo emailIndex 1:
+- If6 -> Email Agent -> Code in JavaScript1 -> Send a message1 -> Update a row1 -> Wait3 (unit minutes, sem amount explicito)
+
+Ramo emailIndex 2:
+- If7 -> Email Agent2 -> Code in JavaScript2 -> Send a message2 -> Update a row3 -> Wait6 (3 min)
+
+Ramo emailIndex 3:
+- If8 -> Email Agent3 -> Code in JavaScript3 -> Send a message3 -> Update a row2 -> Wait9 (2 min)
+
+Ramo emailIndex 4:
+- If9 -> Email Agent4 -> Code in JavaScript4 -> Send a message4 -> Update a row4 -> Wait12 (7 min)
+
+Por que essa arquitetura:
+- Balanceia throughput.
+- Introduz pausas diferentes por faixa.
+- Reduz risco de padrao robotico uniforme.
+
+====================================================================
+6) NODES DE IA (AGENTES, MODELOS, PARSER, VECTOR STORE)
+====================================================================
+
+--------------------------------------------------
+Email Agent / Email Agent1 / ... / Email Agent4
+Tipo: @n8n/n8n-nodes-langchain.agent
+--------------------------------------------------
+O que fazem:
+- Recebem dados do lead e geram JSON final:
+  { to, subject, message }
+- Seguem system prompt extenso de copy consultiva da Drone Livre.
+- Exigem consulta previa ao script vetorial.
+
+Por que existem:
+- Produzem mensagem personalizada em escala sem perder contexto comercial.
+
+Observacao de contexto:
+- Os 5 agentes usam a mesma estrategia de prompt, mas em ramos diferentes (rotacao de envio).
+
+
+--------------------------------------------------
+OpenAI Chat Model / OpenRouter Chat Model (x5)
+Tipo: modelos de linguagem
+--------------------------------------------------
+O que fazem:
+- Fornecem backend de inferencia para cada agente.
+
+Por que existem:
+- Fallback/model routing: resiliencia e flexibilidade de custo/latencia.
+
+
+--------------------------------------------------
+Structured Output Parser (x5)
+Tipo: output parser estruturado
+--------------------------------------------------
+O que faz:
+- Impoe schema de saida com to/subject/message.
+
+Por que existe:
+- Evita resposta textual livre e quebra no node de envio.
+
+
+--------------------------------------------------
+CONSULTA AO SCRIPT / ...1 / ...2 / ...3 / ...4
+Tipo: Vector Store Supabase (retrieve-as-tool)
+Tabela vetorial: documents_email
+--------------------------------------------------
+O que fazem:
+- Recuperam contexto de script comercial via match_documents_email.
+
+Por que existem:
+- Forcam aderencia da copy ao playbook de abordagem.
+
+
+--------------------------------------------------
+Embeddings OpenAI (x5) + Reranker Cohere (x5)
+--------------------------------------------------
+O que fazem:
+- Geram embedding da query e rerankeiam trechos recuperados.
+
+Por que existem:
+- Melhoram qualidade do contexto fornecido ao agente.
+
+====================================================================
+7) FORMATACAO E ENVIO
+====================================================================
+
+--------------------------------------------------
+Code in JavaScript / ...1 / ...2 / ...3 / ...4
+--------------------------------------------------
+O que o codigo faz:
+- Separa paragrafo em pontos-chave (saudacao, dor, proposta, CTA, assinatura).
+- Normaliza quebras de linha.
+- Cria versao HTML via replace(\n -> <br>).
+
+Por que existe:
+- Melhora legibilidade do e-mail e evita bloco unico "chapado".
+- Padroniza estilo antes de enviar.
+
+
+--------------------------------------------------
+Send a message / ...1 / ...2 / ...3 / ...4
+Tipo: Gmail
+--------------------------------------------------
+O que fazem:
+- Enviam e-mail com to/subject/message produzidos pelo agente.
+- Aplicam senderName e bcc.
+
+Por que existem:
+- Etapa de entrega efetiva do outreach.
+- Multiplicacao em 5 nodes acompanha a estrategia de rotacao de contas.
+
+====================================================================
+8) REGISTRO DE AUDITORIA NO SUPABASE
+====================================================================
+
+--------------------------------------------------
+Update a row / ...1 / ...2 / ...3 / ...4
+Tipo: Supabase update
+--------------------------------------------------
+Filtro:
+- keyName Email eq output.to do agente correspondente.
+
+Campos atualizados:
+- Data Mensagem Email = now
+- Mensagem Enviada Email = subject + corpo
+
+Por que existem:
+- Garantem trilha de auditoria do que foi disparado.
+- Alimentam os filtros de "ja enviado" nas proximas execucoes.
+
+====================================================================
+9) PAPEL DOS WAITS DE CADA RAMO
+====================================================================
+
+Wait, Wait3, Wait6, Wait9, Wait12:
+- Introduzem pausas entre envios.
+- Ao final, retornam para Loop Over Items1 para continuar lote.
+
+Por que existem:
+- Antibloqueio (cadencia humana).
+- Controle de reputacao de dominio/conta.
+
+====================================================================
+10) PONTOS DE ATENCAO / RISCOS TECNICOS
+====================================================================
+
+1. Mistura de nomes TT&Co x Drone Livre
+- Nodes de formatacao ainda citam TT&Co/Fabio Ferraz.
+- Pode gerar inconsistencias de assinatura/branding.
+
+2. Mapeamentos potencialmente incorretos no prompt
+- Ex.: connections_count usa URL Linkedin.
+- Ex.: company_domain usa Conexões.
+- Ex.: company_specialities usa Endereço Empresa.
+- Isso pode degradar qualidade da personalizacao.
+
+3. tableId no update aparece "Qualified Leads - Google Maps"
+- SQL mostra qualified_leads_google_maps.
+- Confirmar se e alias interno do n8n ou divergencia de tabela.
+
+4. If duplicado em cada ramo
+- Revalida "Mensagem Enviada Email" vazio (positivo para seguranca).
+- Mas se o update falhar, pode repetir lead em execucoes futuras.
+
+5. executeOnce no Get many rows
+- Bom para evitar re-fetch por item, mas precisa monitorar volume em lotes grandes.
+
+6. Wait3 sem amount explicito no JSON lido
+- Validar comportamento default para nao quebrar cadencia planejada.
+
+====================================================================
+11) RESUMO FINAL
+====================================================================
+
+Este fluxo e uma esteira completa de first approach por e-mail, com:
+- selecao de leads aptos (com e-mail e sem envio previo),
+- priorizacao e limitacao de lote,
+- distribuicao inteligente entre 5 caixas,
+- geracao de copy personalizada com agente + RAG vetorial,
+- formatacao de mensagem para envio humano,
+- envio por Gmail,
+- registro no banco para rastreio e anti-duplicidade,
+- pausas de seguranca entre disparos.
+
+O valor principal esta na combinacao entre personalizacao em escala e controle operacional de reputacao (rotacao + waits + update de auditoria).
