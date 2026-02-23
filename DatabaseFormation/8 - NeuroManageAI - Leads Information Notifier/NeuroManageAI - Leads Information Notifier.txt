@@ -1,0 +1,250 @@
+NeuroManageAI - Leads Information Notifier
+
+Documentacao do workflow em ordem logica, com o que cada node faz e por que esta no fluxo.
+
+====================================================================
+1) OBJETIVO DO FLUXO
+====================================================================
+
+Objetivo:
+Disparar, em horarios definidos (dias uteis, manha), um resumo das bases de leads por e-mail: exportar cada uma das quatro tabelas de leads para planilha (XLS) e enviar por Gmail como anexo.
+
+Por que esse fluxo existe:
+As outras esteiras (ICP, Jobs, Comments, Google Maps) alimentam o Supabase. Este fluxo e o canal de entrega operacional para o cliente/gestor receber as bases atualizadas sem acessar o banco.
+
+Tabelas envolvidas (SQL):
+- qualified_leads_icp
+- qualified_leads_jobs_offers
+- qualified_leads_comments
+- qualified_leads_google_maps
+
+Cada tabela vira um XLS e um e-mail separado.
+
+====================================================================
+2) VISAO DA SEQUENCIA
+====================================================================
+
+O Schedule Trigger dispara uma vez e abre quatro ramos em paralelo (um por tabela). Em cada ramo:
+
+1. Buscar todos os registros da tabela no Supabase.
+2. Converter o resultado em arquivo XLS com nome incluindo a data.
+3. Enviar e-mail com anexo XLS pelo Gmail.
+
+Nao existe merge entre os ramos: sao quatro pipelines independentes executando ao mesmo tempo.
+
+====================================================================
+3) NODE POR NODE (DETALHADO)
+====================================================================
+
+--------------------------------------------------
+ETAPA 1 - Schedule Trigger
+Tipo: n8n-nodes-base.scheduleTrigger
+--------------------------------------------------
+O que faz:
+- Dispara o workflow conforme cron.
+
+Configuracao:
+- cronExpression: 0 8-12 * * 1-5
+  - minuto 0
+  - horas 8, 9, 10, 11 e 12
+  - segunda a sexta
+
+Por que esta aqui:
+- E o gatilho do processo.
+- Mantem disparo em horario comercial da manha.
+- A partir dele saem 4 conexoes em paralelo para evitar 4 workflows diferentes.
+
+
+--------------------------------------------------
+ETAPA 2A - Get many rows
+Tipo: n8n-nodes-base.supabase (getAll)
+Tabela: qualified_leads_icp
+--------------------------------------------------
+O que faz:
+- Busca todos os registros da tabela ICP (returnAll: true).
+
+Por que esta aqui:
+- Fornece a base bruta que sera exportada no relatorio de ICP.
+
+
+--------------------------------------------------
+ETAPA 2B - Get many rows1
+Tipo: n8n-nodes-base.supabase (getAll)
+Tabela: qualified_leads_jobs_offers
+--------------------------------------------------
+O que faz:
+- Busca todos os registros da tabela de jobs/vagas.
+
+Por que esta aqui:
+- Fornece a base bruta do relatorio de jobs.
+
+
+--------------------------------------------------
+ETAPA 2C - Get many rows2
+Tipo: n8n-nodes-base.supabase (getAll)
+Tabela: qualified_leads_comments
+--------------------------------------------------
+O que faz:
+- Busca todos os registros da tabela de leads vindos de comentarios.
+
+Por que esta aqui:
+- Fornece a base do relatorio de comments.
+
+
+--------------------------------------------------
+ETAPA 2D - Get many rows3
+Tipo: n8n-nodes-base.supabase (getAll)
+Tabela: qualified_leads_google_maps
+--------------------------------------------------
+O que faz:
+- Busca todos os registros da base de Google Maps.
+
+Por que esta aqui:
+- Fornece a base do relatorio de Maps.
+
+
+--------------------------------------------------
+ETAPA 3A - Convert to File
+Tipo: n8n-nodes-base.convertToFile
+--------------------------------------------------
+O que faz:
+- Converte os registros da tabela ICP para XLS.
+- binaryPropertyName: NMAI_ICP_database_{{ $today }}
+
+Por que esta aqui:
+- O Gmail precisa de anexo binario.
+- O nome com data ajuda no controle de versao/snapshot diario.
+
+
+--------------------------------------------------
+ETAPA 3B - Convert to File1
+Tipo: n8n-nodes-base.convertToFile
+--------------------------------------------------
+O que faz:
+- Converte dados de Jobs para XLS.
+- binaryPropertyName: NMAI_Jobs_database_{{ $today }}
+
+Por que esta aqui:
+- Padroniza entrega da base Jobs em arquivo.
+
+
+--------------------------------------------------
+ETAPA 3C - Convert to File2
+Tipo: n8n-nodes-base.convertToFile
+--------------------------------------------------
+O que faz:
+- Converte dados de Comments para XLS.
+- binaryPropertyName: NMAI_Comments_database_{{ $today }}
+
+Por que esta aqui:
+- Gera anexo padrao para envio da base de comentarios.
+
+
+--------------------------------------------------
+ETAPA 3D - Convert to File3
+Tipo: n8n-nodes-base.convertToFile
+--------------------------------------------------
+O que faz:
+- Converte dados de Google Maps para XLS.
+- binaryPropertyName: NMAI_Maps_database_{{ $today }}
+
+Por que esta aqui:
+- Fecha o conjunto de exportacoes com o mesmo padrao.
+
+
+--------------------------------------------------
+ETAPA 4A - Send a message
+Tipo: n8n-nodes-base.gmail
+--------------------------------------------------
+O que faz:
+- Envia e-mail com assunto e mensagem da base ICP.
+- Anexa NMAI_ICP_database_{{ $today }}.
+
+Por que esta aqui:
+- Entrega final do relatorio ICP para o destinatario configurado na conta Gmail.
+
+
+--------------------------------------------------
+ETAPA 4B - Send a message1
+Tipo: n8n-nodes-base.gmail
+--------------------------------------------------
+O que faz:
+- Envia e-mail da base Jobs.
+- Anexa NMAI_Jobs_database_{{ $today }}.
+
+Por que esta aqui:
+- Entrega dedicada da base de vagas.
+
+
+--------------------------------------------------
+ETAPA 4C - Send a message2
+Tipo: n8n-nodes-base.gmail
+--------------------------------------------------
+O que faz:
+- Envia e-mail da base Comments.
+- Anexa NMAI_Comments_database_{{ $today }}.
+
+Por que esta aqui:
+- Entrega dedicada da base de comentarios (LinkedIn/Instagram).
+
+
+--------------------------------------------------
+ETAPA 4D - Send a message3
+Tipo: n8n-nodes-base.gmail
+--------------------------------------------------
+O que faz:
+- Envia e-mail da base Google Maps.
+- Anexa NMAI_Maps_database_{{ $today }}.
+
+Por que esta aqui:
+- Entrega dedicada da base de Maps.
+
+====================================================================
+4) RELACAO COM O SQL
+====================================================================
+
+As quatro tabelas definidas no SQL sao exatamente as quatro fontes usadas no notifier:
+
+1. qualified_leads_icp
+2. qualified_leads_jobs_offers
+3. qualified_leads_comments
+4. qualified_leads_google_maps
+
+Este workflow nao faz insert/update/delete nessas tabelas.
+Ele so le (getAll), converte e envia.
+
+====================================================================
+5) PONTOS DE ATENCAO E MELHORIAS
+====================================================================
+
+1. returnAll = true em todas as tabelas
+- Se o volume crescer muito, pode gerar alto consumo de memoria/tempo.
+- Alternativa: paginacao ou filtro por periodo.
+
+2. Assuntos de e-mail parecidos
+- Dois assuntos sao genericos ("Base de Dados de ICP...") mesmo em ramos diferentes.
+- Melhor diferenciar claramente ICP / Jobs / Comments / Maps no subject.
+
+3. Frequencia do cron
+- Hoje roda 5 vezes por dia util (8h, 9h, 10h, 11h, 12h).
+- Se a intencao for 1 envio diario, ajustar cron.
+
+4. Escalabilidade operacional
+- Como sao 4 anexos gerados por rodada, em bases grandes pode haver atraso.
+- Recomendado monitorar tempo de execucao e tamanho dos anexos.
+
+5. Dependencia de Gmail OAuth
+- O envio depende da credencial estar valida.
+- Se token expirar, os 4 ramos falham na entrega.
+
+====================================================================
+6) RESUMO FINAL
+====================================================================
+
+O Leads Information Notifier e o fluxo de distribuicao das bases:
+- dispara por horario,
+- le as quatro tabelas principais de leads,
+- transforma cada base em XLS,
+- envia cada arquivo por e-mail.
+
+Ele funciona como camada de notificacao/entrega para dar visibilidade operacional das bases atualizadas sem exigir acesso direto ao Supabase.

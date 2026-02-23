@@ -1,0 +1,918 @@
+{
+   "nodes": [
+     {
+       "parameters": {
+         "rule": {
+           "interval": [
+             {
+               "triggerAtHour": 20,
+               "triggerAtMinute": 20
+             }
+           ]
+         }
+       },
+       "id": "f61049dd-3cbc-4ea3-926f-5f9e0773db9d",
+       "name": "Schedule Trigger",
+       "type": "n8n-nodes-base.scheduleTrigger",
+       "position": [
+         0,
+         0
+       ],
+       "typeVersion": 1.3
+     },
+     {
+       "parameters": {
+         "operation": "getAll",
+         "tableId": "qualified_leads_icp",
+         "returnAll": true
+       },
+       "id": "58349695-efba-4ef3-a0c2-eeccd618a2b2",
+       "name": "Get many rows - ICP",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         320,
+         -256
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "getAll",
+         "tableId": "qualified_leads_jobs_offers",
+         "returnAll": true
+       },
+       "id": "0bddac7c-a708-4881-b1ee-eaadb097c04e",
+       "name": "Get many rows - Jobs",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         320,
+         -96
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "getAll",
+         "tableId": "qualified_leads_comments",
+         "returnAll": true
+       },
+       "id": "f9894c39-7fc9-49c8-bdbc-41843a489c86",
+       "name": "Get many rows - Comments",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         320,
+         64
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "getAll",
+         "tableId": "qualified_leads_google_maps",
+         "returnAll": true
+       },
+       "id": "df936998-5e3f-40ef-9b2a-c80f44eb6f29",
+       "name": "Get many rows - Maps",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         320,
+         224
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "numberInputs": 4
+       },
+       "id": "ee230318-22e5-44d7-88d4-575db44c4b70",
+       "name": "Merge",
+       "type": "n8n-nodes-base.merge",
+       "position": [
+         624,
+         -32
+       ],
+       "typeVersion": 3.2
+     },
+     {
+       "parameters": {
+         "fieldsToSummarize": {
+           "values": [
+             {
+               "field": "Mensagem Enviada Email"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "92f937d7-b057-4c20-898e-5c39df9f80ba",
+       "name": "Count Emails Sent",
+       "type": "n8n-nodes-base.summarize",
+       "position": [
+         1104,
+         -320
+       ],
+       "typeVersion": 1.1
+     },
+     {
+       "parameters": {
+         "fieldsToSummarize": {
+           "values": [
+             {
+               "field": "Conectado LinkedIn"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "11df3cd6-4042-47b2-8102-b3eda650c662",
+       "name": "Count LinkedIn Connections Accepted",
+       "type": "n8n-nodes-base.summarize",
+       "position": [
+         1104,
+         128
+       ],
+       "typeVersion": 1.1
+     },
+     {
+       "parameters": {
+         "fieldsToSummarize": {
+           "values": [
+             {
+               "field": "mensagem_enviada_em"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "f14d82a4-2de9-43cb-9d57-8cb1184f7d25",
+       "name": "Count Wpp Messages Sent",
+       "type": "n8n-nodes-base.summarize",
+       "position": [
+         1104,
+         -48
+       ],
+       "typeVersion": 1.1
+     },
+     {
+       "parameters": {
+         "fieldsToSummarize": {
+           "values": [
+             {
+               "field": "Mensagem Enviada LinkedIn"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "86e98045-da1f-4ead-9b8e-4c1c56614cbd",
+       "name": "Count LinkedIn Invites Sent",
+       "type": "n8n-nodes-base.summarize",
+       "position": [
+         1104,
+         -192
+       ],
+       "typeVersion": 1.1
+     },
+     {
+       "parameters": {
+         "fieldsToSummarize": {
+           "values": [
+             {
+               "field": "resposta_whatsapp"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "15fc702b-b5fc-49de-bc19-1f233aaa6335",
+       "name": "Count LinkedIn Wpp Responses",
+       "type": "n8n-nodes-base.summarize",
+       "position": [
+         1104,
+         304
+       ],
+       "typeVersion": 1.1
+     },
+     {
+       "parameters": {
+         "chatId": "=1399660760",
+         "text": "=Emails Enviados Hoje por {{ $json.company_name }}: {{ $json.emails_sent }}",
+         "additionalFields": {}
+       },
+       "id": "ca588c62-ec76-4d95-a84c-658c810ca6d3",
+       "name": "Send a text message",
+       "type": "n8n-nodes-base.telegram",
+       "position": [
+         1488,
+         -320
+       ],
+       "typeVersion": 1.2,
+       "webhookId": "7ef39258-10f8-44f9-8d2b-cd52a25f2014",
+       "credentials": {
+         "telegramApi": {
+           "id": "51xzPykdzmDf4eA4",
+           "name": "Telegram account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "e3e26c4c-d307-43b8-b3fb-397a1d71d52f",
+               "name": "emails_sent",
+               "value": "={{ $json.count_Mensagem_Enviada_Email }}",
+               "type": "number"
+             },
+             {
+               "id": "32d6fe75-b70d-4f7e-9b9b-7ebfedfc9021",
+               "name": "company_name",
+               "value": "NeuroManageAI",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "6ecfe82d-def1-45b2-a1b6-77925dfef111",
+       "name": "Edit Fields",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         1312,
+         -320
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "chatId": "=1399660760",
+         "text": "=Pedidos de Conexão de LinkedIn Enviados Hoje por {{ $json.company_name }}: {{ $json.linkedin_sent }}",
+         "additionalFields": {}
+       },
+       "id": "6e4b30b3-b2f8-45be-8fb5-9b9492fc33ab",
+       "name": "Send a text message1",
+       "type": "n8n-nodes-base.telegram",
+       "position": [
+         1488,
+         -192
+       ],
+       "typeVersion": 1.2,
+       "webhookId": "7ef39258-10f8-44f9-8d2b-cd52a25f2014",
+       "credentials": {
+         "telegramApi": {
+           "id": "51xzPykdzmDf4eA4",
+           "name": "Telegram account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "e3e26c4c-d307-43b8-b3fb-397a1d71d52f",
+               "name": "linkedin_sent",
+               "value": "={{ $json.count_Mensagem_Enviada_LinkedIn }}",
+               "type": "number"
+             },
+             {
+               "id": "32d6fe75-b70d-4f7e-9b9b-7ebfedfc9021",
+               "name": "company_name",
+               "value": "NeuroManageAI",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "82518378-83ce-42bc-9a18-47b38f208cea",
+       "name": "Edit Fields1",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         1312,
+         -192
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "chatId": "=1399660760",
+         "text": "=Disparos de Wpp Enviados Hoje por {{ $json.company_name }}: {{ $json.messages_sent }}",
+         "additionalFields": {}
+       },
+       "id": "d578fbd3-834c-4583-a53f-7d05eb0f78a7",
+       "name": "Send a text message2",
+       "type": "n8n-nodes-base.telegram",
+       "position": [
+         1488,
+         -48
+       ],
+       "typeVersion": 1.2,
+       "webhookId": "7ef39258-10f8-44f9-8d2b-cd52a25f2014",
+       "credentials": {
+         "telegramApi": {
+           "id": "51xzPykdzmDf4eA4",
+           "name": "Telegram account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "e3e26c4c-d307-43b8-b3fb-397a1d71d52f",
+               "name": "messages_sent",
+               "value": "={{ $json.count_mensagem_enviada_em }}",
+               "type": "number"
+             },
+             {
+               "id": "32d6fe75-b70d-4f7e-9b9b-7ebfedfc9021",
+               "name": "company_name",
+               "value": "NeuroManageAI",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "94bd79d9-72ff-4055-bc28-473969d6fc02",
+       "name": "Edit Fields2",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         1312,
+         -48
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "chatId": "=1399660760",
+         "text": "=Conexões Aceitas Hoje por {{ $json.company_name }}: {{ $json.connections }}",
+         "additionalFields": {}
+       },
+       "id": "251e3662-409a-4527-9bae-37d58369228c",
+       "name": "Send a text message3",
+       "type": "n8n-nodes-base.telegram",
+       "position": [
+         1488,
+         128
+       ],
+       "typeVersion": 1.2,
+       "webhookId": "7ef39258-10f8-44f9-8d2b-cd52a25f2014",
+       "credentials": {
+         "telegramApi": {
+           "id": "51xzPykdzmDf4eA4",
+           "name": "Telegram account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "e3e26c4c-d307-43b8-b3fb-397a1d71d52f",
+               "name": "connections",
+               "value": "={{ $json.count_Conectado_LinkedIn }}",
+               "type": "number"
+             },
+             {
+               "id": "32d6fe75-b70d-4f7e-9b9b-7ebfedfc9021",
+               "name": "company_name",
+               "value": "NeuroManageAI",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "cf804200-a9d4-48e6-9e63-f0f5da5d474f",
+       "name": "Edit Fields3",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         1312,
+         128
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "chatId": "=1399660760",
+         "text": "=Respostas de Wpp Hoje por {{ $json.company_name }}: {{ $json.messages_responses }}",
+         "additionalFields": {}
+       },
+       "id": "95fb3f7e-4413-4304-b15f-bad887c0278d",
+       "name": "Send a text message4",
+       "type": "n8n-nodes-base.telegram",
+       "position": [
+         1488,
+         304
+       ],
+       "typeVersion": 1.2,
+       "webhookId": "7ef39258-10f8-44f9-8d2b-cd52a25f2014",
+       "credentials": {
+         "telegramApi": {
+           "id": "51xzPykdzmDf4eA4",
+           "name": "Telegram account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "e3e26c4c-d307-43b8-b3fb-397a1d71d52f",
+               "name": "messages_responses",
+               "value": "={{ $json.count_Mensagem_Enviada_Email }}",
+               "type": "number"
+             },
+             {
+               "id": "32d6fe75-b70d-4f7e-9b9b-7ebfedfc9021",
+               "name": "company_name",
+               "value": "NeuroManageAI",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "4feab427-67d7-4002-8dec-24689688a9bd",
+       "name": "Edit Fields4",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         1312,
+         304
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 3
+           },
+           "conditions": [
+             {
+               "id": "4ac98c86-1429-4ecd-b3a0-47f9a24d28e7",
+               "leftValue": "={{ \n  new Date($json['Data Mensagem LinkedIn']).toISOString().split('T')[0] === new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().split('T')[0] \n}}",
+               "rightValue": "=true",
+               "operator": {
+                 "type": "boolean",
+                 "operation": "true",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "0249e411-12d8-4e4f-b462-fa6228a7cc69",
+       "name": "If",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         864,
+         -176
+       ],
+       "typeVersion": 2.3
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 3
+           },
+           "conditions": [
+             {
+               "id": "4ac98c86-1429-4ecd-b3a0-47f9a24d28e7",
+               "leftValue": "={{ $json['Conectado LinkedIn'] === 'true' }}",
+               "rightValue": "={{ $today }}",
+               "operator": {
+                 "type": "boolean",
+                 "operation": "true",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "7f65c8ee-8cd7-49b7-b744-2077699c2623",
+       "name": "If1",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         864,
+         144
+       ],
+       "typeVersion": 2.3
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 3
+           },
+           "conditions": [
+             {
+               "id": "4ac98c86-1429-4ecd-b3a0-47f9a24d28e7",
+               "leftValue": "={{ $json.resposta_whatsapp }}",
+               "rightValue": "={{ $today }}",
+               "operator": {
+                 "type": "boolean",
+                 "operation": "true",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "4260ae9f-caec-41d5-8ada-5e63b6971be2",
+       "name": "If2",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         864,
+         320
+       ],
+       "typeVersion": 2.3
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 3
+           },
+           "conditions": [
+             {
+               "id": "571c6947-1610-4cc8-a44b-6083887dae9e",
+               "leftValue": "={{ new Date($json['Data Mensagem Email']).toISOString().split('T')[0] === new Date().toISOString().split('T')[0] }}",
+               "rightValue": "true",
+               "operator": {
+                 "type": "boolean",
+                 "operation": "true",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "c70a6593-3ad7-40e6-ba71-f5953b7ec77c",
+       "name": "If3",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         864,
+         -304
+       ],
+       "typeVersion": 2.3
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 3
+           },
+           "conditions": [
+             {
+               "id": "571c6947-1610-4cc8-a44b-6083887dae9e",
+               "leftValue": "={{ new Date($json['mensagem_enviada_em']).toISOString().split('T')[0] === new Date().toISOString().split('T')[0] }}",
+               "rightValue": "true",
+               "operator": {
+                 "type": "boolean",
+                 "operation": "true",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "d31b4562-e351-472f-a1f4-e788d54247fa",
+       "name": "If4",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         864,
+         -32
+       ],
+       "typeVersion": 2.3
+     }
+   ],
+   "connections": {
+     "Schedule Trigger": {
+       "main": [
+         [
+           {
+             "node": "Get many rows - ICP",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "Get many rows - Jobs",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "Get many rows - Comments",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "Get many rows - Maps",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Get many rows - ICP": {
+       "main": [
+         [
+           {
+             "node": "Merge",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Get many rows - Jobs": {
+       "main": [
+         [
+           {
+             "node": "Merge",
+             "type": "main",
+             "index": 1
+           }
+         ]
+       ]
+     },
+     "Get many rows - Comments": {
+       "main": [
+         [
+           {
+             "node": "Merge",
+             "type": "main",
+             "index": 2
+           }
+         ]
+       ]
+     },
+     "Get many rows - Maps": {
+       "main": [
+         [
+           {
+             "node": "Merge",
+             "type": "main",
+             "index": 3
+           }
+         ]
+       ]
+     },
+     "Merge": {
+       "main": [
+         [
+           {
+             "node": "If3",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "If",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "If1",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "If2",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "If4",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Count Emails Sent": {
+       "main": [
+         [
+           {
+             "node": "Edit Fields",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Count LinkedIn Connections Accepted": {
+       "main": [
+         [
+           {
+             "node": "Edit Fields3",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Count Wpp Messages Sent": {
+       "main": [
+         [
+           {
+             "node": "Edit Fields2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Count LinkedIn Invites Sent": {
+       "main": [
+         [
+           {
+             "node": "Edit Fields1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Count LinkedIn Wpp Responses": {
+       "main": [
+         [
+           {
+             "node": "Edit Fields4",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Edit Fields": {
+       "main": [
+         [
+           {
+             "node": "Send a text message",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Edit Fields1": {
+       "main": [
+         [
+           {
+             "node": "Send a text message1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Edit Fields2": {
+       "main": [
+         [
+           {
+             "node": "Send a text message2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Edit Fields3": {
+       "main": [
+         [
+           {
+             "node": "Send a text message3",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Edit Fields4": {
+       "main": [
+         [
+           {
+             "node": "Send a text message4",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "If": {
+       "main": [
+         [
+           {
+             "node": "Count LinkedIn Invites Sent",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "If1": {
+       "main": [
+         [
+           {
+             "node": "Count LinkedIn Connections Accepted",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "If2": {
+       "main": [
+         [
+           {
+             "node": "Count LinkedIn Wpp Responses",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "If3": {
+       "main": [
+         [
+           {
+             "node": "Count Emails Sent",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "If4": {
+       "main": [
+         [
+           {
+             "node": "Count Wpp Messages Sent",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     }
+   },
+   "pinData": {},
+   "meta": {
+     "instanceId": "a0f7a305da35e849bafdb639b90f9c75f57bc77027e416642bf74993eb8cfaee"
+   }
+ }

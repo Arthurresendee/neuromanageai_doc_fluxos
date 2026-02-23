@@ -5,4 +5,36 @@ Quando eu sei quando criar em um ambiente ou em outro? Sei que eu seguir o padr�
 de boa descobrir, mas e quando fo algo novo? 
 
 Esses fluxos são específicos de alguns clientes?? Pois eles possuem dados 
-pré-definidos, ex, na formação das consultas nos code nodes.
+pré-definidos nos nodes
+
+Os leads de misturam né, dentro dessa pasta de criação de prospecção.
+
+Parece que eu tinha visto que existe o n8n na VPS? ou foi impressão minha? acho que confundi com o supabase produção e development.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

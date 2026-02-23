@@ -1,0 +1,633 @@
+{
+   "nodes": [
+     {
+       "parameters": {
+         "httpMethod": "POST",
+         "path": "executor/PLACEHOLDER",
+         "options": {}
+       },
+       "id": "schedule-trigger",
+       "name": "Executor Webhook",
+       "type": "n8n-nodes-base.webhook",
+       "position": [
+         208,
+         304
+       ],
+       "typeVersion": 2,
+       "webhookId": "a3458f46-a416-4deb-b027-5dc9ad74d919"
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "kw",
+               "name": "keywords",
+               "value": "=[\"odontologia\", \"dentista\", \"clinica odontologica\", \"saude\", \"saude oral\", \"sorriso\", \"estetica\", \"bem estar\", \"tratamento\", \"atendimento\", \"implante\", \"ortodontia\", \"clareamento\", \"proteses\", \"cirurgiaoral\", \"canal\", \"limpeza\", \"aparelho\", \"harmonizacao\", \"esteticaoral\", \"harmonizacaofacial\", \"sorriso perfeito\", \"autoestima\", \"qualidade\", \"odontogram\", \"odontolovers\", \"vidadeodontista\", \"rotinaodontologica\", \"odontopost\", \"odontobrasil\"]",
+               "type": "array"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "target-keywords",
+       "name": "Target Keywords",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         400,
+         304
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "jsCode": "const keywords = $input.first().json.keywords;\nfunction shuffleArray(array) {\n  const shuffled = [...array];\n  for (let i = shuffled.length - 1; i > 0; i--) {\n    const j = Math.floor(Math.random() * (i + 1));\n    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];\n  }\n  return shuffled;\n}\nconst shuffled = shuffleArray(keywords);\nconst selectedKeywords = shuffled.slice(0, 3);\nreturn [{\n  json: {\n    selectedKeywords: selectedKeywords,\n    totalOriginal: keywords.length,\n    totalSelected: selectedKeywords.length\n  }\n}];"
+       },
+       "id": "random-selector",
+       "name": "Random Keyword Selector",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         608,
+         304
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "fieldToSplitOut": "selectedKeywords",
+         "options": {}
+       },
+       "id": "split-keywords",
+       "name": "Split Keywords",
+       "type": "n8n-nodes-base.splitOut",
+       "position": [
+         800,
+         304
+       ],
+       "typeVersion": 1
+     },
+     {
+       "parameters": {
+         "operation": "Run actor and get dataset",
+         "actorId": {
+           "__rl": true,
+           "value": "https://console.apify.com/actors/reGe1ST3OBgYZSsZJ/input",
+           "mode": "url"
+         },
+         "customBody": "={{ JSON.stringify({\"hashtags\": [$json.selectedKeywords.replace(/[\\s!?.,:;\\-+=*&%$#@\\/\\\\~^|()[\\]{}\\\"'`]+/g, '')],\"resultsLimit\": 10,\"resultsType\": \"reels\"}) }}",
+         "authentication": "apifyOAuth2Api"
+       },
+       "id": "scrape-reels",
+       "name": "Scrape Instagram Reels",
+       "type": "@apify/n8n-nodes-apify.apify",
+       "position": [
+         1008,
+         304
+       ],
+       "typeVersion": 1,
+       "retryOnFail": true,
+       "credentials": {
+         "apifyOAuth2Api": {
+           "id": "ekINpf0jTe8qrqgm",
+           "name": "Apify account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "version": 3,
+             "leftValue": "",
+             "caseSensitive": true,
+             "typeValidation": "strict"
+           },
+           "conditions": [
+             {
+               "id": "c1",
+               "leftValue": "={{ $json.commentsCount }}",
+               "rightValue": 1,
+               "operator": {
+                 "type": "number",
+                 "operation": "gte"
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "filter-comments",
+       "name": "Filter Commented Posts",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         1200,
+         304
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "fieldsToAggregate": {
+           "fieldToAggregate": [
+             {
+               "fieldToAggregate": "url",
+               "renameField": true,
+               "outputFieldName": "url_post"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "aggregate-urls",
+       "name": "Aggregate Post URLs",
+       "type": "n8n-nodes-base.aggregate",
+       "position": [
+         1424,
+         288
+       ],
+       "typeVersion": 1
+     },
+     {
+       "parameters": {
+         "operation": "Run actor and get dataset",
+         "actorId": {
+           "__rl": true,
+           "value": "https://console.apify.com/actors/shu8hvrXbJbY3Eb9W/input",
+           "mode": "url"
+         },
+         "customBody": "={\"addParentData\": false,\"directUrls\": {{ JSON.stringify($json.url_post) }},\"resultsLimit\": 5,\"resultsType\": \"comments\"}",
+         "authentication": "apifyOAuth2Api"
+       },
+       "id": "scrape-comments",
+       "name": "Scrape Post Comments",
+       "type": "@apify/n8n-nodes-apify.apify",
+       "position": [
+         1616,
+         288
+       ],
+       "typeVersion": 1,
+       "retryOnFail": true,
+       "credentials": {
+         "apifyOAuth2Api": {
+           "id": "ekINpf0jTe8qrqgm",
+           "name": "Apify account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "fieldsToAggregate": {
+           "fieldToAggregate": [
+             {
+               "fieldToAggregate": "ownerUsername",
+               "renameField": true,
+               "outputFieldName": "author_username"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "aggregate-users",
+       "name": "Aggregate Usernames",
+       "type": "n8n-nodes-base.aggregate",
+       "position": [
+         1824,
+         288
+       ],
+       "typeVersion": 1
+     },
+     {
+       "parameters": {
+         "jsCode": "const items = $input.all();\nconst seen = new Set();\nconst unique = [];\nfor (const item of items) {\n  const usernames = Array.isArray(item.json.author_username) ? item.json.author_username : [item.json.author_username];\n  const newUsernames = usernames.filter(u => {\n    if (!seen.has(u)) {\n      seen.add(u);\n      return true;\n    }\n    return false;\n  });\n  if (newUsernames.length > 0) {\n    unique.push({json: {...item.json, author_username: newUsernames}});\n  }\n}\nreturn unique;"
+       },
+       "id": "dedupe-users",
+       "name": "Deduplicate Instagram Users",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         2016,
+         288
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "operation": "getAll",
+         "tableId": "instagram_prospects_cache",
+         "limit": 100,
+         "filterType": "string",
+         "filterString": "=username=eq.{{ Array.isArray($json.author_username) ? $json.author_username[0] : $json.author_username }}"
+       },
+       "id": "check-cache",
+       "name": "Check Supabase Cache",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         336,
+         560
+       ],
+       "typeVersion": 1,
+       "alwaysOutputData": true,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       },
+       "continueOnFail": true
+     },
+     {
+       "parameters": {
+         "operation": "Run actor and get dataset",
+         "actorId": {
+           "__rl": true,
+           "value": "https://console.apify.com/actors/dSCLg0C3YEZ83HzYX/input",
+           "mode": "url"
+         },
+         "customBody": "={{ JSON.stringify({\"includeAboutSection\": false,\"usernames\": $json.usernames_to_scrape}) }}",
+         "authentication": "apifyOAuth2Api"
+       },
+       "id": "scrape-profiles",
+       "name": "Scrape Instagram Profiles",
+       "type": "@apify/n8n-nodes-apify.apify",
+       "position": [
+         976,
+         560
+       ],
+       "typeVersion": 1,
+       "retryOnFail": true,
+       "credentials": {
+         "apifyOAuth2Api": {
+           "id": "ekINpf0jTe8qrqgm",
+           "name": "Apify account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "jsCode": "const items = $input.all();\n\nfunction extractLocation(bio) {\n  if (!bio) return null;\n  const patterns = [\n    /(?:de|em|@)\\s*([A-Z]{2})\\b/i,\n    /(São Paulo|Rio de Janeiro|Belo Horizonte|Curitiba|Porto Alegre|Brasília|Salvador|Fortaleza|Recife|Manaus)/i,\n    /📍\\s*([^\\n📍]+)/i,\n    /🏠\\s*([^\\n]+)/i\n  ];\n  for (const p of patterns) {\n    const m = bio.match(p);\n    if (m) return (m[1] || m[0]).trim();\n  }\n  return null;\n}\n\nfunction extractTitle(bio, name) {\n  if (!bio) return null;\n  \n  // Split bio into lines for analysis\n  const lines = bio.split('\\n').map(l => l.trim()).filter(l => l.length > 0);\n  \n  // Professional keywords to look for (Portuguese)\n  const professionKeywords = [\n    // Dental\n    'dentista', 'odonto', 'ortodont', 'implant', 'protés', 'endodont', 'periodont',\n    'odontopediatra', 'bucomaxilo', 'estomatolog', 'radiolog', 'cro', ' cd ',\n    // Tech\n    'desenvolvedor', 'developer', 'dev', 'programador', 'analista', 'engenheiro',\n    'software', 'sistemas', 'ti', 'tech', 'dados', 'data', 'frontend', 'backend',\n    'fullstack', 'devops', 'ux', 'ui', 'design', 'product', 'produto',\n    // Health\n    'médic', 'enfermeiro', 'fisioterapeuta', 'psicólog', 'nutricion', 'farmacêutic',\n    'veterinár', 'biomédic', 'fonoaudiólog', 'terapeu',\n    // Business\n    'advogad', 'contador', 'administra', 'consultor', 'empreen', 'ceo', 'cfo', 'cto',\n    'diretor', 'gerente', 'coordenador', 'gestor', 'líder', 'founder', 'co-founder',\n    'vendedor', 'comercial', 'marketing', 'social media', 'copywriter',\n    // Creative\n    'fotógrafo', 'designer', 'arquitet', 'editor', 'produtor', 'artista', 'músico',\n    'influencer', 'content creator', 'criador', 'modelo',\n    // Education\n    'professor', 'educador', 'coach', 'mentor', 'instrutor', 'palestrante',\n    // Other\n    'corretor', 'imobiliár', 'personal', 'trainer', 'atleta', 'piloto', 'chef'\n  ];\n  \n  // Credential patterns (CRO, CRM, OAB, CREA, etc.)\n  const credentialPattern = /\\b(CRO|CRM|OAB|CREA|CRC|CREF|CRP|CREFITO|COFFITO|CRFA|CRBIO|CRN|CRMV)[\\s\\-:]*\\d*/i;\n  \n  // Emoji indicators often used with professions\n  const professionEmojis = ['💼', '👨‍💻', '👩‍💻', '👨‍⚕️', '👩‍⚕️', '🦷', '📚', '💻', '🎓', '⚕️', '🏥', '📊', '📈', '🎨', '📷', '🎬', '✈️', '🛩️', '👨‍🍳', '👩‍🍳', '⚖️', '🏋️', '🏠'];\n  \n  // First, check for credential patterns (highest priority)\n  for (const line of lines) {\n    const credMatch = line.match(credentialPattern);\n    if (credMatch) {\n      // Return the whole line or clean it up\n      const cleanLine = line.replace(/[📍🏠💙❤️🖤💜💛💚🧡🤍🤎@]/g, '').trim();\n      if (cleanLine.length > 3 && cleanLine.length < 60) {\n        return cleanLine;\n      }\n    }\n  }\n  \n  // Second, look for lines containing profession keywords\n  for (const line of lines) {\n    const lineLower = line.toLowerCase();\n    const lineClean = line.replace(/[\\u{1F300}-\\u{1F9FF}]/gu, '').trim(); // Remove emojis for checking\n    \n    // Skip if line contains the person's name\n    if (name && lineLower.includes(name.toLowerCase().split(' ')[0])) continue;\n    \n    // Skip if line is just emojis, flags, or very short\n    if (lineClean.length < 4) continue;\n    \n    // Skip lines that look like locations only\n    if (/^(de|em|@|📍)\\s/i.test(line) && lineClean.length < 15) continue;\n    \n    // Skip lines that are just mentions (@username)\n    if (/^[@💙❤️🖤💜💛💚🧡🤍🤎♥️💕]\\s*@\\w+$/i.test(line)) continue;\n    \n    // Check if line contains profession keywords\n    for (const keyword of professionKeywords) {\n      if (lineLower.includes(keyword)) {\n        // Clean up the line (remove some emojis but keep text)\n        const result = line\n          .replace(/[📍🏠💙❤️🖤💜💛💚🧡🤍🤎@♥️💕🔗👇⬇️]/g, '')\n          .replace(/\\s+/g, ' ')\n          .trim();\n        if (result.length > 3 && result.length < 80 && !result.includes(name)) {\n          return result;\n        }\n      }\n    }\n  }\n  \n  // Third, look for lines with profession emojis that might indicate a title\n  for (const line of lines) {\n    for (const emoji of professionEmojis) {\n      if (line.includes(emoji)) {\n        const lineClean = line\n          .replace(/[\\u{1F300}-\\u{1F9FF}]/gu, ' ')\n          .replace(/[\\u{2600}-\\u{26FF}]/gu, ' ')\n          .replace(/[\\u{2700}-\\u{27BF}]/gu, ' ')\n          .replace(/\\s+/g, ' ')\n          .trim();\n        \n        // Check if it looks like a title (has letters, reasonable length)\n        if (lineClean.length > 5 && lineClean.length < 60 && /[a-zA-ZÀ-ú]{3,}/.test(lineClean)) {\n          if (!name || !lineClean.toLowerCase().includes(name.toLowerCase().split(' ')[0])) {\n            return lineClean;\n          }\n        }\n      }\n    }\n  }\n  \n  return null;\n}\n\nreturn items.map(item => ({\n  json: {\n    output: {\n      username: item.json.username || '',\n      url: item.json.url || '',\n      fullName: item.json.fullName || '',\n      location: extractLocation(item.json.biography) || 'NÃO FOI POSSÍVEL DETERMINAR',\n      title: extractTitle(item.json.biography, item.json.fullName) || 'NÃO FOI POSSÍVEL DETERMINAR',\n      insta_photo_url: item.json.profilePicUrl || '',\n      post_input_url: item.json.inputUrl || '',\n      comment: item.json.text || '',\n      comment_date: item.json.timestamp || null,\n      details: item.json.biography || ''\n    },\n    raw_biography: item.json.biography || ''\n  }\n}));"
+       },
+       "id": "parse-bio",
+       "name": "Parse Bio Smart",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         1184,
+         560
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "version": 2,
+             "leftValue": "",
+             "caseSensitive": true,
+             "typeValidation": "strict"
+           },
+           "conditions": [
+             {
+               "id": "t1",
+               "leftValue": "={{ $json.output.title }}",
+               "rightValue": "=NÃO FOI POSSÍVEL DETERMINAR",
+               "operator": {
+                 "type": "string",
+                 "operation": "notContains"
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "filter-title",
+       "name": "Filter Has Title",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         1392,
+         560
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "jsCode": "const palavrasChave = ['ortodontia', 'ortodontista', 'odontologia', 'odontologista', 'dentista', 'cirurgião dentista', 'cd ', 'cro', 'implantodontia', 'periodontia', 'endodontia', 'protese', 'odontopediatria', 'estetica dental', 'harmonização facial', 'clareamento', 'clinica dental', 'consultorio'];\nfunction normalize(text) {\n  if (!text) return '';\n  return text.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').replace(/[^\\w\\s]/g, ' ');\n}\nfunction containsKeyword(title) {\n  const normalized = normalize(title);\n  for (const keyword of palavrasChave) {\n    if (normalized.includes(normalize(keyword))) return { found: true, matchedKeyword: keyword };\n  }\n  return { found: false };\n}\nconst results = [];\nfor (const item of $input.all()) {\n  const title = item.json.output && item.json.output.title ? item.json.output.title : '';\n  const check = containsKeyword(title);\n  if (check.found) results.push({json: {...item.json, _keywordMatch: check.matchedKeyword}});\n}\nreturn results;"
+       },
+       "id": "filter-keywords",
+       "name": "Filter Keywords Early",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         1632,
+         544
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "tableId": "instagram_prospects_cache",
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "username",
+               "fieldValue": "={{ $json.output.username }}"
+             },
+             {
+               "fieldId": "full_name",
+               "fieldValue": "={{ $json.output.fullName }}"
+             },
+             {
+               "fieldId": "title",
+               "fieldValue": "={{ $json.output.title }}"
+             },
+             {
+               "fieldId": "location",
+               "fieldValue": "={{ $json.output.location }}"
+             },
+             {
+               "fieldId": "profile_url",
+               "fieldValue": "={{ $json.output.url }}"
+             },
+             {
+               "fieldId": "photo_url",
+               "fieldValue": "={{ $json.output.insta_photo_url }}"
+             },
+             {
+               "fieldId": "biography",
+               "fieldValue": "={{ $json.raw_biography }}"
+             },
+             {
+               "fieldId": "keyword_match",
+               "fieldValue": "={{ $json._keywordMatch }}"
+             },
+             {
+               "fieldId": "comment",
+               "fieldValue": "={{ $json.output.comment }}"
+             },
+             {
+               "fieldId": "comment_date",
+               "fieldValue": "={{ $json.output.comment_date }}"
+             },
+             {
+               "fieldId": "post_url",
+               "fieldValue": "={{ $json.output.post_input_url }}"
+             },
+             {
+               "fieldId": "qualified",
+               "fieldValue": "false"
+             },
+             {
+               "fieldId": "processed",
+               "fieldValue": "false"
+             },
+             {
+               "fieldId": "cached_at",
+               "fieldValue": "={{ $now.toISO() }}"
+             }
+           ]
+         }
+       },
+       "id": "save-prospects",
+       "name": "Save to Instagram Prospects",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         1840,
+         544
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       },
+       "continueOnFail": true
+     },
+     {
+       "parameters": {
+         "fieldsToAggregate": {
+           "fieldToAggregate": [
+             {
+               "fieldToAggregate": "author_username",
+               "renameField": true,
+               "outputFieldName": "usernames_to_scrape"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "aggregate-non-cached",
+       "name": "Aggregate Non-Cached Users",
+       "type": "n8n-nodes-base.aggregate",
+       "position": [
+         560,
+         560
+       ],
+       "typeVersion": 1
+     },
+     {
+       "parameters": {
+         "jsCode": "// Get all original usernames from Deduplicate Instagram Users\nconst deduplicatedItems = $('Deduplicate Instagram Users').all();\nconst allUsernames = [];\nfor (const item of deduplicatedItems) {\n  const data = item.json.author_username;\n  if (Array.isArray(data)) {\n    allUsernames.push(...data.flat());\n  } else if (data) {\n    allUsernames.push(data);\n  }\n}\n\n// Get cached usernames from Check Supabase Cache (these are the ones that EXIST in cache)\nconst cacheResults = $('Check Supabase Cache').all();\nconst cachedUsernames = new Set(\n  cacheResults\n    .map(item => item.json.username)\n    .filter(u => u && u.length > 0)\n);\n\n// Filter: keep only usernames that are NOT in the cache\nconst uniqueUsernames = [...new Set(allUsernames)].filter(u => u && u.length > 0);\nconst nonCachedUsernames = uniqueUsernames.filter(u => !cachedUsernames.has(u));\n\nif (nonCachedUsernames.length === 0) {\n  return [];\n}\n\nreturn [{\n  json: {\n    usernames_to_scrape: nonCachedUsernames,\n    count: nonCachedUsernames.length,\n    total_original: uniqueUsernames.length,\n    cached_count: cachedUsernames.size\n  }\n}];"
+       },
+       "id": "prepare-usernames",
+       "name": "Prepare Usernames for Scraping",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         784,
+         560
+       ],
+       "typeVersion": 2
+     }
+   ],
+   "connections": {
+     "Executor Webhook": {
+       "main": [
+         [
+           {
+             "node": "Target Keywords",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Target Keywords": {
+       "main": [
+         [
+           {
+             "node": "Random Keyword Selector",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Random Keyword Selector": {
+       "main": [
+         [
+           {
+             "node": "Split Keywords",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Split Keywords": {
+       "main": [
+         [
+           {
+             "node": "Scrape Instagram Reels",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Scrape Instagram Reels": {
+       "main": [
+         [
+           {
+             "node": "Filter Commented Posts",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Filter Commented Posts": {
+       "main": [
+         [
+           {
+             "node": "Aggregate Post URLs",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Aggregate Post URLs": {
+       "main": [
+         [
+           {
+             "node": "Scrape Post Comments",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Scrape Post Comments": {
+       "main": [
+         [
+           {
+             "node": "Aggregate Usernames",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Aggregate Usernames": {
+       "main": [
+         [
+           {
+             "node": "Deduplicate Instagram Users",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Deduplicate Instagram Users": {
+       "main": [
+         [
+           {
+             "node": "Check Supabase Cache",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Check Supabase Cache": {
+       "main": [
+         [
+           {
+             "node": "Aggregate Non-Cached Users",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Scrape Instagram Profiles": {
+       "main": [
+         [
+           {
+             "node": "Parse Bio Smart",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Parse Bio Smart": {
+       "main": [
+         [
+           {
+             "node": "Filter Has Title",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Filter Has Title": {
+       "main": [
+         [
+           {
+             "node": "Filter Keywords Early",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Filter Keywords Early": {
+       "main": [
+         [
+           {
+             "node": "Save to Instagram Prospects",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Aggregate Non-Cached Users": {
+       "main": [
+         [
+           {
+             "node": "Prepare Usernames for Scraping",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Prepare Usernames for Scraping": {
+       "main": [
+         [
+           {
+             "node": "Scrape Instagram Profiles",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     }
+   },
+   "pinData": {},
+   "meta": {
+     "instanceId": "a0f7a305da35e849bafdb639b90f9c75f57bc77027e416642bf74993eb8cfaee"
+   }
+ }

@@ -1,0 +1,408 @@
+{
+   "nodes": [
+     {
+       "parameters": {
+         "rule": {
+           "interval": [
+             {
+               "field": "cronExpression",
+               "expression": "0 8-12 * * 1-5"
+             }
+           ]
+         }
+       },
+       "id": "97ddb472-c479-4177-83ab-0e9726e1d0f4",
+       "name": "Schedule Trigger",
+       "type": "n8n-nodes-base.scheduleTrigger",
+       "position": [
+         0,
+         0
+       ],
+       "typeVersion": 1.3
+     },
+     {
+       "parameters": {
+         "operation": "getAll",
+         "tableId": "qualified_leads_icp",
+         "returnAll": true
+       },
+       "id": "7c1f1c25-bb9b-4462-823e-2e8e78d155d6",
+       "name": "Get many rows",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         272,
+         -240
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "getAll",
+         "tableId": "qualified_leads_jobs_offers",
+         "returnAll": true
+       },
+       "id": "a0e7908c-7861-4e30-a4ce-33614d0c048f",
+       "name": "Get many rows1",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         272,
+         64
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "getAll",
+         "tableId": "qualified_leads_comments",
+         "returnAll": true
+       },
+       "id": "1fc23156-a662-4018-b1a4-33268ea4a127",
+       "name": "Get many rows2",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         272,
+         208
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "xls",
+         "binaryPropertyName": "=NMAI_ICP_database_{{ $today }}",
+         "options": {}
+       },
+       "id": "2bae370b-12b9-4fa2-8839-b17ac5f75e5e",
+       "name": "Convert to File",
+       "type": "n8n-nodes-base.convertToFile",
+       "position": [
+         480,
+         -240
+       ],
+       "typeVersion": 1.1
+     },
+     {
+       "parameters": {
+         "operation": "xls",
+         "binaryPropertyName": "=NMAI_Jobs_database_{{ $today }}",
+         "options": {}
+       },
+       "id": "fe9b515b-7792-44a5-965f-123ff0d0a63d",
+       "name": "Convert to File1",
+       "type": "n8n-nodes-base.convertToFile",
+       "position": [
+         480,
+         64
+       ],
+       "typeVersion": 1.1
+     },
+     {
+       "parameters": {
+         "operation": "xls",
+         "binaryPropertyName": "=NMAI_Comments_database_{{ $today }}",
+         "options": {}
+       },
+       "id": "c904a858-73aa-48d8-8dfe-31c37f5a6133",
+       "name": "Convert to File2",
+       "type": "n8n-nodes-base.convertToFile",
+       "position": [
+         480,
+         208
+       ],
+       "typeVersion": 1.1
+     },
+     {
+       "parameters": {
+         "subject": "Sua Base de Dados de ICP da NMAI está pronta",
+         "message": "Aqui está a sua Base de dados definida a partir do ICP do seu cliente, atualizada!",
+         "options": {
+           "attachmentsUi": {
+             "attachmentsBinary": [
+               {
+                 "property": "=NMAI_ICP_database_{{ $today }}"
+               }
+             ]
+           }
+         }
+       },
+       "id": "856dd272-cc0a-4efc-aefe-6ea979f9ba9c",
+       "name": "Send a message",
+       "type": "n8n-nodes-base.gmail",
+       "position": [
+         720,
+         -240
+       ],
+       "typeVersion": 2.1,
+       "webhookId": "ffea163f-a02d-45f4-8dba-392ce32b8783",
+       "credentials": {
+         "gmailOAuth2": {
+           "id": "p0fUIoqgD9urSV0b",
+           "name": "jair_silva@drone-livre.com"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "subject": "Sua Base de Dados de ICP com a NMAI está pronta",
+         "message": "Aqui está a sua Base de dados definida a partir as vagas abertas no LinkedIn do seu cliente!",
+         "options": {
+           "attachmentsUi": {
+             "attachmentsBinary": [
+               {
+                 "property": "=NMAI_Jobs_database_{{ $today }}"
+               }
+             ]
+           }
+         }
+       },
+       "id": "48cf8bef-bada-4203-8ca6-af07e91d1b1b",
+       "name": "Send a message1",
+       "type": "n8n-nodes-base.gmail",
+       "position": [
+         720,
+         64
+       ],
+       "typeVersion": 2.1,
+       "webhookId": "f90616a1-2865-4f4d-82fd-51dfaa73cdcb",
+       "credentials": {
+         "gmailOAuth2": {
+           "id": "p0fUIoqgD9urSV0b",
+           "name": "jair_silva@drone-livre.com"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "subject": "Sua Base de Dados de ICP com a NMAI está pronta",
+         "message": "Aqui está a sua Base de dados definida a partir dos Comentários de LinkedIn e Instagram do seu cliente!",
+         "options": {
+           "attachmentsUi": {
+             "attachmentsBinary": [
+               {
+                 "property": "=NMAI_Comments_database_{{ $today }}"
+               }
+             ]
+           }
+         }
+       },
+       "id": "3458f4a0-31c3-4fa6-b617-c01af7f755bc",
+       "name": "Send a message2",
+       "type": "n8n-nodes-base.gmail",
+       "position": [
+         720,
+         208
+       ],
+       "typeVersion": 2.1,
+       "webhookId": "8204804a-7097-42db-8f26-d5ee234dd0d3",
+       "credentials": {
+         "gmailOAuth2": {
+           "id": "p0fUIoqgD9urSV0b",
+           "name": "jair_silva@drone-livre.com"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "getAll",
+         "tableId": "qualified_leads_google_maps",
+         "returnAll": true
+       },
+       "id": "4966bad3-5649-4ab3-bc30-14a54a0e619d",
+       "name": "Get many rows3",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         272,
+         -80
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "xls",
+         "binaryPropertyName": "=NMAI_Maps_database_{{ $today }}",
+         "options": {}
+       },
+       "id": "fe2b2766-70a9-4b2c-933b-611e74b85ff0",
+       "name": "Convert to File3",
+       "type": "n8n-nodes-base.convertToFile",
+       "position": [
+         480,
+         -80
+       ],
+       "typeVersion": 1.1
+     },
+     {
+       "parameters": {
+         "subject": "Sua Base de Dados de ICP da NMAI está pronta",
+         "message": "Aqui está a sua Base de dados definida a partir do Google Maps, atualizada!",
+         "options": {
+           "attachmentsUi": {
+             "attachmentsBinary": [
+               {
+                 "property": "=NMAI_Maps_database_{{ $today }}"
+               }
+             ]
+           }
+         }
+       },
+       "id": "994f5de9-b6d6-45e6-b5c1-61463065bea5",
+       "name": "Send a message3",
+       "type": "n8n-nodes-base.gmail",
+       "position": [
+         720,
+         -80
+       ],
+       "typeVersion": 2.1,
+       "webhookId": "429afe89-aa22-446d-aa15-fd314542ec96",
+       "credentials": {
+         "gmailOAuth2": {
+           "id": "p0fUIoqgD9urSV0b",
+           "name": "jair_silva@drone-livre.com"
+         }
+       }
+     }
+   ],
+   "connections": {
+     "Schedule Trigger": {
+       "main": [
+         [
+           {
+             "node": "Get many rows",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "Get many rows1",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "Get many rows2",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "Get many rows3",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Get many rows": {
+       "main": [
+         [
+           {
+             "node": "Convert to File",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Get many rows1": {
+       "main": [
+         [
+           {
+             "node": "Convert to File1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Get many rows2": {
+       "main": [
+         [
+           {
+             "node": "Convert to File2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Convert to File": {
+       "main": [
+         [
+           {
+             "node": "Send a message",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Convert to File1": {
+       "main": [
+         [
+           {
+             "node": "Send a message1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Convert to File2": {
+       "main": [
+         [
+           {
+             "node": "Send a message2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Get many rows3": {
+       "main": [
+         [
+           {
+             "node": "Convert to File3",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Convert to File3": {
+       "main": [
+         [
+           {
+             "node": "Send a message3",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     }
+   },
+   "pinData": {},
+   "meta": {
+     "instanceId": "a0f7a305da35e849bafdb639b90f9c75f57bc77027e416642bf74993eb8cfaee"
+   }
+ }

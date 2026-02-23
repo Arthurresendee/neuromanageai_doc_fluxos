@@ -1,0 +1,424 @@
+NeuroManageAI - Instagram Daily Discovery Daily
+
+Documentacao do workflow em ordem sequencial, explicando o que cada node faz e por que cada etapa existe no processo.
+
+====================================================================
+1) OBJETIVO DO FLUXO
+====================================================================
+
+Objetivo macro:
+Descobrir diariamente novos perfis do Instagram com potencial de lead (foco odontologia), extrair dados basicos, filtrar por sinais de qualificacao e armazenar em cache no Supabase para posterior enriquecimento/abordagem.
+
+Em termos praticos, o fluxo:
+1. Seleciona keywords de nicho.
+2. Busca reels por hashtag.
+3. Filtra posts com comentarios (sinal de engajamento).
+4. Coleta comentarios e usernames dos autores.
+5. Remove duplicidades e evita reprocessar o que ja esta no cache.
+6. Faz scrape de perfil dos usuarios novos.
+7. Extrai titulo/localizacao da bio com heuristica.
+8. Filtra por palavras-chave de profissao/nicho.
+9. Salva no instagram_prospects_cache.
+
+====================================================================
+2) TABELA SQL ENVOLVIDA
+====================================================================
+
+Tabela usada:
+- public.instagram_prospects_cache
+
+Campos-chave no fluxo:
+- username (unique)
+- full_name
+- title
+- location
+- profile_url
+- photo_url
+- biography
+- keyword_match
+- comment
+- comment_date
+- post_url
+- qualified (default false)
+- processed (default false)
+- cached_at
+- processed_at
+
+Papel da tabela:
+- Servir como memoria operacional para nao re-scrapear o mesmo usuario.
+- Separar descoberta (este fluxo) de enriquecimento/qualificacao posterior.
+
+====================================================================
+3) SEQUENCIA GERAL (VISAO DE PIPELINE)
+====================================================================
+
+Executor Webhook
+-> Target Keywords
+-> Random Keyword Selector
+-> Split Keywords
+-> Scrape Instagram Reels
+-> Filter Commented Posts
+-> Aggregate Post URLs
+-> Scrape Post Comments
+-> Aggregate Usernames
+-> Deduplicate Instagram Users
+-> Check Supabase Cache
+-> Aggregate Non-Cached Users
+-> Prepare Usernames for Scraping
+-> Scrape Instagram Profiles
+-> Parse Bio Smart
+-> Filter Has Title
+-> Filter Keywords Early
+-> Save to Instagram Prospects
+
+====================================================================
+4) NODE POR NODE (DETALHADO + PORQUE)
+====================================================================
+
+--------------------------------------------------
+ETAPA 1 - Executor Webhook
+Tipo: n8n-nodes-base.webhook
+--------------------------------------------------
+O que faz:
+- Dispara o workflow via POST em executor/PLACEHOLDER.
+
+Por que existe:
+- Permite controle externo de execucao (orquestracao manual, cron externo, outro fluxo).
+
+
+--------------------------------------------------
+ETAPA 2 - Target Keywords
+Tipo: n8n-nodes-base.set
+--------------------------------------------------
+O que faz:
+- Define array de keywords de nicho (odontologia, dentista, ortodontia, implante etc.).
+
+Por que existe:
+- Centraliza a estrategia de busca em um ponto unico.
+- Facilita ajuste de nicho sem mexer nos nodes de scraping.
+
+
+--------------------------------------------------
+ETAPA 3 - Random Keyword Selector
+Tipo: n8n-nodes-base.code
+--------------------------------------------------
+O que faz:
+- Embaralha a lista de keywords (Fisher-Yates).
+- Seleciona as 3 primeiras apos embaralhar.
+- Retorna selectedKeywords, totalOriginal e totalSelected.
+
+Por que existe:
+- Evita sempre consultar as mesmas hashtags na mesma ordem.
+- Aumenta variabilidade de descoberta mantendo custo controlado.
+
+
+--------------------------------------------------
+ETAPA 4 - Split Keywords
+Tipo: n8n-nodes-base.splitOut
+--------------------------------------------------
+O que faz:
+- Divide selectedKeywords em itens individuais (1 por keyword).
+
+Por que existe:
+- Permite fazer scrape por termo separadamente, facilitando rastreabilidade e controle.
+
+
+--------------------------------------------------
+ETAPA 5 - Scrape Instagram Reels
+Tipo: Apify actor (reGe1ST3OBgYZSsZJ)
+--------------------------------------------------
+Payload:
+- hashtags: [keyword higienizada]
+- resultsLimit: 10
+- resultsType: reels
+
+O que faz:
+- Busca reels por hashtag no Instagram.
+
+Por que existe:
+- Gera a lista de posts-fonte onde ha chance de encontrar comentaristas relevantes.
+
+Observacao tecnica:
+- O codigo remove pontuacao/simbolos da keyword antes de enviar.
+
+
+--------------------------------------------------
+ETAPA 6 - Filter Commented Posts
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regra:
+- commentsCount >= 1
+
+O que faz:
+- Mantem apenas posts com comentarios.
+
+Por que existe:
+- Comentario e sinal de engajamento real.
+- Sem comentarios, nao ha autores para prospectar.
+
+
+--------------------------------------------------
+ETAPA 7 - Aggregate Post URLs
+Tipo: n8n-nodes-base.aggregate
+--------------------------------------------------
+Mapeamento:
+- url -> url_post
+
+O que faz:
+- Consolida URLs dos posts para o proximo scrape.
+
+Por que existe:
+- Prepara payload em lote para buscar comentarios de forma mais eficiente.
+
+
+--------------------------------------------------
+ETAPA 8 - Scrape Post Comments
+Tipo: Apify actor (shu8hvrXbJbY3Eb9W)
+--------------------------------------------------
+Payload:
+- directUrls: url_post
+- resultsLimit: 5
+- resultsType: comments
+- addParentData: false
+
+O que faz:
+- Coleta comentarios dos posts e metadados dos autores.
+
+Por que existe:
+- E a etapa que converte "post" em "possiveis leads" (autores dos comentarios).
+
+
+--------------------------------------------------
+ETAPA 9 - Aggregate Usernames
+Tipo: n8n-nodes-base.aggregate
+--------------------------------------------------
+Mapeamento:
+- ownerUsername -> author_username
+
+O que faz:
+- Agrupa usernames dos autores coletados.
+
+Por que existe:
+- Cria base consolidada para deduplicacao e checagem de cache.
+
+
+--------------------------------------------------
+ETAPA 10 - Deduplicate Instagram Users
+Tipo: n8n-nodes-base.code
+--------------------------------------------------
+O que o codigo faz:
+- Mantem Set global de usernames vistos.
+- Remove duplicatas entre itens.
+- So retorna itens com usernames novos.
+
+Por que existe:
+- Evita processamento repetido dentro da mesma execucao.
+- Reduz custo de scrape de perfil.
+
+
+--------------------------------------------------
+ETAPA 11 - Check Supabase Cache
+Tipo: n8n-nodes-base.supabase (getAll)
+--------------------------------------------------
+Tabela:
+- instagram_prospects_cache
+
+Filtro dinamico:
+- username=eq.<username atual>
+
+O que faz:
+- Verifica se username ja esta salvo no cache.
+
+Por que existe:
+- Evita reprocessar perfis ja descobertos em execucoes anteriores.
+
+Observacao:
+- alwaysOutputData + continueOnFail ajudam resiliencia do fluxo.
+
+
+--------------------------------------------------
+ETAPA 12 - Aggregate Non-Cached Users
+Tipo: n8n-nodes-base.aggregate
+--------------------------------------------------
+Mapeamento:
+- author_username -> usernames_to_scrape
+
+O que faz:
+- Consolida usernames apos checagem de cache.
+
+Por que existe:
+- Prepara estrutura esperada pelo passo de preparacao final.
+
+
+--------------------------------------------------
+ETAPA 13 - Prepare Usernames for Scraping
+Tipo: n8n-nodes-base.code
+--------------------------------------------------
+O que o codigo faz:
+1. Le todos os usernames deduplicados da etapa anterior.
+2. Le usernames encontrados no cache via Check Supabase Cache.
+3. Remove do conjunto final quem ja existe no banco.
+4. Retorna:
+   - usernames_to_scrape
+   - count
+   - total_original
+   - cached_count
+5. Se nao houver novos usernames, retorna [].
+
+Por que existe:
+- Este e o gate principal de economia de processamento.
+- Garante que apenas usuarios novos avancem para scrape pesado de perfil.
+
+
+--------------------------------------------------
+ETAPA 14 - Scrape Instagram Profiles
+Tipo: Apify actor (dSCLg0C3YEZ83HzYX)
+--------------------------------------------------
+Payload:
+- usernames: usernames_to_scrape
+- includeAboutSection: false
+
+O que faz:
+- Busca dados de perfil dos usuarios novos.
+
+Por que existe:
+- Traz os atributos necessarios para triagem inicial (nome, bio, foto, url etc.).
+
+
+--------------------------------------------------
+ETAPA 15 - Parse Bio Smart
+Tipo: n8n-nodes-base.code
+--------------------------------------------------
+O que o codigo faz:
+- extractLocation(bio):
+  tenta extrair local por padroes (UF, cidades BR, emojis de localizacao).
+- extractTitle(bio, name):
+  tenta inferir titulo/profissao usando:
+  - palavras-chave profissionais
+  - credenciais (CRO, CRM, OAB, CREA etc.)
+  - sinais com emojis profissionais
+  - limpeza de ruido.
+- Monta objeto output padronizado:
+  username, url, fullName, location, title, photo, post_url, comment, comment_date, details.
+- Mantem raw_biography para auditoria.
+
+Por que existe:
+- Transforma bio livre em dado estruturado utilizavel no funil.
+- Sem essa etapa, nao haveria criterio consistente para filtros de nicho.
+
+Fallbacks importantes:
+- location/title recebem "NÃO FOI POSSÍVEL DETERMINAR" quando nao encontrados.
+
+
+--------------------------------------------------
+ETAPA 16 - Filter Has Title
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regra:
+- output.title nao contem "NÃO FOI POSSÍVEL DETERMINAR"
+
+O que faz:
+- Mantem apenas perfis onde foi possivel inferir titulo.
+
+Por que existe:
+- Garante minimo de contexto profissional antes de seguir.
+- Reduz leads com baixa qualificacao semantica.
+
+
+--------------------------------------------------
+ETAPA 17 - Filter Keywords Early
+Tipo: n8n-nodes-base.code
+--------------------------------------------------
+O que o codigo faz:
+- Normaliza texto (sem acento/pontuacao).
+- Verifica se output.title contem palavras-chave odontologicas.
+- Se bater, retorna item com _keywordMatch.
+
+Por que existe:
+- Filtro de nicho antecipado para manter apenas perfis aderentes.
+- Diminui ruido no cache e melhora qualidade da base descoberta.
+
+
+--------------------------------------------------
+ETAPA 18 - Save to Instagram Prospects
+Tipo: n8n-nodes-base.supabase (insert/create)
+Tabela: instagram_prospects_cache
+--------------------------------------------------
+Campos gravados:
+- username
+- full_name
+- title
+- location
+- profile_url
+- photo_url
+- biography
+- keyword_match
+- comment
+- comment_date
+- post_url
+- qualified = false
+- processed = false
+- cached_at = now ISO
+
+O que faz:
+- Persiste prospects qualificados na camada de discovery.
+
+Por que existe:
+- Fecha ciclo de descoberta diaria.
+- Deixa os dados prontos para fluxos seguintes (enriquecimento, matching, outreach).
+
+====================================================================
+5) LEITURA ESTRATEGICA DO FLUXO
+====================================================================
+
+O pipeline tem 3 camadas:
+
+1. Descoberta de fonte:
+- keywords -> reels -> posts com comentarios.
+
+2. Descoberta de identidade:
+- comentarios -> usernames -> perfis.
+
+3. Triagem e persistencia:
+- parse da bio -> filtro de titulo -> filtro de nicho -> cache supabase.
+
+Valor principal:
+- descobre novos leads organicamente com base em engajamento real no Instagram,
+- sem duplicar usuarios ja processados,
+- e com filtros semanticos antes de salvar.
+
+====================================================================
+6) PONTOS DE ATENCAO E MELHORIAS
+====================================================================
+
+1. Unique key em username
+- A tabela tem constraint unique(username).
+- Se ocorrer corrida entre execucoes, pode haver conflito de insert.
+
+2. resultsLimit baixos
+- Reels: 10 e comentarios: 5 podem limitar cobertura.
+- Bom para custo, mas pode reduzir volume descoberto.
+
+3. includeAboutSection=false
+- Menos dados de contexto na bio.
+- Pode impactar acuracia do Parse Bio Smart.
+
+4. Heuristicas de titulo/local
+- Metodo e robusto, mas pode errar em bios muito curtas ou criativas.
+- Recomendado monitorar taxa de descarte no Filter Has Title.
+
+5. Continuidade do funil
+- O fluxo salva qualified=false e processed=false.
+- Isso sinaliza dependencia de fluxos posteriores para qualificar/enriquecer.
+
+====================================================================
+7) RESUMO FINAL
+====================================================================
+
+O Instagram Daily Discovery Daily e a etapa de captacao inicial:
+- varre hashtags do nicho,
+- identifica autores engajados em comentarios,
+- filtra e estrutura os perfis com regras de negocio,
+- e armazena no cache operacional.
+
+Ele prepara uma base limpa e incremental para as proximas esteiras de enriquecimento e abordagem comercial.

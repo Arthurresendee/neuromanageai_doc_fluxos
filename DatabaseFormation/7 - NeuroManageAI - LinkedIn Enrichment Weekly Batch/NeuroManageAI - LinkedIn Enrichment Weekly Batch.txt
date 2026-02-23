@@ -339,7 +339,6 @@ O que faz:
 Contribuicao no contexto:
 - Materializa resultado principal do batch no banco operacional.
 
-
 --------------------------------------------------
 ETAPA 18 - Enrich with SalesQL
 Tipo: n8n-nodes-base.httpRequest

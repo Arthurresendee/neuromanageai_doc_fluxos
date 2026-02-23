@@ -1,0 +1,91 @@
+Dúvidas
+
+
+Possíveis correções/ melhorias:
+
+
+Objetivo
+Disparar, em horarios definidos (dias uteis, manha), um resumo das bases de leads por e-mail
+
+Como o processo é o mesmo para os 4 caminhos, vou explicar apenas um dos caminhos.
+
+O Schedule Trigger dispara uma vez e abre quatro ramos em paralelo (um por tabela). Em cada ramo:
+
+1. Buscar todos os registros da tabela no Supabase.
+2. Converter o resultado em arquivo XLS com nome incluindo a data.
+3. Enviar e-mail com anexo XLS pelo Gmail.
+
+Schedule Trigger
+- Dispara o workflow conforme cron.
+- A partir dele saem 4 conexoes em paralelo.
+
+Get many rows
+Tabela: qualified_leads_icp
+
+- Busca todos os registros da tabela.
+
+Convert to File
+- Converte os registros da tabela ICP para XLS.
+
+Send a message
+- Envia e-mail com assunto e mensagem da base ICP.
+- Anexa NMAI_ICP_database_{{ $today }}.
+
+Resumo:
+- dispara por horario,
+- le as quatro tabelas principais de leads,
+- transforma cada base em XLS,
+- envia cada arquivo por e-mail.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

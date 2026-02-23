@@ -1,0 +1,78 @@
+Dúvidas
+
+
+Possíveis correções/ melhorias:
+
+
+Objetivo
+onsolidar diariamente os principais indicadores de performance comercial das bases de leads (ICP, Jobs, Comments e Maps) e enviar um mini-relatorio por Telegram.
+Como o processo é o mesmo para os 4 caminhos, vou explicar apenas um dos caminhos.
+
+Schedule TriggerConfiguracao:
+- triggerAtHour: 20
+- triggerAtMinute: 20
+
+- Dispara o fluxo diariamente as 20:20.
+
+Get many rows - ICP
+Tabela: qualified_leads_icp
+
+- Busca todos os registros da tabela ICP.
+
+Get many rows - Jobs
+Tabela: qualified_leads_jobs_offers
+- Busca todos os registros da tabela Jobs.
+
+Get many rows - Comments
+Tabela: qualified_leads_comments
+- Busca todos os registros da tabela Comments.
+
+Get many rows - Maps
+Tabela: qualified_leads_google_maps
+- Busca todos os registros da tabela Maps.
+
+Merge
+- Unifica todos os dados vindo das 4 tabelas.
+
+If3 (filtro para emails enviados hoje)
+
+- Compara Data Mensagem Email com data de hoje.
+
+Count Emails Sent
+- Gera contagem agregada de emails enviados
+
+Edit Fields
+- Renomeia output para formato de mensagem: emails_sent e company_name
+
+Send a text message
+
+Mensagem:
+- Emails Enviados Hoje por NeuroManageAI: X
+
+++++++++++++++++
+++ importante ++
+++++++++++++++++
+
+Para os outros 4 caminhos, vai funcionar da mesmo forma. A única diferença são as informações contadas
+
+Caminho do if
+- Pedidos de Conexão de LinkedIn Enviados Hoje
+
+Caminho do if4 
+- Disparos de Wpp Enviados Hoje
+
+Caminho do if1 
+- Conexões Aceitas
+
+Caminho do If2
+- Respostas de Wpp Hoje
+
+
+
+
+
+
+
+
+
+

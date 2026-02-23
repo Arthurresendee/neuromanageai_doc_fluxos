@@ -1,0 +1,474 @@
+NeuroManageAI - Performance Report Formation
+
+Documentacao do workflow em ordem sequencial, com detalhamento tecnico e de contexto para cada node.
+
+====================================================================
+1) OBJETIVO DO FLUXO
+====================================================================
+
+Objetivo macro:
+Consolidar diariamente os principais indicadores de performance comercial das bases de leads (ICP, Jobs, Comments e Maps) e enviar um mini-relatorio por Telegram.
+
+O que esse fluxo mede:
+1. Quantidade de e-mails enviados.
+2. Quantidade de convites LinkedIn enviados.
+3. Quantidade de mensagens WhatsApp disparadas.
+4. Quantidade de conexoes LinkedIn aceitas.
+5. Quantidade de respostas em WhatsApp.
+
+Por que esse fluxo existe no ecossistema:
+- Os fluxos anteriores capturam, enriquecem e disparam mensagens.
+- Este fluxo fecha o ciclo com observabilidade operacional (monitoramento de output comercial).
+
+====================================================================
+2) FONTES DE DADOS (SQL) E CONTEXTO
+====================================================================
+
+Tabelas consultadas:
+- qualified_leads_icp
+- qualified_leads_jobs_offers
+- qualified_leads_comments
+- qualified_leads_google_maps
+
+Campos usados nos calculos:
+- Mensagem Enviada Email
+- Mensagem Enviada LinkedIn
+- mensagem_enviada_em
+- Conectado LinkedIn
+- resposta_whatsapp
+- Data Mensagem Email
+- Data Mensagem LinkedIn
+
+Leitura de negocio:
+- O fluxo agrega sinais de outreach (envio) e sinais de retorno (aceite/resposta).
+- Isso permite acompanhar volume e reacao dos leads no dia.
+
+====================================================================
+3) SEQUENCIA EXECUTIVA (VISAO GERAL)
+====================================================================
+
+Schedule Trigger
+-> Get many rows - ICP
+-> Get many rows - Jobs
+-> Get many rows - Comments
+-> Get many rows - Maps
+-> Merge (4 entradas)
+-> [5 ramos paralelos de KPI]
+   A) If3 -> Count Emails Sent -> Edit Fields -> Send a text message
+   B) If -> Count LinkedIn Invites Sent -> Edit Fields1 -> Send a text message1
+   C) If4 -> Count Wpp Messages Sent -> Edit Fields2 -> Send a text message2
+   D) If1 -> Count LinkedIn Connections Accepted -> Edit Fields3 -> Send a text message3
+   E) If2 -> Count LinkedIn Wpp Responses -> Edit Fields4 -> Send a text message4
+
+Arquitetura:
+- 4 fontes entram no Merge para unificar universo de dados.
+- Depois, esse universo alimenta 5 "linhas de medicao", uma por KPI.
+
+====================================================================
+4) DETALHAMENTO NODE POR NODE (COM CONTEXTO)
+====================================================================
+
+--------------------------------------------------
+ETAPA 1 - Schedule Trigger
+Tipo: n8n-nodes-base.scheduleTrigger
+--------------------------------------------------
+Configuracao:
+- triggerAtHour: 20
+- triggerAtMinute: 20
+
+O que faz:
+- Dispara o fluxo diariamente as 20:20.
+
+Por que existe:
+- Define uma janela fixa para fechamento do dia.
+- Padroniza o momento de leitura dos KPIs.
+
+
+--------------------------------------------------
+ETAPA 2A - Get many rows - ICP
+Tipo: Supabase getAll
+Tabela: qualified_leads_icp
+--------------------------------------------------
+O que faz:
+- Busca todos os registros da tabela ICP.
+
+Por que existe:
+- Inclui no relatorio os leads e eventos originados do funil ICP.
+
+
+--------------------------------------------------
+ETAPA 2B - Get many rows - Jobs
+Tipo: Supabase getAll
+Tabela: qualified_leads_jobs_offers
+--------------------------------------------------
+O que faz:
+- Busca todos os registros da tabela Jobs.
+
+Por que existe:
+- Traz para o calculo os eventos do funil de vagas.
+
+
+--------------------------------------------------
+ETAPA 2C - Get many rows - Comments
+Tipo: Supabase getAll
+Tabela: qualified_leads_comments
+--------------------------------------------------
+O que faz:
+- Busca todos os registros da tabela Comments.
+
+Por que existe:
+- Adiciona no relatorio os leads captados por engajamento em comentarios.
+
+
+--------------------------------------------------
+ETAPA 2D - Get many rows - Maps
+Tipo: Supabase getAll
+Tabela: qualified_leads_google_maps
+--------------------------------------------------
+O que faz:
+- Busca todos os registros da tabela Maps.
+
+Por que existe:
+- Completa cobertura das quatro fontes de lead.
+
+
+--------------------------------------------------
+ETAPA 3 - Merge
+Tipo: n8n-nodes-base.merge (numberInputs: 4)
+--------------------------------------------------
+O que faz:
+- Unifica as quatro entradas em um fluxo consolidado de itens.
+
+Por que existe:
+- Cria um "pool unico" para os calculos de KPI.
+- Evita repetir cinco vezes a mesma logica de sumarizacao por tabela separada.
+
+Impacto de contexto:
+- Os KPIs passam a representar panorama geral da operacao (nao apenas um funil).
+
+
+--------------------------------------------------
+ETAPA 4A - If3 (filtro para emails enviados hoje)
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regra:
+- Compara Data Mensagem Email com data de hoje.
+
+O que faz:
+- Mantem itens onde a mensagem de email foi enviada no dia atual.
+
+Por que existe:
+- Impede contar historico inteiro; foco no fechamento diario.
+
+
+--------------------------------------------------
+ETAPA 5A - Count Emails Sent
+Tipo: n8n-nodes-base.summarize
+--------------------------------------------------
+Campo sumarizado:
+- Mensagem Enviada Email
+
+O que faz:
+- Gera contagem agregada de emails enviados no recorte filtrado.
+
+Por que existe:
+- Esse KPI mede volume de outreach por email.
+
+
+--------------------------------------------------
+ETAPA 6A - Edit Fields
+Tipo: n8n-nodes-base.set
+--------------------------------------------------
+O que faz:
+- Renomeia output para formato de mensagem:
+  - emails_sent = count_Mensagem_Enviada_Email
+  - company_name = NeuroManageAI
+
+Por que existe:
+- Padroniza payload para node de notificacao.
+
+
+--------------------------------------------------
+ETAPA 7A - Send a text message
+Tipo: Telegram
+--------------------------------------------------
+Mensagem:
+- Emails Enviados Hoje por NeuroManageAI: X
+
+Por que existe:
+- Entrega KPI para acompanhamento rapido no canal operacional.
+
+
+--------------------------------------------------
+ETAPA 4B - If (filtro para convites LinkedIn enviados)
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regra atual:
+- compara Data Mensagem LinkedIn com ontem (getDate()-1), usando boolean true.
+
+O que faz:
+- Tenta filtrar convites enviados no recorte temporal configurado.
+
+Por que existe:
+- Delimita janela de contagem para "hoje/fechamento".
+
+Observacao:
+- O uso de ontem aqui pode indicar estrategia de fechamento D-1 ou possivel inconsistência com outros filtros que usam hoje.
+
+
+--------------------------------------------------
+ETAPA 5B - Count LinkedIn Invites Sent
+Tipo: summarize
+--------------------------------------------------
+Campo:
+- Mensagem Enviada LinkedIn
+
+O que faz:
+- Conta convites/abordagens LinkedIn no recorte.
+
+Por que existe:
+- KPI de volume de outreach no LinkedIn.
+
+
+--------------------------------------------------
+ETAPA 6B - Edit Fields1
+Tipo: set
+--------------------------------------------------
+Mapeia:
+- linkedin_sent = count_Mensagem_Enviada_LinkedIn
+- company_name = NeuroManageAI
+
+Por que existe:
+- Formata payload para mensagem final.
+
+
+--------------------------------------------------
+ETAPA 7B - Send a text message1
+Tipo: Telegram
+--------------------------------------------------
+Mensagem:
+- Pedidos de Conexão de LinkedIn Enviados Hoje por NeuroManageAI: X
+
+Por que existe:
+- Exibe KPI de envios LinkedIn no canal de monitoramento.
+
+
+--------------------------------------------------
+ETAPA 4C - If4 (filtro para disparos WhatsApp)
+Tipo: if
+--------------------------------------------------
+Regra:
+- mensagem_enviada_em com data de hoje.
+
+O que faz:
+- Separa itens com disparo de WhatsApp no dia.
+
+Por que existe:
+- Define universo para KPI de envio em WhatsApp.
+
+
+--------------------------------------------------
+ETAPA 5C - Count Wpp Messages Sent
+Tipo: summarize
+--------------------------------------------------
+Campo:
+- mensagem_enviada_em
+
+O que faz:
+- Conta disparos de WhatsApp.
+
+Por que existe:
+- KPI de volume no canal WhatsApp.
+
+
+--------------------------------------------------
+ETAPA 6C - Edit Fields2
+Tipo: set
+--------------------------------------------------
+Mapeia:
+- messages_sent = count_mensagem_enviada_em
+- company_name = NeuroManageAI
+
+Por que existe:
+- Ajusta formato para notificacao em linguagem executiva.
+
+
+--------------------------------------------------
+ETAPA 7C - Send a text message2
+Tipo: Telegram
+--------------------------------------------------
+Mensagem:
+- Disparos de Wpp Enviados Hoje por NeuroManageAI: X
+
+Por que existe:
+- Publica KPI de outreach WhatsApp.
+
+
+--------------------------------------------------
+ETAPA 4D - If1 (filtro para conexoes aceitas)
+Tipo: if
+--------------------------------------------------
+Regra atual:
+- $json['Conectado LinkedIn'] === 'true'
+
+O que faz:
+- Filtra itens marcados como conectados.
+
+Por que existe:
+- Cria base para KPI de aceite de conexao (sinal de conversao no LinkedIn).
+
+Observacao:
+- Compara string 'true'. Em tabelas com boolean real, pode ser necessario comparar boolean true.
+
+
+--------------------------------------------------
+ETAPA 5D - Count LinkedIn Connections Accepted
+Tipo: summarize
+--------------------------------------------------
+Campo:
+- Conectado LinkedIn
+
+O que faz:
+- Conta quantos leads estao com conexao aceita.
+
+Por que existe:
+- KPI de efetividade (nao so volume).
+
+
+--------------------------------------------------
+ETAPA 6D - Edit Fields3
+Tipo: set
+--------------------------------------------------
+Mapeia:
+- connections = count_Conectado_LinkedIn
+- company_name = NeuroManageAI
+
+Por que existe:
+- Padroniza formato para envio no Telegram.
+
+
+--------------------------------------------------
+ETAPA 7D - Send a text message3
+Tipo: Telegram
+--------------------------------------------------
+Mensagem:
+- Conexões Aceitas Hoje por NeuroManageAI: X
+
+Por que existe:
+- Comunica sinal de resultado (aceite), nao apenas atividade.
+
+
+--------------------------------------------------
+ETAPA 4E - If2 (filtro para respostas WhatsApp)
+Tipo: if
+--------------------------------------------------
+Regra atual:
+- leftValue = resposta_whatsapp com operador boolean true
+
+O que faz:
+- Tenta isolar itens com resposta em WhatsApp.
+
+Por que existe:
+- Base para KPI de resposta (engajamento de volta do lead).
+
+Observacao:
+- O campo resposta_whatsapp no SQL e texto; usar operador boolean pode reduzir acuracia do filtro.
+
+
+--------------------------------------------------
+ETAPA 5E - Count LinkedIn Wpp Responses
+Tipo: summarize
+--------------------------------------------------
+Campo:
+- resposta_whatsapp
+
+O que faz:
+- Conta respostas no canal WhatsApp.
+
+Por que existe:
+- KPI de resposta e interesse (mais proximo de conversao).
+
+
+--------------------------------------------------
+ETAPA 6E - Edit Fields4
+Tipo: set
+--------------------------------------------------
+Mapeamento atual:
+- messages_responses = count_Mensagem_Enviada_Email
+- company_name = NeuroManageAI
+
+Observacao importante:
+- Nome do node sugere respostas de WhatsApp, mas o valor esta vindo de count_Mensagem_Enviada_Email.
+
+Por que existe:
+- Deveria formatar KPI de respostas Wpp para a mensagem final.
+
+
+--------------------------------------------------
+ETAPA 7E - Send a text message4
+Tipo: Telegram
+--------------------------------------------------
+Mensagem:
+- Respostas de Wpp Hoje por NeuroManageAI: X
+
+Por que existe:
+- Fecha painel diario com indicador de retorno no WhatsApp.
+
+====================================================================
+5) LEITURA DE CONTEXTO (O QUE O FLUXO ENTREGA DE VERDADE)
+====================================================================
+
+Este fluxo funciona como um "daily pulse" da operacao comercial:
+
+Camada de atividade:
+- Emails enviados
+- Convites LinkedIn enviados
+- Disparos WhatsApp
+
+Camada de resposta:
+- Conexoes aceitas
+- Respostas WhatsApp
+
+Valor de negocio:
+- Em poucos textos no Telegram, o time ve se houve volume e retorno no dia.
+- Isso permite ajuste rapido em cadencia, copy, canal e segmentacao.
+
+====================================================================
+6) PONTOS DE ATENCAO / MELHORIAS
+====================================================================
+
+1. Inconsistencia de datas nos filtros
+- Alguns If usam hoje; um If usa ontem.
+- Padronizar janela temporal (D0 ou D-1) evita KPI divergente.
+
+2. Tipo de dado em Conectado LinkedIn
+- SQL sugere boolean em algumas tabelas.
+- If1 compara string 'true', pode subcontar ou supercontar dependendo do formato real.
+
+3. If2 usando operador boolean em campo textual
+- resposta_whatsapp e texto no SQL.
+- Melhor validar notEmpty ou contains para resposta.
+
+4. Edit Fields4 parece mapear campo errado
+- messages_responses pega count_Mensagem_Enviada_Email.
+- O esperado seria count_resposta_whatsapp (ou equivalente gerado no summarize).
+
+5. Merge sem normalizacao temporal pre-agregacao
+- Fluxo filtra por data em ramos separados apos merge.
+- Pode ficar pesado com returnAll=true em quatro tabelas grandes.
+
+6. Escalabilidade
+- getAll em quatro tabelas pode crescer bastante.
+- Considerar filtros por periodo direto no Supabase para reduzir custo.
+
+====================================================================
+7) RESUMO FINAL
+====================================================================
+
+O Performance Report Formation e o workflow de monitoramento diario:
+- consolida quatro bases de leads,
+- aplica filtros para eventos do dia,
+- calcula cinco KPIs centrais,
+- e publica resultados em Telegram.
+
+Ele nao gera leads novos; ele mede a saude operacional do funil e ajuda o time a tomar decisao rapida com base em numeros diarios.
