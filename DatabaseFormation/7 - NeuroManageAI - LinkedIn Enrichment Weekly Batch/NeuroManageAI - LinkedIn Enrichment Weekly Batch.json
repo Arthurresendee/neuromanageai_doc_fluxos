@@ -1,0 +1,871 @@
+{
+   "nodes": [
+     {
+       "parameters": {
+         "httpMethod": "POST",
+         "path": "executor/PLACEHOLDER",
+         "options": {}
+       },
+       "id": "schedule-weekly",
+       "name": "Executor Webhook",
+       "type": "n8n-nodes-base.webhook",
+       "position": [
+         160,
+         400
+       ],
+       "typeVersion": 2,
+       "webhookId": "02ddced8-633f-41ba-9680-a3feeffb70b4"
+     },
+     {
+       "parameters": {
+         "operation": "getAll",
+         "tableId": "instagram_prospects_cache",
+         "filterType": "string",
+         "filterString": "processed=eq.false"
+       },
+       "id": "get-prospects",
+       "name": "Get Qualified Instagram Prospects",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         400,
+         400
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "Run actor and get dataset",
+         "actorId": {
+           "__rl": true,
+           "value": "https://console.apify.com/actors/pIyH7237rHZBxoO7q/input",
+           "mode": "url"
+         },
+         "customBody": "={\"firstname\": \"{{ $json.full_name.split(' ')[0] }}\",\"include_email\": true,\"lastname\": \"{{ $json.full_name.split(' ').slice(-1)[0] }}\",\"location\": \"Brazil\",\"max_profiles\": 2}",
+         "authentication": "apifyOAuth2Api"
+       },
+       "id": "linkedin-search",
+       "name": "Scrape LinkedIn by Name",
+       "type": "@apify/n8n-nodes-apify.apify",
+       "position": [
+         608,
+         400
+       ],
+       "typeVersion": 1,
+       "retryOnFail": true,
+       "credentials": {
+         "apifyOAuth2Api": {
+           "id": "ekINpf0jTe8qrqgm",
+           "name": "Apify account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "version": 2,
+             "leftValue": "",
+             "caseSensitive": true,
+             "typeValidation": "strict"
+           },
+           "conditions": [
+             {
+               "id": "p1",
+               "leftValue": "={{ $json.basic_info.profile_picture_url }}",
+               "rightValue": "null",
+               "operator": {
+                 "type": "string",
+                 "operation": "notEmpty"
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "filter-picture",
+       "name": "Filter Has Picture",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         800,
+         400
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "mode": "combine",
+         "combineBy": "combineAll",
+         "options": {
+           "fuzzyCompare": true
+         }
+       },
+       "id": "merge-data",
+       "name": "Merge Instagram + LinkedIn Data",
+       "type": "n8n-nodes-base.merge",
+       "position": [
+         1008,
+         400
+       ],
+       "typeVersion": 3.2
+     },
+     {
+       "parameters": {
+         "jsCode": "const items = $input.all();\nfunction normalize(str) {\n  if (!str) return '';\n  return str.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').replace(/[^a-z0-9\\s]/g, '').trim();\n}\nfunction getNameParts(fullName) {\n  const parts = normalize(fullName).split(/\\s+/).filter(p => p.length > 1);\n  return {first: parts[0] || '', last: parts[parts.length - 1] || '', all: parts};\n}\nfunction calculateNameSimilarity(name1, name2) {\n  const parts1 = getNameParts(name1);\n  const parts2 = getNameParts(name2);\n  let score = 0;\n  if (parts1.first === parts2.first) score += 40;\n  if (parts1.last === parts2.last) score += 40;\n  const commonWords = parts1.all.filter(p => parts2.all.includes(p)).length;\n  score += commonWords * 10;\n  return score;\n}\nconst results = [];\nfor (const item of items) {\n  const data = item.json;\n  const linkedinName = data.basic_info && (data.basic_info.fullname || data.basic_info.full_name) ? (data.basic_info.fullname || data.basic_info.full_name) : '';\n  const instaName = data.full_name || '';\n  const similarity = calculateNameSimilarity(instaName, linkedinName);\n  if (similarity >= 40) {\n    results.push({json: {linkedin_image_url: data.basic_info && data.basic_info.profile_picture_url ? data.basic_info.profile_picture_url : '',linkedin_name: linkedinName,linkedin_title: data.basic_info && data.basic_info.headline ? data.basic_info.headline : '',linkedin_url: data.basic_info && data.basic_info.profile_url ? data.basic_info.profile_url : '',linkedin_data: data.basic_info || {},instagram_image_url: data.photo_url || '',instagram_name: instaName,instagram_title: data.title || '',instagram_url: data.profile_url || '',instagram_username: data.username || '',instagram_comment: data.comment || '',instagram_comment_date: data.comment_date || '',instagram_post_url: data.post_url || '',instagram_data: data || {},instagram_prospect_id: data.id || '',name_similarity_score: similarity}});\n  }\n}\nreturn results;"
+       },
+       "id": "name-match",
+       "name": "Smart Name Match Filter",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         1200,
+         400
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "batchSize": 5,
+         "options": {}
+       },
+       "id": "batch-images",
+       "name": "Batch Image Comparisons",
+       "type": "n8n-nodes-base.splitInBatches",
+       "position": [
+         1408,
+         400
+       ],
+       "typeVersion": 3
+     },
+     {
+       "parameters": {
+         "resource": "image",
+         "operation": "analyze",
+         "modelId": {
+           "__rl": true,
+           "value": "models/gemini-2.5-flash",
+           "mode": "list"
+         },
+         "text": "=Compare as DUAS imagens e determine se são da MESMA PESSOA.\n\n**LinkedIn:** {{ $json.linkedin_name }} ({{ $json.linkedin_title }})\n**Instagram:** {{ $json.instagram_name }} ({{ $json.instagram_title }})\n\nResponda APENAS com JSON:\n```json\n{\"result\": \"<TEM CORRESPONDENCIA ou SEM CORRESPONDENCIA>\",\"confidence\": \"<ALTA, MEDIA ou BAIXA>\",\"detalhamento\": \"<explicação>\",\"linkedin_url\": \"{{ $json.linkedin_url }}\",\"instagram_url\": \"{{ $json.instagram_url }}\"}\n```",
+         "imageUrls": "={{ [$json.linkedin_image_url, $json.instagram_image_url].filter(url => url && url.length > 0).join(',') }}",
+         "options": {}
+       },
+       "id": "gemini-compare",
+       "name": "Gemini Compare Images",
+       "type": "@n8n/n8n-nodes-langchain.googleGemini",
+       "position": [
+         1600,
+         416
+       ],
+       "typeVersion": 1,
+       "retryOnFail": true,
+       "credentials": {
+         "googlePalmApi": {
+           "id": "8TlEWoY8sTJQK6Q4",
+           "name": "Google Gemini(PaLM) Api account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "jsCode": "const items = $input.all();\nreturn items.map(item => {\n  const text = item.json.content && item.json.content.parts && item.json.content.parts[0] && item.json.content.parts[0].text ? item.json.content.parts[0].text : (item.json.text || '');\n  const jsonMatch = text.match(/```(?:json)?\\s*([\\s\\S]*?)\\s*```/) || text.match(/\\{[\\s\\S]*\\}/);\n  if (!jsonMatch) return { json: { error: 'No JSON found', raw_response: text } };\n  try {\n    const jsonStr = jsonMatch[1] || jsonMatch[0];\n    const parsed = JSON.parse(jsonStr);\n    return { json: parsed };\n  } catch (e) {\n    return { json: { error: 'Parse failed: ' + e.message, raw_response: text } };\n  }\n});"
+       },
+       "id": "parse-gemini",
+       "name": "Parse Gemini Response",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         1808,
+         416
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "amount": 3
+       },
+       "id": "wait-batch",
+       "name": "Wait Between Batches",
+       "type": "n8n-nodes-base.wait",
+       "position": [
+         2000,
+         416
+       ],
+       "typeVersion": 1.1,
+       "webhookId": "batch-wait-webhook"
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "version": 2,
+             "leftValue": "",
+             "caseSensitive": true,
+             "typeValidation": "strict"
+           },
+           "conditions": [
+             {
+               "id": "m1",
+               "leftValue": "={{ $json.result }}",
+               "rightValue": "TEM CORRESPONDENCIA",
+               "operator": {
+                 "type": "string",
+                 "operation": "equals"
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "filter-matches",
+       "name": "Filter Only Matches",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         2208,
+         384
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "operation": "Run actor and get dataset",
+         "actorId": {
+           "__rl": true,
+           "value": "https://console.apify.com/actors/VhxlqQXRwhW8H5hNV/input",
+           "mode": "url"
+         },
+         "customBody": "={\"includeEmail\": false,\"username\": \"{{ $json.linkedin_url }}\"}",
+         "authentication": "apifyOAuth2Api"
+       },
+       "id": "scrape-full-linkedin",
+       "name": "Scrape Full LinkedIn Profile",
+       "type": "@apify/n8n-nodes-apify.apify",
+       "position": [
+         2400,
+         384
+       ],
+       "typeVersion": 1,
+       "retryOnFail": true,
+       "credentials": {
+         "apifyOAuth2Api": {
+           "id": "ekINpf0jTe8qrqgm",
+           "name": "Apify account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "Run actor and get dataset",
+         "actorId": {
+           "__rl": true,
+           "value": "https://console.apify.com/actors/AjfNXEI9qTA2IdaAX/input",
+           "mode": "url"
+         },
+         "customBody": "={\"profileUrls\": [\"{{ $json.experience[0].company_linkedin_url }}\"]}",
+         "authentication": "apifyOAuth2Api"
+       },
+       "id": "scrape-company",
+       "name": "Scrape Company",
+       "type": "@apify/n8n-nodes-apify.apify",
+       "position": [
+         2608,
+         384
+       ],
+       "typeVersion": 1,
+       "retryOnFail": true,
+       "credentials": {
+         "apifyOAuth2Api": {
+           "id": "ekINpf0jTe8qrqgm",
+           "name": "Apify account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "version": 2,
+             "leftValue": "",
+             "caseSensitive": true,
+             "typeValidation": "strict"
+           },
+           "conditions": [
+             {
+               "id": "e1",
+               "leftValue": "={{ $json.employeeCount }}",
+               "rightValue": 3,
+               "operator": {
+                 "type": "number",
+                 "operation": "gte"
+               }
+             },
+             {
+               "id": "e2",
+               "leftValue": "={{ $json.employeeCount }}",
+               "rightValue": 200,
+               "operator": {
+                 "type": "number",
+                 "operation": "lte"
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "filter-employees",
+       "name": "Filter Employee Count",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         2800,
+         384
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "version": 2,
+             "leftValue": "",
+             "caseSensitive": true,
+             "typeValidation": "strict"
+           },
+           "conditions": [
+             {
+               "id": "b1",
+               "leftValue": "={{ $json.headquarter.country }}",
+               "rightValue": "BR",
+               "operator": {
+                 "type": "string",
+                 "operation": "equals"
+               }
+             },
+             {
+               "id": "b2",
+               "leftValue": "={{ $json.headquarter.country }}",
+               "rightValue": "br",
+               "operator": {
+                 "type": "string",
+                 "operation": "equals"
+               }
+             }
+           ],
+           "combinator": "or"
+         },
+         "options": {}
+       },
+       "id": "filter-brazil",
+       "name": "Filter Brazil Location",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         3008,
+         384
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "mode": "combine",
+         "advanced": true,
+         "mergeByFields": {
+           "values": [
+             {
+               "field1": "companyName",
+               "field2": "basic_info.current_company"
+             }
+           ]
+         },
+         "options": {
+           "fuzzyCompare": "={{ true }}"
+         }
+       },
+       "id": "merge-company",
+       "name": "Merge Company Data",
+       "type": "n8n-nodes-base.merge",
+       "position": [
+         3200,
+         384
+       ],
+       "typeVersion": 3.2
+     },
+     {
+       "parameters": {
+         "tableId": "qualified_leads_comments",
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "Nome",
+               "fieldValue": "={{ $json.basic_info.fullname}}"
+             },
+             {
+               "fieldId": "URL Linkedin",
+               "fieldValue": "={{ $json.basic_info.profile_url.replace('www.', '') }}"
+             },
+             {
+               "fieldId": "Tipo",
+               "fieldValue": "LinkedIn"
+             },
+             {
+               "fieldId": "Empresa",
+               "fieldValue": "={{ $json.basic_info.current_company ?? null }}"
+             },
+             {
+               "fieldId": "Sobre Lead",
+               "fieldValue": "={{ $json.basic_info.about ?? null }}"
+             },
+             {
+               "fieldId": "Setor",
+               "fieldValue": "={{ $json.industry ? $json.industry : null }}"
+             },
+             {
+               "fieldId": "Colaboradores",
+               "fieldValue": "={{ $json.employeeCount ? $json.employeeCount : null }}"
+             },
+             {
+               "fieldId": "Localidade Empresa",
+               "fieldValue": "={{ $json.headquarter && $json.headquarter.line1 ? $json.headquarter.line1 : null }}"
+             },
+             {
+               "fieldId": "Descript Empresa",
+               "fieldValue": "={{ $json.description ? $json.description : null }}"
+             },
+             {
+               "fieldId": "Cargo",
+               "fieldValue": "={{ $json.experience[0].title ?? null }}"
+             },
+             {
+               "fieldId": "Endereço",
+               "fieldValue": "={{ $json.basic_info.location.full ?? null }}"
+             },
+             {
+               "fieldId": "Headline",
+               "fieldValue": "={{ $json.basic_info.headline ?? null}}"
+             }
+           ]
+         }
+       },
+       "id": "create-supabase",
+       "name": "Create Supabase Row",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         3408,
+         384
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "url": "https://api-public.salesql.com/v1/persons/enrich",
+         "sendQuery": true,
+         "queryParameters": {
+           "parameters": [
+             {
+               "name": "linkedin_url",
+               "value": "={{ $json['URL LinkedIn'] }}"
+             }
+           ]
+         },
+         "sendHeaders": true,
+         "headerParameters": {
+           "parameters": [
+             {
+               "name": "Authorization",
+               "value": "Bearer x5yB0Pk3PXa00TzY8j0TnpdOb7857buC"
+             },
+             {
+               "name": "accept",
+               "value": "application/json"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "enrich-salesql",
+       "name": "Enrich with SalesQL",
+       "type": "n8n-nodes-base.httpRequest",
+       "position": [
+         3600,
+         384
+       ],
+       "typeVersion": 4.2
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "version": 2,
+             "leftValue": "",
+             "caseSensitive": true,
+             "typeValidation": "strict"
+           },
+           "conditions": [
+             {
+               "id": "em1",
+               "leftValue": "={{ $json.emails && $json.emails[0] && $json.emails[0].email ? $json.emails[0].email : '' }}",
+               "rightValue": "",
+               "operator": {
+                 "type": "string",
+                 "operation": "notEmpty"
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "filter-email",
+       "name": "Filter Has Email",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         3808,
+         384
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "qualified_leads_comments",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "URL Linkedin",
+               "condition": "eq",
+               "keyValue": "={{ $json.linkedin_url }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "Email",
+               "fieldValue": "={{ $json.emails[0]?.email ?? null}}"
+             },
+             {
+               "fieldId": "Telefone",
+               "fieldValue": "={{ $json.phones[0].phone || null}}"
+             },
+             {
+               "fieldId": "Outros Emails",
+               "fieldValue": "={{ JSON.stringify($json.emails) ?? null }}"
+             },
+             {
+               "fieldId": "Outros Telefones",
+               "fieldValue": "={{ JSON.stringify($json.phones) ?? null }}"
+             }
+           ]
+         }
+       },
+       "id": "update-supabase",
+       "name": "Update Supabase with Email",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         4032,
+         368
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "instagram_prospects_cache",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "id",
+               "condition": "eq",
+               "keyValue": "={{ $json.instagram_prospect_id }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "processed",
+               "fieldValue": "true"
+             },
+             {
+               "fieldId": "processed_at",
+               "fieldValue": "={{ $now.toISO() }}"
+             }
+           ]
+         }
+       },
+       "id": "mark-processed",
+       "name": "Mark as Processed",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         4240,
+         368
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     }
+   ],
+   "connections": {
+     "Executor Webhook": {
+       "main": [
+         [
+           {
+             "node": "Get Qualified Instagram Prospects",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Get Qualified Instagram Prospects": {
+       "main": [
+         [
+           {
+             "node": "Scrape LinkedIn by Name",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "Merge Instagram + LinkedIn Data",
+             "type": "main",
+             "index": 1
+           }
+         ]
+       ]
+     },
+     "Scrape LinkedIn by Name": {
+       "main": [
+         [
+           {
+             "node": "Filter Has Picture",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Filter Has Picture": {
+       "main": [
+         [
+           {
+             "node": "Merge Instagram + LinkedIn Data",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Merge Instagram + LinkedIn Data": {
+       "main": [
+         [
+           {
+             "node": "Smart Name Match Filter",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Smart Name Match Filter": {
+       "main": [
+         [
+           {
+             "node": "Batch Image Comparisons",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Batch Image Comparisons": {
+       "main": [
+         [
+           {
+             "node": "Filter Only Matches",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "Gemini Compare Images",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Gemini Compare Images": {
+       "main": [
+         [
+           {
+             "node": "Parse Gemini Response",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Parse Gemini Response": {
+       "main": [
+         [
+           {
+             "node": "Wait Between Batches",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Wait Between Batches": {
+       "main": [
+         [
+           {
+             "node": "Batch Image Comparisons",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Filter Only Matches": {
+       "main": [
+         [
+           {
+             "node": "Scrape Full LinkedIn Profile",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Scrape Full LinkedIn Profile": {
+       "main": [
+         [
+           {
+             "node": "Scrape Company",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "Merge Company Data",
+             "type": "main",
+             "index": 1
+           }
+         ]
+       ]
+     },
+     "Scrape Company": {
+       "main": [
+         [
+           {
+             "node": "Filter Employee Count",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Filter Employee Count": {
+       "main": [
+         [
+           {
+             "node": "Filter Brazil Location",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Filter Brazil Location": {
+       "main": [
+         [
+           {
+             "node": "Merge Company Data",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Merge Company Data": {
+       "main": [
+         [
+           {
+             "node": "Create Supabase Row",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Create Supabase Row": {
+       "main": [
+         [
+           {
+             "node": "Enrich with SalesQL",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Enrich with SalesQL": {
+       "main": [
+         [
+           {
+             "node": "Filter Has Email",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Filter Has Email": {
+       "main": [
+         [
+           {
+             "node": "Update Supabase with Email",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Update Supabase with Email": {
+       "main": [
+         [
+           {
+             "node": "Mark as Processed",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     }
+   },
+   "pinData": {},
+   "meta": {
+     "instanceId": "a0f7a305da35e849bafdb639b90f9c75f57bc77027e416642bf74993eb8cfaee"
+   }
+ }

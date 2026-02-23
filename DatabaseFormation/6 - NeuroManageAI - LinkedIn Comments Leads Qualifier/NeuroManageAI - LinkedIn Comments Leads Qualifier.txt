@@ -7,7 +7,7 @@ Esta documentacao explica o workflow em ordem sequencial, com foco no papel de c
 ====================================================================
 
 Objetivo macro:
-Encontrar leads qualificados no LinkedIn a partir de posts com comentarios, enriquecer os perfis (pessoa + empresa), aplicar filtros de ICP e gravar o resultado na tabela qualified_leads_comments no Supabase.
+   no Supabase.
 
 Em termos praticos, o fluxo faz 5 coisas:
 1. Gera e randomiza palavras-chave de nicho.

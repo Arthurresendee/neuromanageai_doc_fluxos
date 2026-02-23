@@ -1,0 +1,140 @@
+Dúvidas
+- Qual o gatilho de disparo desse fluxo? Onde chamam?
+
+Possíveis correções/ melhorias:
+
+Webhook
+- Ponto inicial do fluxo. É onde tudo começa. É basícamente um endpoint POST
+
+Get Qualified Instagram Prospects
+
+- Busca leads que não foram processados, pois quando o lead passa por toda esteira, lá no final ele recebe um processed = true.
+
+Scrape LinkedIn by Name
+autor apify: pIyH7237rHZBxoO7q
+
+- Busca candidatos de perfil LinkedIn por nome.
+
+Has Picture
+- Mantem somente candidatos LinkedIn com foto.
+- A comparacao visual via Gemini depende da existencia das duas imagens.
+
+Merge Instagram + LinkedIn Data
+- Une os itens de do scrap com itens buscados no banco para validação de similaridade.
+
+Smart Name Match Filter
+- Esse node code aqui faz bastante coisas, como: 
+- Normaliza strings
+- Separa nomes (primeiro, último, completo)
+- Calcula score de similaridade
+- Mantem itens com score >= 40
+
+Batch Image Comparisons
+
+- Um loop para iniciar a comparação de cada item coletado e estruturado.
+
+Gemini Compare Images
+
+- Compara imagem do LinkedIn vs imagem do Instagram.
+
+Parse Gemini Response
+- Padroniza a resposta do gemini
+
+Wait Between Batches
+- Espera 3 segundo para a próxima verificação.
+
+Filter Only Matches
+- Mantem apenas dados que as fotos correspondem entre instagram e linkhedin.
+
+Scrape Full LinkedIn Profile
+Ator: VhxlqQXRwhW8H5hNV
+
+- Busca dados completos do perfil LinkedIn aprovado pela url.
+
+O que é a Apify?
+A Apify é uma plataforma que hospeda "robôs" prontos de scraping. Em vez de você desenvolver e manter scrapers para cada site (LinkedIn, Google, etc.), você usa esses robôs pela API, passando parâmetros e recebendo os dados estruturados.
+
+O que é um Actor (ator)
+Um Actor é um desses robôs na Apify: um script pronto para extrair dados de um site ou serviço.
+LinkedIn Profile Scraper – busca perfis por cargo, indústria, localização
+LinkedIn Company Scraper – extrai dados de páginas de empresas
+Google Maps Scraper – extrai estabelecimentos do Google Maps
+Cada Actor tem um ID único que a Apify usa para identificar qual robô executar. É parecido com o ID de um pacote no npm ou de uma biblioteca em um repositório: é o que identifica exatamente qual Actor você está chamando.
+
+Por que usamos o “Request Actor” (passamos o ID)
+Quem executa? → A Apify.
+O que executar? → O Actor indicado pelo ID.
+Com quais parâmetros? → O que vem do node anterior (o customBody = JSON da query).
+Quando configuramos actorId: VhxlqQXRwhW8H5hNV, estamos dizendo ao n8n:
+> "Chame a Apify e peça para ela rodar o Actor com ID VhxlqQXRwhW8H5hNV."
+
+Scrape Company
+- Busca dados da empresa atual do lead pela url.
+
+Filter Employee Count
+- Mantem empresas com o número de funcionários desejado.
+
+Filter Brazil Location
+- Mantem empresas brasileiras.
+
+Regras:
+- headquarter.country == BR
+- ou headquarter.country == br
+
+Merge Company Data
+- Une dados do perfil completo com dados da empresa.
+
+Create Supabase Row
+- Grava base inicial do lead qualificado.
+Campos preenchidos:
+- Nome
+- URL Linkedin
+- Tipo = LinkedIn
+- Empresa
+- Sobre Lead
+- Setor
+- Colaboradores
+- Localidade Empresa
+- Descript Empresa
+- Cargo
+- Endereco
+- Headline
+
+Enrich with SalesQL
+Busca enriquecimento de contato (emails/telefones) via SalesQL.
+
+O que é SalesQL
+SalesQL é um serviço de enriquecimento de dados B2B que, a partir de um perfil LinkedIn (ou URL do Sales Navigator/Recruiter), devolve dados de contato e empresa: e-mails, telefones, cargo, headline, indústria, organização etc.
+Ou seja: você entra com URL do LinkedIn e sai com e-mail/telefone e contexto profissional.
+Site: salesql.com
+API pública: https://api-public.salesql.com/v1
+Documentação: docs.salesql.com
+
+Filter Has Email
+
+Regra:
+- emails[0].email notEmpty
+- Segue para update quando o enriquecimento trouxe email válido.
+
+Update Supabase with Email
+Filtro:
+- URL Linkedin == linkedin_url
+
+Campos atualizados:
+- Email
+- Telefone
+- Outros Emails
+- Outros Telefones
+
+O que faz:
+- Completa o registro criado na etapa anterior com dados de contato.
+
+Mark as Processed
+
+Filtro:
+- id == instagram_prospect_id
+- Marca lead como processado = true, para evitar repetição de processamento no get do início do fluxo.
+
+
+
+

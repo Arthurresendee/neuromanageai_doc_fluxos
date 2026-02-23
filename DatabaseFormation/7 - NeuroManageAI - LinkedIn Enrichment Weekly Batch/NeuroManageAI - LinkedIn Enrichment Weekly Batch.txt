@@ -1,0 +1,453 @@
+NeuroManageAI - LinkedIn Enrichment Weekly Batch
+
+Esta documentacao explica o workflow em ordem sequencial, com foco no papel de cada node no contexto completo do processo.
+
+====================================================================
+1) OBJETIVO DO FLUXO
+====================================================================
+
+Objetivo macro:
+Executar um lote semanal de enriquecimento de prospects vindos do Instagram, localizar possivel perfil correspondente no LinkedIn, validar correspondencia com IA (comparacao de imagem + nome), enriquecer empresa e contato, salvar no banco e marcar o prospect como processado.
+
+Em termos praticos, o fluxo faz:
+1. Busca prospects pendentes em instagram_prospects_cache.
+2. Procura candidatos no LinkedIn por nome.
+3. Filtra e cruza dados Instagram + LinkedIn.
+4. Faz matching inteligente por nome.
+5. Usa Gemini para validar se as fotos sao da mesma pessoa.
+6. Enriquece perfil LinkedIn e empresa.
+7. Aplica filtros de ICP (porte e Brasil).
+8. Salva lead em qualified_leads_comments.
+9. Tenta enriquecer email/telefone via SalesQL.
+10. Marca prospect do cache como processado.
+
+====================================================================
+2) TABELAS ENVOLVIDAS (SQL)
+====================================================================
+
+Tabela 1 - instagram_prospects_cache:
+- Fonte inicial dos prospects.
+- Campos importantes no fluxo: id, full_name, profile_url, photo_url, comment, comment_date, post_url, processed.
+- O filtro de entrada usa processed = false.
+- No final, processed e processed_at sao atualizados.
+
+Tabela 2 - qualified_leads_comments:
+- Tabela destino para persistir leads qualificados.
+- O fluxo escreve principalmente:
+  Nome, URL Linkedin, Tipo, Empresa, Sobre Lead, Setor, Colaboradores,
+  Localidade Empresa, Descript Empresa, Cargo, Endereco, Headline
+- E depois atualiza Email, Telefone, Outros Emails e Outros Telefones.
+
+====================================================================
+3) SEQUENCIA EXECUTIVA (VISÃO GERAL)
+====================================================================
+
+Executor Webhook
+-> Get Qualified Instagram Prospects
+-> Scrape LinkedIn by Name
+-> Filter Has Picture
+-> Merge Instagram + LinkedIn Data
+-> Smart Name Match Filter
+-> Batch Image Comparisons
+-> Gemini Compare Images
+-> Parse Gemini Response
+-> Wait Between Batches
+-> (retorna ao loop de Batch Image Comparisons)
+-> Filter Only Matches
+-> Scrape Full LinkedIn Profile
+-> Scrape Company
+-> Filter Employee Count
+-> Filter Brazil Location
+-> Merge Company Data
+-> Create Supabase Row
+-> Enrich with SalesQL
+-> Filter Has Email
+-> Update Supabase with Email
+-> Mark as Processed
+
+Observacao de arquitetura:
+- Ha dois merges no fluxo:
+  1) Merge Instagram + LinkedIn Data: junta fonte Instagram com resultado inicial de busca LinkedIn.
+  2) Merge Company Data: junta dados completos de pessoa + empresa antes de gravar no banco.
+
+====================================================================
+4) NODE POR NODE (DETALHADO)
+====================================================================
+
+--------------------------------------------------
+ETAPA 1 - Executor Webhook
+Tipo: n8n-nodes-base.webhook
+--------------------------------------------------
+O que faz:
+- Recebe POST em executor/PLACEHOLDER e dispara o fluxo.
+
+Contribuicao no contexto:
+- Ponto de entrada operacional para rodar o batch semanal.
+
+
+--------------------------------------------------
+ETAPA 2 - Get Qualified Instagram Prospects
+Tipo: n8n-nodes-base.supabase (getAll)
+--------------------------------------------------
+Configuracao:
+- tabela: instagram_prospects_cache
+- filtro: processed=eq.false
+
+O que faz:
+- Carrega apenas prospects ainda nao processados.
+
+Contribuicao no contexto:
+- Garante processamento incremental (evita retrabalho em quem ja passou pela esteira).
+
+
+--------------------------------------------------
+ETAPA 3 - Scrape LinkedIn by Name
+Tipo: Apify actor (pIyH7237rHZBxoO7q)
+--------------------------------------------------
+Payload principal:
+- firstname e lastname derivados de full_name
+- location: Brazil
+- include_email: true
+- max_profiles: 2
+
+O que faz:
+- Busca candidatos de perfil LinkedIn por nome.
+
+Contribuicao no contexto:
+- Gera shortlist inicial de possiveis correspondencias entre Instagram e LinkedIn.
+
+
+--------------------------------------------------
+ETAPA 4 - Filter Has Picture
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regra:
+- basic_info.profile_picture_url notEmpty
+
+O que faz:
+- Mantem somente candidatos LinkedIn com foto.
+
+Contribuicao no contexto:
+- A comparacao visual via Gemini depende da existencia das duas imagens.
+
+
+--------------------------------------------------
+ETAPA 5 - Merge Instagram + LinkedIn Data
+Tipo: n8n-nodes-base.merge (combineAll)
+--------------------------------------------------
+O que faz:
+- Une item de prospect Instagram com item de candidato LinkedIn.
+
+Contribuicao no contexto:
+- Monta pacote unico com os dois lados para calculo de similaridade e validacao IA.
+
+
+--------------------------------------------------
+ETAPA 6 - Smart Name Match Filter
+Tipo: n8n-nodes-base.code
+--------------------------------------------------
+O que o codigo faz:
+1. Normaliza strings (minusculo, sem acento, sem caracteres especiais).
+2. Separa nome em partes (primeiro, ultimo e lista completa).
+3. Calcula score de similaridade:
+   - +40 se primeiro nome igual
+   - +40 se ultimo nome igual
+   - +10 por palavra em comum
+4. Mantem itens com score >= 40.
+5. Retorna payload combinado com:
+   - dados do LinkedIn
+   - dados do Instagram
+   - instagram_prospect_id
+   - name_similarity_score
+
+Contribuicao no contexto:
+- Primeiro gate de qualidade sem custo de IA.
+- Reduz falsos positivos antes da etapa de visao computacional.
+
+
+--------------------------------------------------
+ETAPA 7 - Batch Image Comparisons
+Tipo: n8n-nodes-base.splitInBatches
+--------------------------------------------------
+Configuracao:
+- batchSize = 5
+
+O que faz:
+- Processa comparacoes em lotes pequenos.
+
+Contribuicao no contexto:
+- Controla throughput e custo da chamada ao Gemini.
+
+
+--------------------------------------------------
+ETAPA 8 - Gemini Compare Images
+Tipo: Google Gemini image analyze
+Modelo: gemini-2.5-flash
+--------------------------------------------------
+Prompt:
+- Compara imagem do LinkedIn vs imagem do Instagram.
+- Exige resposta em JSON padrao com:
+  result, confidence, detalhamento, linkedin_url, instagram_url
+
+imageUrls:
+- concatena linkedin_image_url e instagram_image_url validos.
+
+O que faz:
+- Validacao visual de identidade.
+
+Contribuicao no contexto:
+- Camada forte de confirmacao quando nomes sao parecidos, mas podem ser pessoas diferentes.
+
+
+--------------------------------------------------
+ETAPA 9 - Parse Gemini Response
+Tipo: n8n-nodes-base.code
+--------------------------------------------------
+O que o codigo faz:
+- Extrai bloco JSON da resposta textual do Gemini (com ou sem markdown code fence).
+- Tenta fazer JSON.parse.
+- Se falhar, retorna erro e resposta bruta.
+
+Contribuicao no contexto:
+- Padroniza output da IA para permitir filtros deterministas no fluxo.
+
+
+--------------------------------------------------
+ETAPA 10 - Wait Between Batches
+Tipo: n8n-nodes-base.wait
+--------------------------------------------------
+Configuracao:
+- amount: 3
+
+O que faz:
+- Introduz espera entre lotes.
+
+Contribuicao no contexto:
+- Evita burst em chamadas ao Gemini e melhora estabilidade do loop.
+
+
+--------------------------------------------------
+ETAPA 11 - Filter Only Matches
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regra:
+- result == "TEM CORRESPONDENCIA"
+
+O que faz:
+- Mantem apenas pares validados como correspondentes.
+
+Contribuicao no contexto:
+- Bloqueia leads sem correspondencia real entre Instagram e LinkedIn.
+
+
+--------------------------------------------------
+ETAPA 12 - Scrape Full LinkedIn Profile
+Tipo: Apify actor (VhxlqQXRwhW8H5hNV)
+--------------------------------------------------
+Payload:
+- includeEmail: false
+- username: linkedin_url
+
+O que faz:
+- Busca dados completos do perfil LinkedIn aprovado.
+
+Contribuicao no contexto:
+- Enriquece os atributos pessoais/profissionais antes de cruzar empresa.
+
+
+--------------------------------------------------
+ETAPA 13 - Scrape Company
+Tipo: Apify actor (AjfNXEI9qTA2IdaAX)
+--------------------------------------------------
+Payload:
+- profileUrls: [experience[0].company_linkedin_url]
+
+O que faz:
+- Busca dados da empresa atual do lead.
+
+Contribuicao no contexto:
+- Permite aplicar ICP e preencher campos B2B do registro final.
+
+
+--------------------------------------------------
+ETAPA 14 - Filter Employee Count
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regras:
+- employeeCount >= 3
+- employeeCount <= 200
+
+O que faz:
+- Mantem empresas no intervalo de porte desejado.
+
+Contribuicao no contexto:
+- Filtro de ICP por tamanho da empresa.
+
+
+--------------------------------------------------
+ETAPA 15 - Filter Brazil Location
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regras:
+- headquarter.country == BR
+- ou headquarter.country == br
+
+O que faz:
+- Mantem empresas brasileiras.
+
+Contribuicao no contexto:
+- Alinha geo-target do funil comercial.
+
+
+--------------------------------------------------
+ETAPA 16 - Merge Company Data
+Tipo: n8n-nodes-base.merge (advanced)
+--------------------------------------------------
+Regra de merge:
+- companyName <-> basic_info.current_company
+- fuzzyCompare = true
+
+O que faz:
+- Une dados do perfil completo com dados da empresa.
+
+Contribuicao no contexto:
+- Cria um registro unificado lead + empresa para persistencia final.
+
+
+--------------------------------------------------
+ETAPA 17 - Create Supabase Row
+Tipo: n8n-nodes-base.supabase (create)
+Tabela: qualified_leads_comments
+--------------------------------------------------
+Campos preenchidos:
+- Nome
+- URL Linkedin
+- Tipo = LinkedIn
+- Empresa
+- Sobre Lead
+- Setor
+- Colaboradores
+- Localidade Empresa
+- Descript Empresa
+- Cargo
+- Endereco
+- Headline
+
+O que faz:
+- Grava base inicial do lead qualificado.
+
+Contribuicao no contexto:
+- Materializa resultado principal do batch no banco operacional.
+
+
+--------------------------------------------------
+ETAPA 18 - Enrich with SalesQL
+Tipo: n8n-nodes-base.httpRequest
+Endpoint: https://api-public.salesql.com/v1/persons/enrich
+--------------------------------------------------
+Query param:
+- linkedin_url = $json['URL LinkedIn']
+
+Headers:
+- Authorization: Bearer ...
+- accept: application/json
+
+O que faz:
+- Busca enriquecimento de contato (emails/telefones) via SalesQL.
+
+Contribuicao no contexto:
+- Aumenta acionabilidade comercial do lead.
+
+Observacao:
+- Token aparece hardcoded no node, o que e risco de seguranca.
+
+
+--------------------------------------------------
+ETAPA 19 - Filter Has Email
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+Regra:
+- emails[0].email notEmpty
+
+O que faz:
+- So segue para update quando o enriquecimento trouxe email valido.
+
+Contribuicao no contexto:
+- Evita gravar atualizacao vazia/inutil.
+
+
+--------------------------------------------------
+ETAPA 20 - Update Supabase with Email
+Tipo: n8n-nodes-base.supabase (update)
+Tabela: qualified_leads_comments
+--------------------------------------------------
+Filtro:
+- URL Linkedin == linkedin_url
+
+Campos atualizados:
+- Email
+- Telefone
+- Outros Emails (JSON)
+- Outros Telefones (JSON)
+
+O que faz:
+- Completa o registro criado na etapa anterior com dados de contato.
+
+Contribuicao no contexto:
+- Converte lead qualificado em lead contatavel.
+
+
+--------------------------------------------------
+ETAPA 21 - Mark as Processed
+Tipo: n8n-nodes-base.supabase (update)
+Tabela: instagram_prospects_cache
+--------------------------------------------------
+Filtro:
+- id == instagram_prospect_id
+
+Campos atualizados:
+- processed = true
+- processed_at = now ISO
+
+O que faz:
+- Marca prospect original como finalizado.
+
+Contribuicao no contexto:
+- Fecha ciclo de processamento e evita duplicidade em execucoes futuras.
+
+====================================================================
+5) PONTOS DE ATENCAO E MELHORIAS
+====================================================================
+
+1. Credencial SalesQL hardcoded
+- O Bearer token esta no fluxo.
+- Recomendacao: mover para credencial segura/variavel.
+
+2. Campo de URL no SalesQL
+- O node usa $json['URL LinkedIn'], enquanto o insert cria "URL Linkedin" (l minusculo/maiúsculo diferente).
+- Validar se o campo realmente chega com a mesma chave esperada no runtime.
+
+3. Possivel perda de contexto no loop de batch
+- O parse do Gemini retorna JSON enxuto; e importante garantir que linkedin_url/instagram_prospect_id permaneçam acessiveis ate o fim.
+
+4. Filtro de foto pode cortar bons leads
+- Perfis sem foto sao descartados antes da IA.
+- Faz sentido para qualidade, mas reduz cobertura.
+
+5. ICP por headquarter.country
+- Alguns registros podem usar formato de pais diferente.
+- Pode valer normalizar pais para aumentar acuracia do filtro BR.
+
+====================================================================
+6) RESUMO FINAL
+====================================================================
+
+Este workflow implementa uma esteira semanal de enriquecimento que conecta dados de Instagram com LinkedIn usando:
+- matching por nome (regra),
+- matching por imagem (IA),
+- enriquecimento de perfil e empresa (Apify),
+- enriquecimento de contato (SalesQL),
+- persistencia estruturada (Supabase),
+- controle de reprocessamento (processed=true no cache).
+
+O valor principal esta na combinacao de filtros em camadas (nome + imagem + ICP) para reduzir falso positivo e gerar leads mais confiaveis.
