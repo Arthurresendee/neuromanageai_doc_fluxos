@@ -1,4 +1,4 @@
-NeuroManageAI - Google Maps Email First Approach
+NeuroManageAI - ICP Email First Approach
 
 Esta documentacao explica todo o fluxo em ordem de execucao, detalhando o papel tecnico de cada node e, principalmente, por que cada etapa existe no contexto da operacao comercial.
 
@@ -8,9 +8,9 @@ Esta documentacao explica todo o fluxo em ordem de execucao, detalhando o papel 
 
 Objetivo macro:
 
-Executar uma cadencia de first approach por e-mail para leads da base Google Maps, gerando mensagem personalizada com IA, enviando por contas rotativas de Gmail, registrando o que foi enviado no Supabase
+Executar uma cadencia de first approach por e-mail para leads da base ICP, gerando mensagem personalizada com IA, enviando por contas rotativas de Gmail, registrando o que foi enviado no Supabase
 Em termos praticos, o fluxo faz:
-1. Carrega leads com e-mail da tabela qualified_leads_google_maps.
+1. Carrega leads com e-mail da tabela qualified_leads_icp.
 2. Mantem apenas leads sem "Mensagem Enviada Email" (nao abordados por e-mail ainda).
 3. Ordena e limita lote de envio.
 4. Distribui leads entre 5 "faixas" (switch por indice) para rotacionar contas de e-mail.
@@ -27,7 +27,7 @@ Em termos praticos, o fluxo faz:
 ====================================================================
 
 Tabela alvo do processo:
-- public.qualified_leads_google_maps
+- public.qualified_leads_icp
 
 Campos mais usados pelo fluxo:
 - Email
@@ -115,7 +115,7 @@ Por que existe:
 --------------------------------------------------
 ETAPA 4 - Get many rows
 Tipo: n8n-nodes-base.supabase (getAll)
-Tabela: qualified_leads_google_maps
+Tabela: qualified_leads_icp
 --------------------------------------------------
 Filtro:
 - Email != null
@@ -384,9 +384,9 @@ Por que existem:
 - Ex.: company_specialities usa Endereço Empresa.
 - Isso pode degradar qualidade da personalizacao.
 
-3. tableId no update aparece "Qualified Leads - Google Maps"
-- SQL mostra qualified_leads_google_maps.
-- Confirmar se e alias interno do n8n ou divergencia de tabela.
+3. tableId no update está consistente com qualified_leads_icp.
+- SQL também mostra qualified_leads_icp.
+- Não há divergência de tabela neste fluxo.
 
 4. If duplicado em cada ramo
 - Revalida "Mensagem Enviada Email" vazio (positivo para seguranca).

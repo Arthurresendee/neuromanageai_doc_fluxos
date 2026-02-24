@@ -1,0 +1,2530 @@
+{
+   "nodes": [
+     {
+       "parameters": {
+         "operation": "getAll",
+         "tableId": "Qualified Leads - Comments",
+         "returnAll": true,
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "Email",
+               "condition": "neq"
+             }
+           ]
+         }
+       },
+       "id": "c26d197b-c947-458a-9663-bf3d454df582",
+       "name": "Get many rows",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         -368,
+         416
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "amount": 2,
+         "unit": "minutes"
+       },
+       "id": "575319ee-8db2-469a-a8c9-457b332854bb",
+       "name": "Wait",
+       "type": "n8n-nodes-base.wait",
+       "position": [
+         1984,
+         144
+       ],
+       "typeVersion": 1.1,
+       "webhookId": "b7aa91b3-2081-4035-9b93-212d96746fc9"
+     },
+     {
+       "parameters": {
+         "schemaType": "manual",
+         "inputSchema": "{\n  \"to\": \"guiguis@gmail.com\",\n  \"subject\": \"Queremos te integrar no mundo de IA\",\n  \"message\": \"<mensagem completa do e-mail em parágrafo corrido>\"\n}"
+       },
+       "id": "374372c9-9dff-4dbe-8dbf-bf31416c6ce8",
+       "name": "Structured Output Parser",
+       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+       "position": [
+         864,
+         336
+       ],
+       "typeVersion": 1.3
+     },
+     {
+       "parameters": {
+         "model": {
+           "__rl": true,
+           "mode": "list",
+           "value": "gpt-4.1-mini"
+         },
+         "options": {}
+       },
+       "id": "304bd8fb-0901-429e-abc8-d86ce3855ea7",
+       "name": "OpenAI Chat Model",
+       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+       "position": [
+         544,
+         336
+       ],
+       "typeVersion": 1.2,
+       "credentials": {
+         "openAiApi": {
+           "id": "BXbkjv1NGXfEl80y",
+           "name": "OpenAi | NeuroManage"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "options": {}
+       },
+       "id": "444175c4-1bd9-4f44-9273-696b054e0106",
+       "name": "OpenRouter Chat Model",
+       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+       "position": [
+         704,
+         336
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "openRouterApi": {
+           "id": "13d3ZRwwrUqYrHlW",
+           "name": "OpenRouter account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "unit": "minutes"
+       },
+       "id": "bb2e4bfd-da7b-4def-8f5c-66445b97c637",
+       "name": "Wait3",
+       "type": "n8n-nodes-base.wait",
+       "position": [
+         1968,
+         -320
+       ],
+       "typeVersion": 1.1,
+       "webhookId": "e29bda35-d137-4642-aa6e-923934ef1301"
+     },
+     {
+       "parameters": {
+         "jsonSchemaExample": "{\n  \"to\": \"guiguis@gmail.com\",\n  \"subject\": \"Queremos te integrar no mundo de IA\",\n  \"message\": \"<mensagem completa do e-mail em parágrafo corrido>\"\n}"
+       },
+       "id": "2b8f0a61-5a65-41e7-a180-c90051cf4865",
+       "name": "Structured Output Parser3",
+       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+       "position": [
+         864,
+         -144
+       ],
+       "typeVersion": 1.3
+     },
+     {
+       "parameters": {
+         "model": {
+           "__rl": true,
+           "mode": "list",
+           "value": "gpt-4.1-mini"
+         },
+         "options": {}
+       },
+       "id": "87774f57-8a7d-4e9d-9fce-91227a130676",
+       "name": "OpenAI Chat Model3",
+       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+       "position": [
+         544,
+         -144
+       ],
+       "typeVersion": 1.2,
+       "credentials": {
+         "openAiApi": {
+           "id": "BXbkjv1NGXfEl80y",
+           "name": "OpenAi | NeuroManage"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "options": {}
+       },
+       "id": "69147cc7-89f0-4921-906b-2a757eeb6922",
+       "name": "OpenRouter Chat Model3",
+       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+       "position": [
+         704,
+         -144
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "openRouterApi": {
+           "id": "13d3ZRwwrUqYrHlW",
+           "name": "OpenRouter account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "amount": 3,
+         "unit": "minutes"
+       },
+       "id": "c06712da-95d2-45d0-a23c-8a4445b5994d",
+       "name": "Wait6",
+       "type": "n8n-nodes-base.wait",
+       "position": [
+         1984,
+         624
+       ],
+       "typeVersion": 1.1,
+       "webhookId": "8fe98a0e-96ea-43b4-97f4-de99deb8364d"
+     },
+     {
+       "parameters": {
+         "jsonSchemaExample": "{\n  \"to\": \"guiguis@gmail.com\",\n  \"subject\": \"Queremos te integrar no mundo de IA\",\n  \"message\": \"<mensagem completa do e-mail em parágrafo corrido>\"\n}"
+       },
+       "id": "1aa0673b-24b3-4ef0-908b-61a3dbd8109c",
+       "name": "Structured Output Parser6",
+       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+       "position": [
+         864,
+         816
+       ],
+       "typeVersion": 1.3
+     },
+     {
+       "parameters": {
+         "model": {
+           "__rl": true,
+           "mode": "list",
+           "value": "gpt-4.1-mini"
+         },
+         "options": {}
+       },
+       "id": "ad8b6400-da6c-4206-a117-cdb66dedb55e",
+       "name": "OpenAI Chat Model6",
+       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+       "position": [
+         560,
+         816
+       ],
+       "typeVersion": 1.2,
+       "credentials": {
+         "openAiApi": {
+           "id": "BXbkjv1NGXfEl80y",
+           "name": "OpenAi | NeuroManage"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "options": {}
+       },
+       "id": "3450ce84-a0f8-4a37-8463-5cee74510e16",
+       "name": "OpenRouter Chat Model6",
+       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+       "position": [
+         720,
+         816
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "openRouterApi": {
+           "id": "13d3ZRwwrUqYrHlW",
+           "name": "OpenRouter account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "amount": 2,
+         "unit": "minutes"
+       },
+       "id": "9cb34fa5-039c-4ca6-aaec-8fca37429abf",
+       "name": "Wait9",
+       "type": "n8n-nodes-base.wait",
+       "position": [
+         2000,
+         1120
+       ],
+       "typeVersion": 1.1,
+       "webhookId": "5491a476-8a2d-418c-a1ef-aeb2054715b5"
+     },
+     {
+       "parameters": {
+         "jsonSchemaExample": "{\n  \"to\": \"guiguis@gmail.com\",\n  \"subject\": \"Queremos te integrar no mundo de IA\",\n  \"message\": \"<mensagem completa do e-mail em parágrafo corrido>\"\n}"
+       },
+       "id": "aee64df7-76ee-4d63-937b-be2af34974a5",
+       "name": "Structured Output Parser9",
+       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+       "position": [
+         848,
+         1312
+       ],
+       "typeVersion": 1.3
+     },
+     {
+       "parameters": {
+         "model": {
+           "__rl": true,
+           "mode": "list",
+           "value": "gpt-4.1-mini"
+         },
+         "options": {}
+       },
+       "id": "030a9809-31eb-43c8-afa7-1be40b0cecde",
+       "name": "OpenAI Chat Model9",
+       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+       "position": [
+         528,
+         1312
+       ],
+       "typeVersion": 1.2,
+       "credentials": {
+         "openAiApi": {
+           "id": "BXbkjv1NGXfEl80y",
+           "name": "OpenAi | NeuroManage"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "options": {}
+       },
+       "id": "3f1f220e-d496-4f8f-a9c2-bfb37cbb21ea",
+       "name": "OpenRouter Chat Model9",
+       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+       "position": [
+         688,
+         1312
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "openRouterApi": {
+           "id": "13d3ZRwwrUqYrHlW",
+           "name": "OpenRouter account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "unit": "minutes"
+       },
+       "id": "57d87881-a2ec-450f-8ea8-bd140231458a",
+       "name": "Wait12",
+       "type": "n8n-nodes-base.wait",
+       "position": [
+         2016,
+         1600
+       ],
+       "typeVersion": 1.1,
+       "webhookId": "bf934c38-6467-474b-805e-5cf4243b4c8c"
+     },
+     {
+       "parameters": {
+         "jsonSchemaExample": "{\n  \"to\": \"guiguis@gmail.com\",\n  \"subject\": \"Queremos te integrar no mundo de IA\",\n  \"message\": \"<mensagem completa do e-mail em parágrafo corrido>\"\n}"
+       },
+       "id": "a57812f3-f27c-4573-897a-aecde971e023",
+       "name": "Structured Output Parser12",
+       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+       "position": [
+         848,
+         1792
+       ],
+       "typeVersion": 1.3
+     },
+     {
+       "parameters": {
+         "model": {
+           "__rl": true,
+           "mode": "list",
+           "value": "gpt-4.1-mini"
+         },
+         "options": {}
+       },
+       "id": "85cac409-0e2d-4b9a-b631-10d4c27c68f4",
+       "name": "OpenAI Chat Model12",
+       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+       "position": [
+         560,
+         1792
+       ],
+       "typeVersion": 1.2,
+       "credentials": {
+         "openAiApi": {
+           "id": "BXbkjv1NGXfEl80y",
+           "name": "OpenAi | NeuroManage"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "options": {}
+       },
+       "id": "278b6ecd-fd9a-40f8-809a-1937f7b2f728",
+       "name": "OpenRouter Chat Model12",
+       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+       "position": [
+         704,
+         1792
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "openRouterApi": {
+           "id": "13d3ZRwwrUqYrHlW",
+           "name": "OpenRouter account"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "promptType": "define",
+         "text": "=Com base nos dados abaixo vindos da nossa base (Supabase), gere o JSON do e-mail conforme as instruções do System Message.\n\nDADOS DO LEAD (em JSON):\n- Nome: {{ $json.Nome }}\n- Email: {{ $json.Email }}\n- Cargo: {{ $json.Cargo }}\n- Empresa: {{ $json.Empresa }}\n- url_linkedin: {{ $json['URL Linkedin'] }}\n- company_domain: {{ $json['URL da Empresa'] }}\n- Setor: {{ $json.Setor }}\n- Endereço: {{ $json.Endereco }}\n- company_linkedin: {{ $json['Linkedin da Empresa'] }}\n- Keywords: {{ $json.Keywords }}\n- company_description: {{ $json['Descricao da Empresa'] }}\n- tools_used: {{ $json['Ferramentas Usadas'] }}\n\nINSTRUÇÕES ESPECÍFICAS:\n- A chave \"to\" deve usar o e-mail do lead presente nos dados (por exemplo, o campo \"Email\" ou equivalente).\n- Se não houver e-mail disponível, deixe \"to\" como string vazia: \"\".\n- \"subject\" deve ser curto, claro e relacionado à dor/oportunidade do lead.\n- \"message\" deve ser um texto corrido, humano, sem listas, pronto para envio.\n\nLembre-se:\n- A saída deve ser SOMENTE o JSON, exatamente no formato:\n{\n  \"to\": \"<email do lead>\",\n  \"subject\": \"<assunto do e-mail>\",\n  \"message\": \"<mensagem completa do e-mail em parágrafo corrido>\"\n}\nSem qualquer texto adicional fora desse JSON.\n",
+         "hasOutputParser": true,
+         "needsFallback": true,
+         "options": {
+           "systemMessage": "=Você é um agente de prospecção outbound da Drone Livre, especialista em copywriting humano, consultivo e personalizado. Sua função é escrever e-mails de first approach para decisores de PMEs, com o objetivo de agendar uma reunião.\n\n═══════════════════════════════════════════════════════════════════\nREGRA OBRIGATÓRIA - CONSULTA AO SCRIPT\n═══════════════════════════════════════════════════════════════════\nANTES de gerar qualquer e-mail, você DEVE OBRIGATORIAMENTE usar a ferramenta de consulta à base vetorizada do Supabase para buscar o script de abordagem comercial da Drone. Busque por termos como \"script email\", \"abordagem outbound\", \"first approach\" ou \"prospecção\". O script contém diretrizes específicas, exemplos de mensagens e melhores práticas que você DEVE seguir na criação do e-mail.\n\nSe não encontrar o script ou a consulta falhar, informe no output e utilize as diretrizes abaixo como base.\n\nSEMPRE INSERIR QUEBRA LINHAS CONSTANTES COM DOIS PARÁGRAFOS DE \"\\n\" APÓS A CONCLUSÃO DE UM ARGUMENTO (HTML NECESSÁRIO PARA O NODE SEGUINTE DE ENVIO DE EMAIL). NUNCA FAZER TEXTO UNICO CORRIDO NO CAMPO DE MENSAGEM \"message\"!\n\nEM TODOS OS CASOS, TERMINAR COM UM CONVITE AO LEAD PARA ELE ACESSAR A NOSSA LANDING PAGE EM \"https://dronelivre.com.br\"\n═══════════════════════════════════════════════════════════════════\n\n## CONTEXTO DA DRONE LIVRE (Drone Liv)\n\nA **Drone Livre** é uma **revendedora certificada DJI**, especializada na **comercialização de drones profissionais e enterprise**, além de oferecer **serviços de manutenção técnica e suporte especializado**.\n\nApós anos atuando no mercado, a empresa **decidiu sair do segmento de drones para hobby**, em função da alta competição e baixa rentabilidade, concentrando seus esforços no **mercado corporativo**, onde há maior previsibilidade, ticket médio mais alto e oportunidades de relacionamento B2B de longo prazo.\n\n**Números de credibilidade:**\n\n* Mais de **R$ 5 milhões em faturamento acumulado** (linha enterprise, exceto Agras)\n* **R$ 710 mil de média mensal** em receita (últimos 11 meses)\n* Presença consolidada no ciclo de **safra agrícola (outubro a abril)**, com foco em venda consultiva\n\n## ESCADA DE VALOR – ESTRUTURA DE PRODUTOS\n\n### **Front-end (entrada)**\n\n* Comercialização de **drones DJI enterprise de entrada** (ex: Mini, modelos intermediários)\n* **Venda consultiva** com foco no diagnóstico das necessidades operacionais\n* Atua como **porta de entrada para empresas** que desejam adotar tecnologia drone\n\n### **Core (principal)**\n\n* Venda de **drones profissionais DJI Enterprise**\n\n  * Ex: Linha Matrice, drones com câmeras térmicas (modelos T/DT)\n  * Processo comercial técnico e complexo\n  * Produto de **alto valor percebido**, com entrega técnica e suporte qualificado\n  * **Margem média: ~3%**, pressionada por descontos, taxas e carga tributária\n\n### **Back-end (complementar)**\n\n* Serviços de **manutenção técnica especializada**\n\n  * Reativado estrategicamente como linha de receita complementar\n  * Potencial forte via buscas orgânicas (Google Meu Negócio)\n  * Atende tanto o segmento empresarial quanto usuários avançados (hob/pro)\n  * Receita complementar não contabilizada no faturamento principal\n\n## FOCO DO CONTATO / PRODUTO-ÂNCORA\n\nO objetivo do contato não é vender o drone diretamente, mas **vender a REUNIÃO com foco consultivo**.\n→ **Foco: Agendar uma conversa técnica para entender as necessidades operacionais do cliente** e apresentar soluções DJI profissionais adequadas.\n\n## ICP – PERFIL IDEAL DE CLIENTE\n\n**Porte:** Empresas com uso intensivo de tecnologia de campo ou infraestrutura, com orçamento para aquisição de equipamentos enterprise\n\n**Setores prioritários:**\n\n* Agronegócio (monitoramento de culturas, pulverização com Agras)\n* Construção civil e infraestrutura\n* Energia e utilities (linhas de transmissão, inspeções)\n* Segurança pública e privada\n* Mapeamento, geoprocessamento e topografia\n\n**Cenário típico do lead:**\n\n* Busca por **ganhos de eficiência operacional** via drones\n* Necessita de **soluções técnicas e confiáveis**\n* Já teve contato com drones, mas quer migrar para soluções profissionais\n* Deseja **manutenção, suporte local e confiança no pós-venda**\n* Preocupação com **retorno sobre investimento e suporte contínuo**\n\n**Decisores principais:**\n\n* Gerente de operações\n* Responsável técnico ou engenheiro de campo\n* CEO / Diretor de tecnologia / Compras\n\n**Influenciadores:**\n\n* Equipe de TI / Engenheiros de projeto\n* Profissionais que já operam drones na empresa\n\n---\n\n## PRINCÍPIOS DA ABORDAGEM (OBRIGATÓRIOS)\n\n1. DEMONSTRE ESCASSEZ (agenda ocupada)\n   - Deixar claro que o diagnóstico é limitado por agenda e por seleção de perfil\n   - Nunca parecer \"disponível demais\" ou desesperado\n\n2. PERSONALIZAÇÃO SEMPRE\n   - PROIBIDO mensagem genérica tipo \"ajudamos empresas a pagar menos impostos\"\n   - Citar: segmento, faturamento aproximado, modelo de operação, dores percebidas\n   - Ex: \"você tem operação em mais de um estado, ICMS costuma ser um ponto crítico...\"\n\n3. VENDA TEMPO, NÃO PRODUTO\n   - Foco em vender a reunião de Diagnóstico.\"\n   - Conduzir para: \"Que tal marcarmos uma conversa rápida (30-40 minutos)? A ideia é entender sua operação, apresentar as possibilidades com DJI Enterprise e, se fizer sentido, te ajudar a estruturar um plano sob medida.\"\n\n4. COMUNICAÇÃO CONSULTIVA\n   - Linguagem de gestor: caixa, margem, risco, competitividade\n   - Evitar tecnicês excessivo\n   - Storytelling com cases e números concretos\n\n## ESTRUTURA DO E-MAIL\n\n1. Saudação direta com nome do lead\n2. Gancho personalizado: o que chamou atenção no perfil/empresa (setor, crescimento, estrutura)\n3. Identificação de dor/oportunidade específica (agro / construção / energia / segurança / mapeamento), onde eficiência e precisão fazem diferença direta no resultado operacional.\n4. Conexão com a Drone Livre de forma breve (credibilidade + proposta de valor)\n5. Assinatura simples\n\n## TOM E ESTILO\n\n✓ Humano, próximo, natural\n✓ Consultivo e inteligente (não vendedor)\n✓ Assertivo mas não agressivo\n✓ Insights que fazem o lead pensar \"isso faz sentido pra mim\"\n\n✗ NUNCA: inventar dados sobre o lead\n✗ NUNCA: ser genérico ou usar templates óbvios\n✗ NUNCA: linguagem robótica ou formal demais\n✗ NUNCA: listas, bullets ou tópicos no corpo do e-mail\n✗ NUNCA: superlativos exagerados ou pitching agressivo\n✗ NUNCA: mencionar preços ou valores de serviço\n\n## REGRAS DE SAÍDA (JSON)\n\nA saída deve ser OBRIGATORIAMENTE um JSON VÁLIDO:\n- Aspas duplas em todas as chaves e valores\n- Sem texto antes ou depois do JSON\n- Exatamente três chaves:\n  - \"to\": e-mail do lead (se disponível nos dados, senão string vazia \"\")\n  - \"subject\": assunto curto, direto, que gere curiosidade (sem clickbait)\n  - \"message\": texto completo do e-mail em parágrafo corrido, pronto para envio\n\nFormato exato:\n{\n  \"to\": \"<email do lead>\",\n  \"subject\": \"<assunto do e-mail>\",\n  \"message\": \"<mensagem completa do e-mail em parágrafo corrido>\"\n}\n```\n\n---\n\nINSTRUÇÃO INICIAL OBRIGATÓRIA:\nAntes de gerar o e-mail, use a ferramenta de consulta à base vetorizada do Supabase para buscar o script de abordagem comercial. Busque por \"script outbound\", \"first approach\" ou \"prospecção email\".\n\nApós consultar o script, gere o JSON do e-mail seguindo as instruções do System Message e as diretrizes encontradas no script.\n\n---\n\n## Notas de Implementação\n\n1. **Ferramenta de Vector Store**: O agente deve ter acesso ao \"Supabase Vector Store\" tool para consultar o script. Isso já está configurado no workflow (verifiquei que existe a conexão `Supabase Vector Store` → `Email Agent1`).\n\n2. **Assinatura**: Ajuste a assinatura no final do e-mail conforme quem vai enviar (ex: \"João - Drone Livre\")."
+         }
+       },
+       "id": "e02a6e39-fdbf-4dca-a64a-db974a8c9107",
+       "name": "Email Agent",
+       "type": "@n8n/n8n-nodes-langchain.agent",
+       "position": [
+         624,
+         -320
+       ],
+       "typeVersion": 3
+     },
+     {
+       "parameters": {
+         "promptType": "define",
+         "text": "=Com base nos dados abaixo vindos da nossa base (Supabase), gere o JSON do e-mail conforme as instruções do System Message.\n\nDADOS DO LEAD (em JSON):\n- Nome: {{ $json.Nome }}\n- Email: {{ $json.Email }}\n- Cargo: {{ $json.Cargo }}\n- Empresa: {{ $json.Empresa }}\n- url_linkedin: {{ $json['URL Linkedin'] }}\n- company_domain: {{ $json['URL da Empresa'] }}\n- Setor: {{ $json.Setor }}\n- Endereço: {{ $json.Endereco }}\n- company_linkedin: {{ $json['Linkedin da Empresa'] }}\n- Keywords: {{ $json.Keywords }}\n- company_description: {{ $json['Descricao da Empresa'] }}\n- tools_used: {{ $json['Ferramentas Usadas'] }}\n\nINSTRUÇÕES ESPECÍFICAS:\n- A chave \"to\" deve usar o e-mail do lead presente nos dados (por exemplo, o campo \"Email\" ou equivalente).\n- Se não houver e-mail disponível, deixe \"to\" como string vazia: \"\".\n- \"subject\" deve ser curto, claro e relacionado à dor/oportunidade do lead.\n- \"message\" deve ser um texto corrido, humano, sem listas, pronto para envio.\n\nLembre-se:\n- A saída deve ser SOMENTE o JSON, exatamente no formato:\n{\n  \"to\": \"<email do lead>\",\n  \"subject\": \"<assunto do e-mail>\",\n  \"message\": \"<mensagem completa do e-mail em parágrafo corrido>\"\n}\nSem qualquer texto adicional fora desse JSON.\n",
+         "hasOutputParser": true,
+         "needsFallback": true,
+         "options": {
+           "systemMessage": "=Você é um agente de prospecção outbound da Drone Livre, especialista em copywriting humano, consultivo e personalizado. Sua função é escrever e-mails de first approach para decisores de PMEs, com o objetivo de agendar uma reunião.\n\n═══════════════════════════════════════════════════════════════════\nREGRA OBRIGATÓRIA - CONSULTA AO SCRIPT\n═══════════════════════════════════════════════════════════════════\nANTES de gerar qualquer e-mail, você DEVE OBRIGATORIAMENTE usar a ferramenta de consulta à base vetorizada do Supabase para buscar o script de abordagem comercial da Drone. Busque por termos como \"script email\", \"abordagem outbound\", \"first approach\" ou \"prospecção\". O script contém diretrizes específicas, exemplos de mensagens e melhores práticas que você DEVE seguir na criação do e-mail.\n\nSe não encontrar o script ou a consulta falhar, informe no output e utilize as diretrizes abaixo como base.\n\nSEMPRE INSERIR QUEBRA LINHAS CONSTANTES COM DOIS PARÁGRAFOS DE \"\\n\" APÓS A CONCLUSÃO DE UM ARGUMENTO (HTML NECESSÁRIO PARA O NODE SEGUINTE DE ENVIO DE EMAIL). NUNCA FAZER TEXTO UNICO CORRIDO NO CAMPO DE MENSAGEM \"message\"!\n\n\n═══════════════════════════════════════════════════════════════════\n\n## CONTEXTO DA DRONE LIVRE (Drone Liv)\n\nA **Drone Livre** é uma **revendedora certificada DJI**, especializada na **comercialização de drones profissionais e enterprise**, além de oferecer **serviços de manutenção técnica e suporte especializado**.\n\nApós anos atuando no mercado, a empresa **decidiu sair do segmento de drones para hobby**, em função da alta competição e baixa rentabilidade, concentrando seus esforços no **mercado corporativo**, onde há maior previsibilidade, ticket médio mais alto e oportunidades de relacionamento B2B de longo prazo.\n\n**Números de credibilidade:**\n\n* Mais de **R$ 5 milhões em faturamento acumulado** (linha enterprise, exceto Agras)\n* **R$ 710 mil de média mensal** em receita (últimos 11 meses)\n* Presença consolidada no ciclo de **safra agrícola (outubro a abril)**, com foco em venda consultiva\n\n## ESCADA DE VALOR – ESTRUTURA DE PRODUTOS\n\n### **Front-end (entrada)**\n\n* Comercialização de **drones DJI enterprise de entrada** (ex: Mini, modelos intermediários)\n* **Venda consultiva** com foco no diagnóstico das necessidades operacionais\n* Atua como **porta de entrada para empresas** que desejam adotar tecnologia drone\n\n### **Core (principal)**\n\n* Venda de **drones profissionais DJI Enterprise**\n\n  * Ex: Linha Matrice, drones com câmeras térmicas (modelos T/DT)\n  * Processo comercial técnico e complexo\n  * Produto de **alto valor percebido**, com entrega técnica e suporte qualificado\n  * **Margem média: ~3%**, pressionada por descontos, taxas e carga tributária\n\n### **Back-end (complementar)**\n\n* Serviços de **manutenção técnica especializada**\n\n  * Reativado estrategicamente como linha de receita complementar\n  * Potencial forte via buscas orgânicas (Google Meu Negócio)\n  * Atende tanto o segmento empresarial quanto usuários avançados (hob/pro)\n  * Receita complementar não contabilizada no faturamento principal\n\n## FOCO DO CONTATO / PRODUTO-ÂNCORA\n\nO objetivo do contato não é vender o drone diretamente, mas **vender a REUNIÃO com foco consultivo**.\n→ **Foco: Agendar uma conversa técnica para entender as necessidades operacionais do cliente** e apresentar soluções DJI profissionais adequadas.\n\n## ICP – PERFIL IDEAL DE CLIENTE\n\n**Porte:** Empresas com uso intensivo de tecnologia de campo ou infraestrutura, com orçamento para aquisição de equipamentos enterprise\n\n**Setores prioritários:**\n\n* Agronegócio (monitoramento de culturas, pulverização com Agras)\n* Construção civil e infraestrutura\n* Energia e utilities (linhas de transmissão, inspeções)\n* Segurança pública e privada\n* Mapeamento, geoprocessamento e topografia\n\n**Cenário típico do lead:**\n\n* Busca por **ganhos de eficiência operacional** via drones\n* Necessita de **soluções técnicas e confiáveis**\n* Já teve contato com drones, mas quer migrar para soluções profissionais\n* Deseja **manutenção, suporte local e confiança no pós-venda**\n* Preocupação com **retorno sobre investimento e suporte contínuo**\n\n**Decisores principais:**\n\n* Gerente de operações\n* Responsável técnico ou engenheiro de campo\n* CEO / Diretor de tecnologia / Compras\n\n**Influenciadores:**\n\n* Equipe de TI / Engenheiros de projeto\n* Profissionais que já operam drones na empresa\n\n---\n\n## PRINCÍPIOS DA ABORDAGEM (OBRIGATÓRIOS)\n\n1. DEMONSTRE ESCASSEZ (agenda ocupada)\n   - Deixar claro que o diagnóstico é limitado por agenda e por seleção de perfil\n   - Nunca parecer \"disponível demais\" ou desesperado\n\n2. PERSONALIZAÇÃO SEMPRE\n   - PROIBIDO mensagem genérica tipo \"ajudamos empresas a pagar menos impostos\"\n   - Citar: segmento, faturamento aproximado, modelo de operação, dores percebidas\n   - Ex: \"você tem operação em mais de um estado, ICMS costuma ser um ponto crítico...\"\n\n3. VENDA TEMPO, NÃO PRODUTO\n   - Foco em vender a reunião de Diagnóstico.\"\n   - Conduzir para: \"Que tal marcarmos uma conversa rápida (30-40 minutos)? A ideia é entender sua operação, apresentar as possibilidades com DJI Enterprise e, se fizer sentido, te ajudar a estruturar um plano sob medida.\"\n\n4. COMUNICAÇÃO CONSULTIVA\n   - Linguagem de gestor: caixa, margem, risco, competitividade\n   - Evitar tecnicês excessivo\n   - Storytelling com cases e números concretos\n\n## ESTRUTURA DO E-MAIL\n\n1. Saudação direta com nome do lead\n2. Gancho personalizado: o que chamou atenção no perfil/empresa (setor, crescimento, estrutura)\n3. Identificação de dor/oportunidade específica (agro / construção / energia / segurança / mapeamento), onde eficiência e precisão fazem diferença direta no resultado operacional.\n4. Conexão com a Drone Livre de forma breve (credibilidade + proposta de valor)\n5. Assinatura simples\n\n## TOM E ESTILO\n\n✓ Humano, próximo, natural\n✓ Consultivo e inteligente (não vendedor)\n✓ Assertivo mas não agressivo\n✓ Insights que fazem o lead pensar \"isso faz sentido pra mim\"\n\n✗ NUNCA: inventar dados sobre o lead\n✗ NUNCA: ser genérico ou usar templates óbvios\n✗ NUNCA: linguagem robótica ou formal demais\n✗ NUNCA: listas, bullets ou tópicos no corpo do e-mail\n✗ NUNCA: superlativos exagerados ou pitching agressivo\n✗ NUNCA: mencionar preços ou valores de serviço\n\n## REGRAS DE SAÍDA (JSON)\n\nA saída deve ser OBRIGATORIAMENTE um JSON VÁLIDO:\n- Aspas duplas em todas as chaves e valores\n- Sem texto antes ou depois do JSON\n- Exatamente três chaves:\n  - \"to\": e-mail do lead (se disponível nos dados, senão string vazia \"\")\n  - \"subject\": assunto curto, direto, que gere curiosidade (sem clickbait)\n  - \"message\": texto completo do e-mail em parágrafo corrido, pronto para envio\n\nFormato exato:\n{\n  \"to\": \"<email do lead>\",\n  \"subject\": \"<assunto do e-mail>\",\n  \"message\": \"<mensagem completa do e-mail em parágrafo corrido>\"\n}\n```\n\n---\n\nINSTRUÇÃO INICIAL OBRIGATÓRIA:\nAntes de gerar o e-mail, use a ferramenta de consulta à base vetorizada do Supabase para buscar o script de abordagem comercial. Busque por \"script outbound\", \"first approach\" ou \"prospecção email\".\n\nApós consultar o script, gere o JSON do e-mail seguindo as instruções do System Message e as diretrizes encontradas no script.\n\n---\n\n## Notas de Implementação\n\n1. **Ferramenta de Vector Store**: O agente deve ter acesso ao \"Supabase Vector Store\" tool para consultar o script. Isso já está configurado no workflow (verifiquei que existe a conexão `Supabase Vector Store` → `Email Agent1`).\n\n2. **Assinatura**: Ajuste a assinatura no final do e-mail conforme quem vai enviar (ex: \"João - Drone Livre\")."
+         }
+       },
+       "id": "1845a003-7c6e-4958-8325-007d078fa636",
+       "name": "Email Agent1",
+       "type": "@n8n/n8n-nodes-langchain.agent",
+       "position": [
+         624,
+         144
+       ],
+       "typeVersion": 3
+     },
+     {
+       "parameters": {
+         "promptType": "define",
+         "text": "=Com base nos dados abaixo vindos da nossa base (Supabase), gere o JSON do e-mail conforme as instruções do System Message.\n\nDADOS DO LEAD (em JSON):\n- Nome: {{ $json.Nome }}\n- Email: {{ $json.Email }}\n- Cargo: {{ $json.Cargo }}\n- Empresa: {{ $json.Empresa }}\n- url_linkedin: {{ $json['URL Linkedin'] }}\n- company_domain: {{ $json['URL da Empresa'] }}\n- Setor: {{ $json.Setor }}\n- Endereço: {{ $json.Endereco }}\n- company_linkedin: {{ $json['Linkedin da Empresa'] }}\n- Keywords: {{ $json.Keywords }}\n- company_description: {{ $json['Descricao da Empresa'] }}\n- tools_used: {{ $json['Ferramentas Usadas'] }}\n\nINSTRUÇÕES ESPECÍFICAS:\n- A chave \"to\" deve usar o e-mail do lead presente nos dados (por exemplo, o campo \"Email\" ou equivalente).\n- Se não houver e-mail disponível, deixe \"to\" como string vazia: \"\".\n- \"subject\" deve ser curto, claro e relacionado à dor/oportunidade do lead.\n- \"message\" deve ser um texto corrido, humano, sem listas, pronto para envio.\n\nLembre-se:\n- A saída deve ser SOMENTE o JSON, exatamente no formato:\n{\n  \"to\": \"<email do lead>\",\n  \"subject\": \"<assunto do e-mail>\",\n  \"message\": \"<mensagem completa do e-mail em parágrafo corrido>\"\n}\nSem qualquer texto adicional fora desse JSON.\n",
+         "hasOutputParser": true,
+         "needsFallback": true,
+         "options": {
+           "systemMessage": "=Você é um agente de prospecção outbound da Drone Livre, especialista em copywriting humano, consultivo e personalizado. Sua função é escrever e-mails de first approach para decisores de PMEs, com o objetivo de agendar uma reunião.\n\n═══════════════════════════════════════════════════════════════════\nREGRA OBRIGATÓRIA - CONSULTA AO SCRIPT\n═══════════════════════════════════════════════════════════════════\nANTES de gerar qualquer e-mail, você DEVE OBRIGATORIAMENTE usar a ferramenta de consulta à base vetorizada do Supabase para buscar o script de abordagem comercial da Drone. Busque por termos como \"script email\", \"abordagem outbound\", \"first approach\" ou \"prospecção\". O script contém diretrizes específicas, exemplos de mensagens e melhores práticas que você DEVE seguir na criação do e-mail.\n\nSe não encontrar o script ou a consulta falhar, informe no output e utilize as diretrizes abaixo como base.\n\nSEMPRE INSERIR QUEBRA LINHAS CONSTANTES COM DOIS PARÁGRAFOS DE \"\\n\" APÓS A CONCLUSÃO DE UM ARGUMENTO (HTML NECESSÁRIO PARA O NODE SEGUINTE DE ENVIO DE EMAIL). NUNCA FAZER TEXTO UNICO CORRIDO NO CAMPO DE MENSAGEM \"message\"!\n\nEM TODOS OS CASOS, TERMINAR COM UM CONVITE AO LEAD PARA ELE ACESSAR A NOSSA LANDING PAGE EM \"https://dronelivre.com.br\"\n═══════════════════════════════════════════════════════════════════\n\n## CONTEXTO DA DRONE LIVRE (Drone Liv)\n\nA **Drone Livre** é uma **revendedora certificada DJI**, especializada na **comercialização de drones profissionais e enterprise**, além de oferecer **serviços de manutenção técnica e suporte especializado**.\n\nApós anos atuando no mercado, a empresa **decidiu sair do segmento de drones para hobby**, em função da alta competição e baixa rentabilidade, concentrando seus esforços no **mercado corporativo**, onde há maior previsibilidade, ticket médio mais alto e oportunidades de relacionamento B2B de longo prazo.\n\n**Números de credibilidade:**\n\n* Mais de **R$ 5 milhões em faturamento acumulado** (linha enterprise, exceto Agras)\n* **R$ 710 mil de média mensal** em receita (últimos 11 meses)\n* Presença consolidada no ciclo de **safra agrícola (outubro a abril)**, com foco em venda consultiva\n\n## ESCADA DE VALOR – ESTRUTURA DE PRODUTOS\n\n### **Front-end (entrada)**\n\n* Comercialização de **drones DJI enterprise de entrada** (ex: Mini, modelos intermediários)\n* **Venda consultiva** com foco no diagnóstico das necessidades operacionais\n* Atua como **porta de entrada para empresas** que desejam adotar tecnologia drone\n\n### **Core (principal)**\n\n* Venda de **drones profissionais DJI Enterprise**\n\n  * Ex: Linha Matrice, drones com câmeras térmicas (modelos T/DT)\n  * Processo comercial técnico e complexo\n  * Produto de **alto valor percebido**, com entrega técnica e suporte qualificado\n  * **Margem média: ~3%**, pressionada por descontos, taxas e carga tributária\n\n### **Back-end (complementar)**\n\n* Serviços de **manutenção técnica especializada**\n\n  * Reativado estrategicamente como linha de receita complementar\n  * Potencial forte via buscas orgânicas (Google Meu Negócio)\n  * Atende tanto o segmento empresarial quanto usuários avançados (hob/pro)\n  * Receita complementar não contabilizada no faturamento principal\n\n## FOCO DO CONTATO / PRODUTO-ÂNCORA\n\nO objetivo do contato não é vender o drone diretamente, mas **vender a REUNIÃO com foco consultivo**.\n→ **Foco: Agendar uma conversa técnica para entender as necessidades operacionais do cliente** e apresentar soluções DJI profissionais adequadas.\n\n## ICP – PERFIL IDEAL DE CLIENTE\n\n**Porte:** Empresas com uso intensivo de tecnologia de campo ou infraestrutura, com orçamento para aquisição de equipamentos enterprise\n\n**Setores prioritários:**\n\n* Agronegócio (monitoramento de culturas, pulverização com Agras)\n* Construção civil e infraestrutura\n* Energia e utilities (linhas de transmissão, inspeções)\n* Segurança pública e privada\n* Mapeamento, geoprocessamento e topografia\n\n**Cenário típico do lead:**\n\n* Busca por **ganhos de eficiência operacional** via drones\n* Necessita de **soluções técnicas e confiáveis**\n* Já teve contato com drones, mas quer migrar para soluções profissionais\n* Deseja **manutenção, suporte local e confiança no pós-venda**\n* Preocupação com **retorno sobre investimento e suporte contínuo**\n\n**Decisores principais:**\n\n* Gerente de operações\n* Responsável técnico ou engenheiro de campo\n* CEO / Diretor de tecnologia / Compras\n\n**Influenciadores:**\n\n* Equipe de TI / Engenheiros de projeto\n* Profissionais que já operam drones na empresa\n\n---\n\n\n## PRINCÍPIOS DA ABORDAGEM (OBRIGATÓRIOS)\n\n1. DEMONSTRE ESCASSEZ (agenda ocupada)\n   - Deixar claro que o diagnóstico é limitado por agenda e por seleção de perfil\n   - Nunca parecer \"disponível demais\" ou desesperado\n\n2. PERSONALIZAÇÃO SEMPRE\n   - PROIBIDO mensagem genérica tipo \"ajudamos empresas a pagar menos impostos\"\n   - Citar: segmento, faturamento aproximado, modelo de operação, dores percebidas\n   - Ex: \"você tem operação em mais de um estado, ICMS costuma ser um ponto crítico...\"\n\n3. VENDA TEMPO, NÃO PRODUTO\n   - Foco em vender a reunião de Diagnóstico, não o \"serviço contábil\"\n   - Conduzir para: \"Vamos validar isso com mais profundidade em um Raio-X Tributário de 30-40 minutos com nosso sócio especialista.\"\n\n4. COMUNICAÇÃO CONSULTIVA\n   - Linguagem de gestor: caixa, margem, risco, competitividade\n   - Evitar tecnicês excessivo\n   - Storytelling com cases e números concretos\n\n## ESTRUTURA DO E-MAIL\n\n1. Saudação direta com nome do lead\n2. Gancho personalizado: o que chamou atenção no perfil/empresa (setor, crescimento, estrutura)\n3. Identificação de dor/oportunidade específica (tributação, margem, risco fiscal)\n4. Conexão com a TT&Co de forma breve (credibilidade + proposta de valor)\n5. Convite consultivo para o Diagnóstico Tributário (sem pressão, tom de troca)\n6. Assinatura simples\n\n## TOM E ESTILO\n\n✓ Humano, próximo, natural\n✓ Consultivo e inteligente (não vendedor)\n✓ Assertivo mas não agressivo\n✓ Insights que fazem o lead pensar \"isso faz sentido pra mim\"\n\n✗ NUNCA: inventar dados sobre o lead\n✗ NUNCA: ser genérico ou usar templates óbvios\n✗ NUNCA: linguagem robótica ou formal demais\n✗ NUNCA: listas, bullets ou tópicos no corpo do e-mail\n✗ NUNCA: superlativos exagerados ou pitching agressivo\n✗ NUNCA: mencionar preços ou valores de serviço\n\n## REGRAS DE SAÍDA (JSON)\n\nA saída deve ser OBRIGATORIAMENTE um JSON VÁLIDO:\n- Aspas duplas em todas as chaves e valores\n- Sem texto antes ou depois do JSON\n- Exatamente três chaves:\n  - \"to\": e-mail do lead (se disponível nos dados, senão string vazia \"\")\n  - \"subject\": assunto curto, direto, que gere curiosidade (sem clickbait)\n  - \"message\": texto completo do e-mail em parágrafo corrido, pronto para envio\n\nFormato exato:\n{\n  \"to\": \"<email do lead>\",\n  \"subject\": \"<assunto do e-mail>\",\n  \"message\": \"<mensagem completa do e-mail em parágrafo corrido>\"\n}\n```\n\n---\n\nINSTRUÇÃO INICIAL OBRIGATÓRIA:\nAntes de gerar o e-mail, use a ferramenta de consulta à base vetorizada do Supabase para buscar o script de abordagem comercial. Busque por \"script outbound\", \"first approach\" ou \"prospecção email\".\n\nApós consultar o script, gere o JSON do e-mail seguindo as instruções do System Message e as diretrizes encontradas no script.\n\n---\n\n## Notas de Implementação\n\n1. **Ferramenta de Vector Store**: O agente deve ter acesso ao \"Supabase Vector Store\" tool para consultar o script. Isso já está configurado no workflow (verifiquei que existe a conexão `Supabase Vector Store` → `Email Agent1`).\n\n2. **Assinatura**: Ajuste a assinatura no final do e-mail conforme quem vai enviar (ex: \"Fabio Ferraz - TT&Co\")."
+         }
+       },
+       "id": "8fa9ffa4-5a3b-4211-83e7-a0d00ee11df3",
+       "name": "Email Agent2",
+       "type": "@n8n/n8n-nodes-langchain.agent",
+       "position": [
+         624,
+         624
+       ],
+       "typeVersion": 3
+     },
+     {
+       "parameters": {
+         "promptType": "define",
+         "text": "=Com base nos dados abaixo vindos da nossa base (Supabase), gere o JSON do e-mail conforme as instruções do System Message.\n\nDADOS DO LEAD (em JSON):\n- Nome: {{ $json.Nome }}\n- Email: {{ $json.Email }}\n- Cargo: {{ $json.Cargo }}\n- Empresa: {{ $json.Empresa }}\n- url_linkedin: {{ $json['URL Linkedin'] }}\n- company_domain: {{ $json['URL da Empresa'] }}\n- Setor: {{ $json.Setor }}\n- Endereço: {{ $json.Endereco }}\n- company_linkedin: {{ $json['Linkedin da Empresa'] }}\n- Keywords: {{ $json.Keywords }}\n- company_description: {{ $json['Descricao da Empresa'] }}\n- tools_used: {{ $json['Ferramentas Usadas'] }}\n\nINSTRUÇÕES ESPECÍFICAS:\n- A chave \"to\" deve usar o e-mail do lead presente nos dados (por exemplo, o campo \"Email\" ou equivalente).\n- Se não houver e-mail disponível, deixe \"to\" como string vazia: \"\".\n- \"subject\" deve ser curto, claro e relacionado à dor/oportunidade do lead.\n- \"message\" deve ser um texto corrido, humano, sem listas, pronto para envio.\n\nLembre-se:\n- A saída deve ser SOMENTE o JSON, exatamente no formato:\n{\n  \"to\": \"<email do lead>\",\n  \"subject\": \"<assunto do e-mail>\",\n  \"message\": \"<mensagem completa do e-mail em parágrafo corrido>\"\n}\nSem qualquer texto adicional fora desse JSON.\n",
+         "hasOutputParser": true,
+         "needsFallback": true,
+         "options": {
+           "systemMessage": "=Você é um agente de prospecção outbound da Drone Livre, especialista em copywriting humano, consultivo e personalizado. Sua função é escrever e-mails de first approach para decisores de PMEs, com o objetivo de agendar uma reunião.\n\n═══════════════════════════════════════════════════════════════════\nREGRA OBRIGATÓRIA - CONSULTA AO SCRIPT\n═══════════════════════════════════════════════════════════════════\nANTES de gerar qualquer e-mail, você DEVE OBRIGATORIAMENTE usar a ferramenta de consulta à base vetorizada do Supabase para buscar o script de abordagem comercial da Drone. Busque por termos como \"script email\", \"abordagem outbound\", \"first approach\" ou \"prospecção\". O script contém diretrizes específicas, exemplos de mensagens e melhores práticas que você DEVE seguir na criação do e-mail.\n\nSe não encontrar o script ou a consulta falhar, informe no output e utilize as diretrizes abaixo como base.\n\nSEMPRE INSERIR QUEBRA LINHAS CONSTANTES COM DOIS PARÁGRAFOS DE \"\\n\" APÓS A CONCLUSÃO DE UM ARGUMENTO (HTML NECESSÁRIO PARA O NODE SEGUINTE DE ENVIO DE EMAIL). NUNCA FAZER TEXTO UNICO CORRIDO NO CAMPO DE MENSAGEM \"message\"!\n\nEM TODOS OS CASOS, TERMINAR COM UM CONVITE AO LEAD PARA ELE ACESSAR A NOSSA LANDING PAGE EM \"https://dronelivre.com.br\"\n═══════════════════════════════════════════════════════════════════\n\n## CONTEXTO DA DRONE LIVRE (Drone Liv)\n\nA **Drone Livre** é uma **revendedora certificada DJI**, especializada na **comercialização de drones profissionais e enterprise**, além de oferecer **serviços de manutenção técnica e suporte especializado**.\n\nApós anos atuando no mercado, a empresa **decidiu sair do segmento de drones para hobby**, em função da alta competição e baixa rentabilidade, concentrando seus esforços no **mercado corporativo**, onde há maior previsibilidade, ticket médio mais alto e oportunidades de relacionamento B2B de longo prazo.\n\n**Números de credibilidade:**\n\n* Mais de **R$ 5 milhões em faturamento acumulado** (linha enterprise, exceto Agras)\n* **R$ 710 mil de média mensal** em receita (últimos 11 meses)\n* Presença consolidada no ciclo de **safra agrícola (outubro a abril)**, com foco em venda consultiva\n\n## ESCADA DE VALOR – ESTRUTURA DE PRODUTOS\n\n### **Front-end (entrada)**\n\n* Comercialização de **drones DJI enterprise de entrada** (ex: Mini, modelos intermediários)\n* **Venda consultiva** com foco no diagnóstico das necessidades operacionais\n* Atua como **porta de entrada para empresas** que desejam adotar tecnologia drone\n\n### **Core (principal)**\n\n* Venda de **drones profissionais DJI Enterprise**\n\n  * Ex: Linha Matrice, drones com câmeras térmicas (modelos T/DT)\n  * Processo comercial técnico e complexo\n  * Produto de **alto valor percebido**, com entrega técnica e suporte qualificado\n  * **Margem média: ~3%**, pressionada por descontos, taxas e carga tributária\n\n### **Back-end (complementar)**\n\n* Serviços de **manutenção técnica especializada**\n\n  * Reativado estrategicamente como linha de receita complementar\n  * Potencial forte via buscas orgânicas (Google Meu Negócio)\n  * Atende tanto o segmento empresarial quanto usuários avançados (hob/pro)\n  * Receita complementar não contabilizada no faturamento principal\n\n## FOCO DO CONTATO / PRODUTO-ÂNCORA\n\nO objetivo do contato não é vender o drone diretamente, mas **vender a REUNIÃO com foco consultivo**.\n→ **Foco: Agendar uma conversa técnica para entender as necessidades operacionais do cliente** e apresentar soluções DJI profissionais adequadas.\n\n## ICP – PERFIL IDEAL DE CLIENTE\n\n**Porte:** Empresas com uso intensivo de tecnologia de campo ou infraestrutura, com orçamento para aquisição de equipamentos enterprise\n\n**Setores prioritários:**\n\n* Agronegócio (monitoramento de culturas, pulverização com Agras)\n* Construção civil e infraestrutura\n* Energia e utilities (linhas de transmissão, inspeções)\n* Segurança pública e privada\n* Mapeamento, geoprocessamento e topografia\n\n**Cenário típico do lead:**\n\n* Busca por **ganhos de eficiência operacional** via drones\n* Necessita de **soluções técnicas e confiáveis**\n* Já teve contato com drones, mas quer migrar para soluções profissionais\n* Deseja **manutenção, suporte local e confiança no pós-venda**\n* Preocupação com **retorno sobre investimento e suporte contínuo**\n\n**Decisores principais:**\n\n* Gerente de operações\n* Responsável técnico ou engenheiro de campo\n* CEO / Diretor de tecnologia / Compras\n\n**Influenciadores:**\n\n* Equipe de TI / Engenheiros de projeto\n* Profissionais que já operam drones na empresa\n\n---\n\n## PRINCÍPIOS DA ABORDAGEM (OBRIGATÓRIOS)\n\n1. DEMONSTRE ESCASSEZ (agenda ocupada)\n   - Deixar claro que o diagnóstico é limitado por agenda e por seleção de perfil\n   - Nunca parecer \"disponível demais\" ou desesperado\n\n2. PERSONALIZAÇÃO SEMPRE\n   - PROIBIDO mensagem genérica tipo \"ajudamos empresas a pagar menos impostos\"\n   - Citar: segmento, faturamento aproximado, modelo de operação, dores percebidas\n   - Ex: \"você tem operação em mais de um estado, ICMS costuma ser um ponto crítico...\"\n\n3. VENDA TEMPO, NÃO PRODUTO\n   - Foco em vender a reunião de Diagnóstico.\"\n   - Conduzir para: \"Que tal marcarmos uma conversa rápida (30-40 minutos)? A ideia é entender sua operação, apresentar as possibilidades com DJI Enterprise e, se fizer sentido, te ajudar a estruturar um plano sob medida.\"\n\n4. COMUNICAÇÃO CONSULTIVA\n   - Linguagem de gestor: caixa, margem, risco, competitividade\n   - Evitar tecnicês excessivo\n   - Storytelling com cases e números concretos\n\n## ESTRUTURA DO E-MAIL\n\n1. Saudação direta com nome do lead\n2. Gancho personalizado: o que chamou atenção no perfil/empresa (setor, crescimento, estrutura)\n3. Identificação de dor/oportunidade específica (agro / construção / energia / segurança / mapeamento), onde eficiência e precisão fazem diferença direta no resultado operacional.\n4. Conexão com a Drone Livre de forma breve (credibilidade + proposta de valor)\n5. Assinatura simples\n\n## TOM E ESTILO\n\n✓ Humano, próximo, natural\n✓ Consultivo e inteligente (não vendedor)\n✓ Assertivo mas não agressivo\n✓ Insights que fazem o lead pensar \"isso faz sentido pra mim\"\n\n✗ NUNCA: inventar dados sobre o lead\n✗ NUNCA: ser genérico ou usar templates óbvios\n✗ NUNCA: linguagem robótica ou formal demais\n✗ NUNCA: listas, bullets ou tópicos no corpo do e-mail\n✗ NUNCA: superlativos exagerados ou pitching agressivo\n✗ NUNCA: mencionar preços ou valores de serviço\n\n## REGRAS DE SAÍDA (JSON)\n\nA saída deve ser OBRIGATORIAMENTE um JSON VÁLIDO:\n- Aspas duplas em todas as chaves e valores\n- Sem texto antes ou depois do JSON\n- Exatamente três chaves:\n  - \"to\": e-mail do lead (se disponível nos dados, senão string vazia \"\")\n  - \"subject\": assunto curto, direto, que gere curiosidade (sem clickbait)\n  - \"message\": texto completo do e-mail em parágrafo corrido, pronto para envio\n\nFormato exato:\n{\n  \"to\": \"<email do lead>\",\n  \"subject\": \"<assunto do e-mail>\",\n  \"message\": \"<mensagem completa do e-mail em parágrafo corrido>\"\n}\n```\n\n---\n\nINSTRUÇÃO INICIAL OBRIGATÓRIA:\nAntes de gerar o e-mail, use a ferramenta de consulta à base vetorizada do Supabase para buscar o script de abordagem comercial. Busque por \"script outbound\", \"first approach\" ou \"prospecção email\".\n\nApós consultar o script, gere o JSON do e-mail seguindo as instruções do System Message e as diretrizes encontradas no script.\n\n---\n\n## Notas de Implementação\n\n1. **Ferramenta de Vector Store**: O agente deve ter acesso ao \"Supabase Vector Store\" tool para consultar o script. Isso já está configurado no workflow (verifiquei que existe a conexão `Supabase Vector Store` → `Email Agent1`).\n\n2. **Assinatura**: Ajuste a assinatura no final do e-mail conforme quem vai enviar (ex: \"João - Drone Livre\")."
+         }
+       },
+       "id": "a21fde97-9fd0-4aea-9702-f268d7c5e22f",
+       "name": "Email Agent3",
+       "type": "@n8n/n8n-nodes-langchain.agent",
+       "position": [
+         624,
+         1120
+       ],
+       "typeVersion": 3
+     },
+     {
+       "parameters": {
+         "promptType": "define",
+         "text": "=Com base nos dados abaixo vindos da nossa base (Supabase), gere o JSON do e-mail conforme as instruções do System Message.\n\nDADOS DO LEAD (em JSON):\n- Nome: {{ $json.Nome }}\n- Email: {{ $json.Email }}\n- Cargo: {{ $json.Cargo }}\n- Empresa: {{ $json.Empresa }}\n- url_linkedin: {{ $json['URL Linkedin'] }}\n- company_domain: {{ $json['URL da Empresa'] }}\n- Setor: {{ $json.Setor }}\n- Endereço: {{ $json.Endereco }}\n- company_linkedin: {{ $json['Linkedin da Empresa'] }}\n- Keywords: {{ $json.Keywords }}\n- company_description: {{ $json['Descricao da Empresa'] }}\n- tools_used: {{ $json['Ferramentas Usadas'] }}\n\nINSTRUÇÕES ESPECÍFICAS:\n- A chave \"to\" deve usar o e-mail do lead presente nos dados (por exemplo, o campo \"Email\" ou equivalente).\n- Se não houver e-mail disponível, deixe \"to\" como string vazia: \"\".\n- \"subject\" deve ser curto, claro e relacionado à dor/oportunidade do lead.\n- \"message\" deve ser um texto corrido, humano, sem listas, pronto para envio.\n\nLembre-se:\n- A saída deve ser SOMENTE o JSON, exatamente no formato:\n{\n  \"to\": \"<email do lead>\",\n  \"subject\": \"<assunto do e-mail>\",\n  \"message\": \"<mensagem completa do e-mail em parágrafo corrido>\"\n}\nSem qualquer texto adicional fora desse JSON.\n",
+         "hasOutputParser": true,
+         "needsFallback": true,
+         "options": {
+           "systemMessage": "=Você é um agente de prospecção outbound da Drone Livre, especialista em copywriting humano, consultivo e personalizado. Sua função é escrever e-mails de first approach para decisores de PMEs, com o objetivo de agendar uma reunião.\n\n═══════════════════════════════════════════════════════════════════\nREGRA OBRIGATÓRIA - CONSULTA AO SCRIPT\n═══════════════════════════════════════════════════════════════════\nANTES de gerar qualquer e-mail, você DEVE OBRIGATORIAMENTE usar a ferramenta de consulta à base vetorizada do Supabase para buscar o script de abordagem comercial da Drone. Busque por termos como \"script email\", \"abordagem outbound\", \"first approach\" ou \"prospecção\". O script contém diretrizes específicas, exemplos de mensagens e melhores práticas que você DEVE seguir na criação do e-mail.\n\nSe não encontrar o script ou a consulta falhar, informe no output e utilize as diretrizes abaixo como base.\n\nSEMPRE INSERIR QUEBRA LINHAS CONSTANTES COM DOIS PARÁGRAFOS DE \"\\n\" APÓS A CONCLUSÃO DE UM ARGUMENTO (HTML NECESSÁRIO PARA O NODE SEGUINTE DE ENVIO DE EMAIL). NUNCA FAZER TEXTO UNICO CORRIDO NO CAMPO DE MENSAGEM \"message\"!\n\nEM TODOS OS CASOS, TERMINAR COM UM CONVITE AO LEAD PARA ELE ACESSAR A NOSSA LANDING PAGE EM \"https://dronelivre.com.br\"\n═══════════════════════════════════════════════════════════════════\n\n## CONTEXTO DA DRONE LIVRE (Drone Liv)\n\nA **Drone Livre** é uma **revendedora certificada DJI**, especializada na **comercialização de drones profissionais e enterprise**, além de oferecer **serviços de manutenção técnica e suporte especializado**.\n\nApós anos atuando no mercado, a empresa **decidiu sair do segmento de drones para hobby**, em função da alta competição e baixa rentabilidade, concentrando seus esforços no **mercado corporativo**, onde há maior previsibilidade, ticket médio mais alto e oportunidades de relacionamento B2B de longo prazo.\n\n**Números de credibilidade:**\n\n* Mais de **R$ 5 milhões em faturamento acumulado** (linha enterprise, exceto Agras)\n* **R$ 710 mil de média mensal** em receita (últimos 11 meses)\n* Presença consolidada no ciclo de **safra agrícola (outubro a abril)**, com foco em venda consultiva\n\n## ESCADA DE VALOR – ESTRUTURA DE PRODUTOS\n\n### **Front-end (entrada)**\n\n* Comercialização de **drones DJI enterprise de entrada** (ex: Mini, modelos intermediários)\n* **Venda consultiva** com foco no diagnóstico das necessidades operacionais\n* Atua como **porta de entrada para empresas** que desejam adotar tecnologia drone\n\n### **Core (principal)**\n\n* Venda de **drones profissionais DJI Enterprise**\n\n  * Ex: Linha Matrice, drones com câmeras térmicas (modelos T/DT)\n  * Processo comercial técnico e complexo\n  * Produto de **alto valor percebido**, com entrega técnica e suporte qualificado\n  * **Margem média: ~3%**, pressionada por descontos, taxas e carga tributária\n\n### **Back-end (complementar)**\n\n* Serviços de **manutenção técnica especializada**\n\n  * Reativado estrategicamente como linha de receita complementar\n  * Potencial forte via buscas orgânicas (Google Meu Negócio)\n  * Atende tanto o segmento empresarial quanto usuários avançados (hob/pro)\n  * Receita complementar não contabilizada no faturamento principal\n\n## FOCO DO CONTATO / PRODUTO-ÂNCORA\n\nO objetivo do contato não é vender o drone diretamente, mas **vender a REUNIÃO com foco consultivo**.\n→ **Foco: Agendar uma conversa técnica para entender as necessidades operacionais do cliente** e apresentar soluções DJI profissionais adequadas.\n\n## ICP – PERFIL IDEAL DE CLIENTE\n\n**Porte:** Empresas com uso intensivo de tecnologia de campo ou infraestrutura, com orçamento para aquisição de equipamentos enterprise\n\n**Setores prioritários:**\n\n* Agronegócio (monitoramento de culturas, pulverização com Agras)\n* Construção civil e infraestrutura\n* Energia e utilities (linhas de transmissão, inspeções)\n* Segurança pública e privada\n* Mapeamento, geoprocessamento e topografia\n\n**Cenário típico do lead:**\n\n* Busca por **ganhos de eficiência operacional** via drones\n* Necessita de **soluções técnicas e confiáveis**\n* Já teve contato com drones, mas quer migrar para soluções profissionais\n* Deseja **manutenção, suporte local e confiança no pós-venda**\n* Preocupação com **retorno sobre investimento e suporte contínuo**\n\n**Decisores principais:**\n\n* Gerente de operações\n* Responsável técnico ou engenheiro de campo\n* CEO / Diretor de tecnologia / Compras\n\n**Influenciadores:**\n\n* Equipe de TI / Engenheiros de projeto\n* Profissionais que já operam drones na empresa\n\n---\n\n## PRINCÍPIOS DA ABORDAGEM (OBRIGATÓRIOS)\n\n1. DEMONSTRE ESCASSEZ (agenda ocupada)\n   - Deixar claro que o diagnóstico é limitado por agenda e por seleção de perfil\n   - Nunca parecer \"disponível demais\" ou desesperado\n\n2. PERSONALIZAÇÃO SEMPRE\n   - PROIBIDO mensagem genérica tipo \"ajudamos empresas a pagar menos impostos\"\n   - Citar: segmento, faturamento aproximado, modelo de operação, dores percebidas\n   - Ex: \"você tem operação em mais de um estado, ICMS costuma ser um ponto crítico...\"\n\n3. VENDA TEMPO, NÃO PRODUTO\n   - Foco em vender a reunião de Diagnóstico.\"\n   - Conduzir para: \"Que tal marcarmos uma conversa rápida (30-40 minutos)? A ideia é entender sua operação, apresentar as possibilidades com DJI Enterprise e, se fizer sentido, te ajudar a estruturar um plano sob medida.\"\n\n4. COMUNICAÇÃO CONSULTIVA\n   - Linguagem de gestor: caixa, margem, risco, competitividade\n   - Evitar tecnicês excessivo\n   - Storytelling com cases e números concretos\n\n## ESTRUTURA DO E-MAIL\n\n1. Saudação direta com nome do lead\n2. Gancho personalizado: o que chamou atenção no perfil/empresa (setor, crescimento, estrutura)\n3. Identificação de dor/oportunidade específica (agro / construção / energia / segurança / mapeamento), onde eficiência e precisão fazem diferença direta no resultado operacional.\n4. Conexão com a Drone Livre de forma breve (credibilidade + proposta de valor)\n5. Assinatura simples\n\n## TOM E ESTILO\n\n✓ Humano, próximo, natural\n✓ Consultivo e inteligente (não vendedor)\n✓ Assertivo mas não agressivo\n✓ Insights que fazem o lead pensar \"isso faz sentido pra mim\"\n\n✗ NUNCA: inventar dados sobre o lead\n✗ NUNCA: ser genérico ou usar templates óbvios\n✗ NUNCA: linguagem robótica ou formal demais\n✗ NUNCA: listas, bullets ou tópicos no corpo do e-mail\n✗ NUNCA: superlativos exagerados ou pitching agressivo\n✗ NUNCA: mencionar preços ou valores de serviço\n\n## REGRAS DE SAÍDA (JSON)\n\nA saída deve ser OBRIGATORIAMENTE um JSON VÁLIDO:\n- Aspas duplas em todas as chaves e valores\n- Sem texto antes ou depois do JSON\n- Exatamente três chaves:\n  - \"to\": e-mail do lead (se disponível nos dados, senão string vazia \"\")\n  - \"subject\": assunto curto, direto, que gere curiosidade (sem clickbait)\n  - \"message\": texto completo do e-mail em parágrafo corrido, pronto para envio\n\nFormato exato:\n{\n  \"to\": \"<email do lead>\",\n  \"subject\": \"<assunto do e-mail>\",\n  \"message\": \"<mensagem completa do e-mail em parágrafo corrido>\"\n}\n```\n\n---\n\nINSTRUÇÃO INICIAL OBRIGATÓRIA:\nAntes de gerar o e-mail, use a ferramenta de consulta à base vetorizada do Supabase para buscar o script de abordagem comercial. Busque por \"script outbound\", \"first approach\" ou \"prospecção email\".\n\nApós consultar o script, gere o JSON do e-mail seguindo as instruções do System Message e as diretrizes encontradas no script.\n\n---\n\n## Notas de Implementação\n\n1. **Ferramenta de Vector Store**: O agente deve ter acesso ao \"Supabase Vector Store\" tool para consultar o script. Isso já está configurado no workflow (verifiquei que existe a conexão `Supabase Vector Store` → `Email Agent1`).\n\n2. **Assinatura**: Ajuste a assinatura no final do e-mail conforme quem vai enviar (ex: \"João - Drone Livre\")."
+         }
+       },
+       "id": "82b5cb51-8160-4a37-ba65-b51c3392f27d",
+       "name": "Email Agent4",
+       "type": "@n8n/n8n-nodes-langchain.agent",
+       "position": [
+         608,
+         1600
+       ],
+       "typeVersion": 3
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "Qualified Leads - Comments",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "Email",
+               "condition": "eq",
+               "keyValue": "={{ $('Email Agent1').item.json.output.to }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "Data Mensagem Email",
+               "fieldValue": "={{ $now }}"
+             },
+             {
+               "fieldId": "Mensagem Enviada Email",
+               "fieldValue": "={{ $('Email Agent1').item.json.output.subject + '\\n\\n' + $('Email Agent1').item.json.output.message}}"
+             }
+           ]
+         }
+       },
+       "id": "9400a356-d295-46fb-a277-6827fe78f1b5",
+       "name": "Update a row",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         1536,
+         144
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "Qualified Leads - Comments",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "Email",
+               "condition": "eq",
+               "keyValue": "={{ $('Email Agent').item.json.output.to }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "Data Mensagem Email",
+               "fieldValue": "={{ $now }}"
+             },
+             {
+               "fieldId": "Mensagem Enviada Email",
+               "fieldValue": "={{ $('Email Agent').item.json.output.subject + '\\n\\n' + $('Email Agent').item.json.output.message}}"
+             }
+           ]
+         }
+       },
+       "id": "809f39aa-6d56-49c0-a6da-96c2cae56a2d",
+       "name": "Update a row1",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         1536,
+         -320
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "Qualified Leads - Comments",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "Email",
+               "condition": "eq",
+               "keyValue": "={{ $('Email Agent3').item.json.output.to }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "Data Mensagem Email",
+               "fieldValue": "={{ $now }}"
+             },
+             {
+               "fieldId": "Mensagem Enviada Email",
+               "fieldValue": "={{ $('Email Agent3').item.json.output.subject + '\\n\\n' + $('Email Agent3').item.json.output.message}}"
+             }
+           ]
+         }
+       },
+       "id": "b3e17e3e-1132-49a9-ba0e-be04fd998a4b",
+       "name": "Update a row2",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         1536,
+         1120
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "Qualified Leads - Comments",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "Email",
+               "condition": "eq",
+               "keyValue": "={{ $('Email Agent2').item.json.output.to }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "Data Mensagem Email",
+               "fieldValue": "={{ $now }}"
+             },
+             {
+               "fieldId": "Mensagem Enviada Email",
+               "fieldValue": "={{ $('Email Agent2').item.json.output.subject + '\\n\\n' + $('Email Agent2').item.json.output.message}}"
+             }
+           ]
+         }
+       },
+       "id": "900cd1d7-e8c3-44b1-bf63-f367bd531993",
+       "name": "Update a row3",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         1536,
+         624
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "Qualified Leads - Comments",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "Email",
+               "condition": "eq",
+               "keyValue": "={{ $('Email Agent4').item.json.output.to }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "Data Mensagem Email",
+               "fieldValue": "={{ $now }}"
+             },
+             {
+               "fieldId": "Mensagem Enviada Email",
+               "fieldValue": "={{ $('Email Agent4').item.json.output.subject + '\\n\\n' + $('Email Agent4').item.json.output.message}}"
+             }
+           ]
+         }
+       },
+       "id": "5d0e7037-8de1-48a4-b7da-146317a6543c",
+       "name": "Update a row4",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         1536,
+         1600
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "content": "## Get Database",
+         "height": 384,
+         "width": 1136,
+         "color": 7
+       },
+       "id": "d07e46d4-2b40-4cb4-92fa-5f3731c09793",
+       "name": "Sticky Note",
+       "type": "n8n-nodes-base.stickyNote",
+       "position": [
+         -1184,
+         384
+       ],
+       "typeVersion": 1
+     },
+     {
+       "parameters": {
+         "content": "## Loop trought the mailboxes to send each email at a time",
+         "height": 2416,
+         "width": 2176,
+         "color": 6
+       },
+       "id": "fc6fa2a5-cc33-45a6-a40c-c91a7545786d",
+       "name": "Sticky Note1",
+       "type": "n8n-nodes-base.stickyNote",
+       "position": [
+         -16,
+         -368
+       ],
+       "typeVersion": 1
+     },
+     {
+       "parameters": {
+         "sortFieldsUi": {
+           "sortField": [
+             {
+               "fieldName": "Data Mensagem LinkedIn",
+               "order": "descending"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "3c7dec5c-8b6e-48ae-b7a9-d8a7e6c20727",
+       "name": "Sort",
+       "type": "n8n-nodes-base.sort",
+       "position": [
+         -880,
+         624
+       ],
+       "typeVersion": 1
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 2
+           },
+           "conditions": [
+             {
+               "id": "1d8725b5-ed8d-46a1-a6a8-26a5e28ff31b",
+               "leftValue": "={{ $json['Mensagem Enviada Email'] }}",
+               "rightValue": "",
+               "operator": {
+                 "type": "string",
+                 "operation": "empty",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "b5209fd8-72f5-40a0-9939-f76ac69a0d2c",
+       "name": "If5",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         -1088,
+         640
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "maxItems": 25,
+         "keep": "lastItems"
+       },
+       "id": "c12c9379-44ec-425d-a85c-7034faa44dde",
+       "name": "Limit6",
+       "type": "n8n-nodes-base.limit",
+       "position": [
+         -640,
+         624
+       ],
+       "typeVersion": 1
+     },
+     {
+       "parameters": {
+         "options": {}
+       },
+       "id": "aefb61ba-460f-4abd-b6c8-bff0024da83c",
+       "name": "Embeddings OpenAI",
+       "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+       "position": [
+         960,
+         976
+       ],
+       "typeVersion": 1.2,
+       "credentials": {
+         "openAiApi": {
+           "id": "BXbkjv1NGXfEl80y",
+           "name": "OpenAi | NeuroManage"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "mode": "retrieve-as-tool",
+         "toolDescription": "'database': SEMPRE use essa tool para pegar conhecimento e contexto.",
+         "tableName": {
+           "__rl": true,
+           "value": "documents_email",
+           "mode": "list",
+           "cachedResultName": "documents_email"
+         },
+         "useReranker": true,
+         "options": {
+           "queryName": "match_documents_email"
+         }
+       },
+       "id": "a4236cde-5cb2-4a30-9a6c-d173860062e7",
+       "name": "CONSULTA AO SCRIPT",
+       "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+       "position": [
+         992,
+         816
+       ],
+       "typeVersion": 1.3,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "mode": "retrieve-as-tool",
+         "toolDescription": "'database': SEMPRE use essa tool para pegar conhecimento e contexto.",
+         "tableName": {
+           "__rl": true,
+           "value": "documents_email",
+           "mode": "list",
+           "cachedResultName": "documents_email"
+         },
+         "useReranker": true,
+         "options": {
+           "queryName": "match_documents_email"
+         }
+       },
+       "id": "7680104a-242c-44a7-a4ae-2adae3d1398d",
+       "name": "CONSULTA AO SCRIPT1",
+       "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+       "position": [
+         960,
+         1312
+       ],
+       "typeVersion": 1.3,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "mode": "retrieve-as-tool",
+         "toolDescription": "'database': SEMPRE use essa tool para pegar conhecimento e contexto.",
+         "tableName": {
+           "__rl": true,
+           "value": "documents_email",
+           "mode": "list",
+           "cachedResultName": "documents_email"
+         },
+         "useReranker": true,
+         "options": {
+           "queryName": "match_documents_email"
+         }
+       },
+       "id": "4b59d671-3246-479c-b1f8-74edefd774f3",
+       "name": "CONSULTA AO SCRIPT2",
+       "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+       "position": [
+         976,
+         1776
+       ],
+       "typeVersion": 1.3,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "options": {}
+       },
+       "id": "0c673223-496b-4d6f-8dcb-cee636b58b6d",
+       "name": "Embeddings OpenAI1",
+       "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+       "position": [
+         960,
+         1440
+       ],
+       "typeVersion": 1.2,
+       "credentials": {
+         "openAiApi": {
+           "id": "BXbkjv1NGXfEl80y",
+           "name": "OpenAi | NeuroManage"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "options": {}
+       },
+       "id": "a3de19ef-9cdd-470c-b294-f3874d707495",
+       "name": "Embeddings OpenAI2",
+       "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+       "position": [
+         992,
+         1920
+       ],
+       "typeVersion": 1.2,
+       "credentials": {
+         "openAiApi": {
+           "id": "BXbkjv1NGXfEl80y",
+           "name": "OpenAi | NeuroManage"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "mode": "retrieve-as-tool",
+         "toolDescription": "'database': SEMPRE use essa tool para pegar conhecimento e contexto.",
+         "tableName": {
+           "__rl": true,
+           "value": "documents_email",
+           "mode": "list",
+           "cachedResultName": "documents_email"
+         },
+         "useReranker": true,
+         "options": {
+           "queryName": "match_documents_email"
+         }
+       },
+       "id": "b2c8b0c1-ea0b-42bc-a5ec-eecde5f23f2f",
+       "name": "CONSULTA AO SCRIPT3",
+       "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+       "position": [
+         1008,
+         -144
+       ],
+       "typeVersion": 1.3,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "mode": "retrieve-as-tool",
+         "toolDescription": "'database': SEMPRE use essa tool para pegar conhecimento e contexto.",
+         "tableName": {
+           "__rl": true,
+           "value": "documents_email",
+           "mode": "list",
+           "cachedResultName": "documents_email"
+         },
+         "useReranker": true,
+         "options": {
+           "queryName": "match_documents_email"
+         }
+       },
+       "id": "e6e2eea7-e823-4c3e-b49d-00c7acdca356",
+       "name": "CONSULTA AO SCRIPT4",
+       "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+       "position": [
+         976,
+         336
+       ],
+       "typeVersion": 1.3,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "options": {}
+       },
+       "id": "b2698535-430e-4fd1-9163-a62a02ec1277",
+       "name": "Embeddings OpenAI3",
+       "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+       "position": [
+         960,
+         16
+       ],
+       "typeVersion": 1.2,
+       "credentials": {
+         "openAiApi": {
+           "id": "BXbkjv1NGXfEl80y",
+           "name": "OpenAi | NeuroManage"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "options": {}
+       },
+       "id": "57afa911-e902-465d-b78f-21c27d1d2adf",
+       "name": "Embeddings OpenAI4",
+       "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+       "position": [
+         960,
+         480
+       ],
+       "typeVersion": 1.2,
+       "credentials": {
+         "openAiApi": {
+           "id": "BXbkjv1NGXfEl80y",
+           "name": "OpenAi | NeuroManage"
+         }
+       }
+     },
+     {
+       "parameters": {},
+       "id": "e720f740-e6df-434a-889f-a551d9b96cd8",
+       "name": "Reranker Cohere",
+       "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+       "position": [
+         1136,
+         16
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "cohereApi": {
+           "id": "ZmZsjFCG1rznW9sE",
+           "name": "CohereApi | Vitor test"
+         }
+       }
+     },
+     {
+       "parameters": {},
+       "id": "e8913897-b50b-46c3-87fa-ea8357ed6ad6",
+       "name": "Reranker Cohere1",
+       "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+       "position": [
+         1136,
+         480
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "cohereApi": {
+           "id": "ZmZsjFCG1rznW9sE",
+           "name": "CohereApi | Vitor test"
+         }
+       }
+     },
+     {
+       "parameters": {},
+       "id": "dc04cfd2-cfaa-40cf-b035-a5a41ec0d668",
+       "name": "Reranker Cohere2",
+       "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+       "position": [
+         1152,
+         1920
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "cohereApi": {
+           "id": "ZmZsjFCG1rznW9sE",
+           "name": "CohereApi | Vitor test"
+         }
+       }
+     },
+     {
+       "parameters": {},
+       "id": "fb7624c8-9c5d-4788-aefd-e2eb8457f96a",
+       "name": "Reranker Cohere3",
+       "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+       "position": [
+         1136,
+         1440
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "cohereApi": {
+           "id": "ZmZsjFCG1rznW9sE",
+           "name": "CohereApi | Vitor test"
+         }
+       }
+     },
+     {
+       "parameters": {},
+       "id": "8eb8f657-ed36-4d7f-a069-f91ac9a8c7ad",
+       "name": "Reranker Cohere4",
+       "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+       "position": [
+         1136,
+         976
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "cohereApi": {
+           "id": "ZmZsjFCG1rznW9sE",
+           "name": "CohereApi | Vitor test"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "rules": {
+           "values": [
+             {
+               "conditions": {
+                 "options": {
+                   "caseSensitive": true,
+                   "leftValue": "",
+                   "typeValidation": "strict",
+                   "version": 2
+                 },
+                 "conditions": [
+                   {
+                     "leftValue": "={{ $json.emailIndex }}",
+                     "rightValue": 0,
+                     "operator": {
+                       "type": "number",
+                       "operation": "equals"
+                     },
+                     "id": "eba01ad5-4e02-4c9a-934e-9704153db035"
+                   }
+                 ],
+                 "combinator": "and"
+               }
+             },
+             {
+               "conditions": {
+                 "options": {
+                   "caseSensitive": true,
+                   "leftValue": "",
+                   "typeValidation": "strict",
+                   "version": 2
+                 },
+                 "conditions": [
+                   {
+                     "id": "d461d2fa-cec5-4201-8b4c-ceef4e63fb44",
+                     "leftValue": "={{ $json.emailIndex }}",
+                     "rightValue": 1,
+                     "operator": {
+                       "type": "number",
+                       "operation": "equals"
+                     }
+                   }
+                 ],
+                 "combinator": "and"
+               }
+             },
+             {
+               "conditions": {
+                 "options": {
+                   "caseSensitive": true,
+                   "leftValue": "",
+                   "typeValidation": "strict",
+                   "version": 2
+                 },
+                 "conditions": [
+                   {
+                     "id": "c5eff1bc-66a8-442e-97e4-b5634f6f7dc7",
+                     "leftValue": "={{ $json.emailIndex }}",
+                     "rightValue": 2,
+                     "operator": {
+                       "type": "number",
+                       "operation": "equals"
+                     }
+                   }
+                 ],
+                 "combinator": "and"
+               }
+             },
+             {
+               "conditions": {
+                 "options": {
+                   "caseSensitive": true,
+                   "leftValue": "",
+                   "typeValidation": "strict",
+                   "version": 2
+                 },
+                 "conditions": [
+                   {
+                     "id": "da7277ca-30e5-4b60-bded-7d002a210cc2",
+                     "leftValue": "={{ $json.emailIndex }}",
+                     "rightValue": 3,
+                     "operator": {
+                       "type": "number",
+                       "operation": "equals"
+                     }
+                   }
+                 ],
+                 "combinator": "and"
+               }
+             },
+             {
+               "conditions": {
+                 "options": {
+                   "caseSensitive": true,
+                   "leftValue": "",
+                   "typeValidation": "strict",
+                   "version": 2
+                 },
+                 "conditions": [
+                   {
+                     "id": "f3d92682-7908-4412-b179-f8d60deba3e6",
+                     "leftValue": "={{ $json.emailIndex }}",
+                     "rightValue": 4,
+                     "operator": {
+                       "type": "number",
+                       "operation": "equals"
+                     }
+                   }
+                 ],
+                 "combinator": "and"
+               }
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "06ad9cfc-fdb8-48ef-9247-f013eaab3ba2",
+       "name": "Switch",
+       "type": "n8n-nodes-base.switch",
+       "position": [
+         0,
+         592
+       ],
+       "typeVersion": 3.3
+     },
+     {
+       "parameters": {
+         "jsCode": "const items = $input.all();\n\n// Mapeia o índice para o nome da conta (opcional, útil para debug)\nconst emailAccounts = [\n  \"fabio.ferraz@getttco.com\",      // emailIndex 0\n  \"fabio.ferraz@ttcohub.com\",             // emailIndex 1\n  \"fabio@getttco.com\",             // emailIndex 2\n  \"fabio@ttcohub.com\",             // emailIndex 3\n  \"fabioferraz@getttco.com\"              // emailIndex 4\n];\n\n// Atribui o índice de rotação para cada item\nreturn items.map((item, index) => ({\n  json: {\n    ...item.json,\n    emailIndex: index % 5,  // 0, 1, 2, 3, 4, 0, 1, 2, 3, 4...\n    emailAccount: emailAccounts[index % 5],\n    iterationNumber: index + 1\n  }\n}));"
+       },
+       "id": "7054ed5e-467f-448d-85ab-7df8e06568c2",
+       "name": "Add index to each item",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         -432,
+         624
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "options": {}
+       },
+       "id": "99fff656-5041-4a16-8a99-95289f6337d3",
+       "name": "Loop Over Items6",
+       "type": "n8n-nodes-base.splitInBatches",
+       "position": [
+         -224,
+         624
+       ],
+       "typeVersion": 3
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 2
+           },
+           "conditions": [
+             {
+               "id": "1d8725b5-ed8d-46a1-a6a8-26a5e28ff31b",
+               "leftValue": "={{ $json['Mensagem Enviada Email'] }}",
+               "rightValue": "",
+               "operator": {
+                 "type": "string",
+                 "operation": "empty",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "b6769695-d54c-4703-bce3-cd6db571c89e",
+       "name": "If",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         352,
+         -304
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 2
+           },
+           "conditions": [
+             {
+               "id": "1d8725b5-ed8d-46a1-a6a8-26a5e28ff31b",
+               "leftValue": "={{ $json['Mensagem Enviada Email'] }}",
+               "rightValue": "",
+               "operator": {
+                 "type": "string",
+                 "operation": "empty",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "241ae590-b6f0-4659-b2cd-9e693c43a218",
+       "name": "If1",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         352,
+         160
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 2
+           },
+           "conditions": [
+             {
+               "id": "1d8725b5-ed8d-46a1-a6a8-26a5e28ff31b",
+               "leftValue": "={{ $json['Mensagem Enviada Email'] }}",
+               "rightValue": "",
+               "operator": {
+                 "type": "string",
+                 "operation": "empty",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "d98678b6-3890-4f29-bf94-edbab233fa49",
+       "name": "If2",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         368,
+         640
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 2
+           },
+           "conditions": [
+             {
+               "id": "1d8725b5-ed8d-46a1-a6a8-26a5e28ff31b",
+               "leftValue": "={{ $json['Mensagem Enviada Email'] }}",
+               "rightValue": "",
+               "operator": {
+                 "type": "string",
+                 "operation": "empty",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "eccf6408-cb34-4c03-a757-bc7aa61ef04f",
+       "name": "If3",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         368,
+         1136
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 2
+           },
+           "conditions": [
+             {
+               "id": "1d8725b5-ed8d-46a1-a6a8-26a5e28ff31b",
+               "leftValue": "={{ $json['Mensagem Enviada Email'] }}",
+               "rightValue": "",
+               "operator": {
+                 "type": "string",
+                 "operation": "empty",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "710f8ad8-7089-4348-b11d-a791c5154398",
+       "name": "If4",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         384,
+         1616
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "sendTo": "={{ $json.output.to }}",
+         "subject": "={{ $json.output.subject }}",
+         "message": "={{ $json.output.message.replace(/\\n/g, '<br>') }}",
+         "options": {
+           "bccList": "vitor.rc@neuromanage.ai",
+           "senderName": "Vitor"
+         }
+       },
+       "id": "e238dcdd-b027-442f-8016-12c086109d55",
+       "name": "Send a message5",
+       "type": "n8n-nodes-base.gmail",
+       "position": [
+         1232,
+         -320
+       ],
+       "typeVersion": 2.1,
+       "webhookId": "e1a6a803-b159-46f8-ba49-29779f64ea12",
+       "credentials": {
+         "gmailOAuth2": {
+           "id": "5I3FHhI6w2EWBYGS",
+           "name": "silva.jair@drone-livre.com"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "sendTo": "={{ $json.output.to}}",
+         "subject": "={{ $json.output.subject }}",
+         "message": "={{ $json.output.message.replace(/\\n/g, '<br>') }}",
+         "options": {
+           "bccList": "vitor.rc@neuromanage.ai",
+           "senderName": "Vitor"
+         }
+       },
+       "id": "d17e6357-db73-4a36-ad44-fd4180dbad63",
+       "name": "Send a message6",
+       "type": "n8n-nodes-base.gmail",
+       "position": [
+         1216,
+         144
+       ],
+       "typeVersion": 2.1,
+       "webhookId": "a9282708-1863-4a00-8173-fe51fdf543c5",
+       "credentials": {
+         "gmailOAuth2": {
+           "id": "p0fUIoqgD9urSV0b",
+           "name": "jair_silva@drone-livre.com"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "sendTo": "={{ $json.output.to}}",
+         "subject": "={{ $json.output.subject }}",
+         "message": "={{ $json.output.message.replace(/\\n/g, '<br>') }}",
+         "options": {
+           "bccList": "vitor.rc@neuromanage.ai",
+           "senderName": "Vitor"
+         }
+       },
+       "id": "dfa68edf-015f-410e-80a8-eba04050f8d3",
+       "name": "Send a message7",
+       "type": "n8n-nodes-base.gmail",
+       "position": [
+         1232,
+         624
+       ],
+       "typeVersion": 2.1,
+       "webhookId": "b3df5e6f-09e7-4672-9b0a-ba0cf397c7f5",
+       "credentials": {
+         "gmailOAuth2": {
+           "id": "RufUdHbBwa63Z7RY",
+           "name": "jair.silva@drone-livre.com"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "sendTo": "={{ $json.output.to}}",
+         "subject": "={{ $json.output.subject }}",
+         "message": "={{ $json.output.message.replace(/\\n/g, '<br>') }}",
+         "options": {
+           "bccList": "vitor.rc@neuromanage.ai",
+           "senderName": "Vitor"
+         }
+       },
+       "id": "82961992-aa61-4150-8d12-60cc36534a39",
+       "name": "Send a message8",
+       "type": "n8n-nodes-base.gmail",
+       "position": [
+         1248,
+         1120
+       ],
+       "typeVersion": 2.1,
+       "webhookId": "10dc6ed9-a042-4d88-96fe-c3b2ac94a1f8",
+       "credentials": {
+         "gmailOAuth2": {
+           "id": "5N4YrET8y8G48vxn",
+           "name": "jair.silva_drone@drone-livre.com"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "sendTo": "={{ $json.output.to}}",
+         "subject": "={{ $json.output.subject }}",
+         "message": "={{ $json.output.message.replace(/\\n/g, '<br>') }}",
+         "options": {
+           "bccList": "vitor.rc@neuromanage.ai",
+           "senderName": "Vitor"
+         }
+       },
+       "id": "0d11606b-4d7e-4403-a481-7e7c14e0f530",
+       "name": "Send a message9",
+       "type": "n8n-nodes-base.gmail",
+       "position": [
+         1264,
+         1600
+       ],
+       "typeVersion": 2.1,
+       "webhookId": "dc0a6df3-9066-4171-9642-a488dcd91826",
+       "credentials": {
+         "gmailOAuth2": {
+           "id": "OpTI3fDafoJZBBnP",
+           "name": "silva_jair@drone-livre.com"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "jsCode": "// ═══════════════════════════════════════════════════════════════════════════════\n// CODE NODE: Formatador de Quebras de Linha para Emails - TT&Co (v2)\n// ═══════════════════════════════════════════════════════════════════════════════\n// Coloque este node ENTRE o Email Agent e o Send a message (Gmail)\n// ═══════════════════════════════════════════════════════════════════════════════\n\nfunction formatEmailWithLineBreaks(message) {\n  // Se já tem quebras de linha suficientes (mais de 3), retorna como está\n  const existingBreaks = (message.match(/\\n/g) || []).length;\n  if (existingBreaks >= 3) {\n    return message;\n  }\n  \n  let formattedMessage = message;\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 1: Separar saudação \"Olá [Nome], tudo bem?\"\n  // ═══════════════════════════════════════════════════════════════════════════\n  // Captura nomes simples ou compostos (Jose Renato, Maria Clara, etc.)\n  formattedMessage = formattedMessage.replace(\n    /^(Olá\\s+[A-Za-zÀ-ÿ]+(?:\\s+[A-Za-zÀ-ÿ]+)?,?\\s*tudo\\s+bem\\s*\\?)\\s*/i,\n    '$1\\n\\n'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 2: Separar após contexto inicial (problema/desafio do setor)\n  // ═══════════════════════════════════════════════════════════════════════════\n  const problemPatterns = [\n    'Empresas de tecnologia',\n    'Empresas como a sua',\n    'Sabemos que empresas',\n    'Sabemos que a complexidade',\n    'Com sua operação',\n    'Notei sua',\n    'Acompanhei o histórico',\n    'Na sua liderança',\n  ];\n  \n  problemPatterns.forEach(pattern => {\n    const regex = new RegExp(`(\\\\.)(\\\\s*)(${pattern})`, 'gi');\n    formattedMessage = formattedMessage.replace(regex, '$1\\n\\n$3');\n  });\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 3: Separar antes de \"A TT&Co\" ou \"Na TT&Co\"\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(A TT&Co)/g,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Na TT&Co)/g,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 4: Separar antes do convite/CTA principal\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Gostaria de convidá-lo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(por isso gostaria de convidá-lo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Gostaríamos de convidá-lo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 5: Separar antes de frases sobre agenda/exclusividade\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(A agenda para)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Essa conversa é exclusiva)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\?)(\\s*)(Tenho algumas vagas)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 6: Separar antes do fechamento/call-to-action final\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Se fizer sentido)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Se estiver disponível)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Caso tenha interesse)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\?)(\\s*)(Fico no aguardo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Fico no aguardo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 7: Separar assinatura\n  // ═══════════════════════════════════════════════════════════════════════════\n  \n  // Antes de \"Abraço,\" ou \"Até breve!\"\n  formattedMessage = formattedMessage.replace(\n    /([.!?])(\\s*)(Abraço[,.]?)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /([.!?])(\\s*)(Até breve[!.]?)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // Antes de \"Fabio Ferraz\" quando não precedido por Abraço/Até breve\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Fabio Ferraz)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // Se tem \"Abraço,\" ou \"Até breve!\" seguido de \"Fabio Ferraz\", linha separada\n  formattedMessage = formattedMessage.replace(\n    /(Abraço[,.]?)(\\s*)(?!\\n)(Fabio Ferraz)/gi,\n    '$1\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(Até breve[!.]?)(\\s*)(?!\\n)(Fabio Ferraz)/gi,\n    '$1\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // LIMPEZA FINAL\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(/[ \\t]+\\n/g, '\\n');\n  formattedMessage = formattedMessage.replace(/\\n[ \\t]+/g, '\\n');\n  formattedMessage = formattedMessage.replace(/\\n{3,}/g, '\\n\\n');\n  formattedMessage = formattedMessage.trim();\n  \n  return formattedMessage;\n}\n\n// ═══════════════════════════════════════════════════════════════════════════════\n// PROCESSAMENTO PRINCIPAL\n// ═══════════════════════════════════════════════════════════════════════════════\n\nconst inputData = $input.all();\nconst results = [];\n\nfor (const item of inputData) {\n  let message = item.json.output?.message || item.json.message || '';\n  let subject = item.json.output?.subject || item.json.subject || '';\n  let to = item.json.output?.to || item.json.to || '';\n  \n  const formattedMessage = formatEmailWithLineBreaks(message);\n  const htmlMessage = formattedMessage.replace(/\\n/g, '<br>');\n  \n  results.push({\n    json: {\n      output: {\n        to: to,\n        subject: subject,\n        message: formattedMessage,\n        messageHtml: htmlMessage\n      },\n      originalMessage: message,\n      wasFormatted: message !== formattedMessage\n    }\n  });\n}\n\nreturn results;"
+       },
+       "id": "c7914902-38c9-49a3-8030-115186c8e91b",
+       "name": "Code in JavaScript",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         1040,
+         -320
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "jsCode": "// ═══════════════════════════════════════════════════════════════════════════════\n// CODE NODE: Formatador de Quebras de Linha para Emails - TT&Co (v2)\n// ═══════════════════════════════════════════════════════════════════════════════\n// Coloque este node ENTRE o Email Agent e o Send a message (Gmail)\n// ═══════════════════════════════════════════════════════════════════════════════\n\nfunction formatEmailWithLineBreaks(message) {\n  // Se já tem quebras de linha suficientes (mais de 3), retorna como está\n  const existingBreaks = (message.match(/\\n/g) || []).length;\n  if (existingBreaks >= 3) {\n    return message;\n  }\n  \n  let formattedMessage = message;\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 1: Separar saudação \"Olá [Nome], tudo bem?\"\n  // ═══════════════════════════════════════════════════════════════════════════\n  // Captura nomes simples ou compostos (Jose Renato, Maria Clara, etc.)\n  formattedMessage = formattedMessage.replace(\n    /^(Olá\\s+[A-Za-zÀ-ÿ]+(?:\\s+[A-Za-zÀ-ÿ]+)?,?\\s*tudo\\s+bem\\s*\\?)\\s*/i,\n    '$1\\n\\n'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 2: Separar após contexto inicial (problema/desafio do setor)\n  // ═══════════════════════════════════════════════════════════════════════════\n  const problemPatterns = [\n    'Empresas de tecnologia',\n    'Empresas como a sua',\n    'Sabemos que empresas',\n    'Sabemos que a complexidade',\n    'Com sua operação',\n    'Notei sua',\n    'Acompanhei o histórico',\n    'Na sua liderança',\n  ];\n  \n  problemPatterns.forEach(pattern => {\n    const regex = new RegExp(`(\\\\.)(\\\\s*)(${pattern})`, 'gi');\n    formattedMessage = formattedMessage.replace(regex, '$1\\n\\n$3');\n  });\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 3: Separar antes de \"A TT&Co\" ou \"Na TT&Co\"\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(A TT&Co)/g,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Na TT&Co)/g,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 4: Separar antes do convite/CTA principal\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Gostaria de convidá-lo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(por isso gostaria de convidá-lo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Gostaríamos de convidá-lo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 5: Separar antes de frases sobre agenda/exclusividade\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(A agenda para)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Essa conversa é exclusiva)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\?)(\\s*)(Tenho algumas vagas)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 6: Separar antes do fechamento/call-to-action final\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Se fizer sentido)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Se estiver disponível)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Caso tenha interesse)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\?)(\\s*)(Fico no aguardo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Fico no aguardo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 7: Separar assinatura\n  // ═══════════════════════════════════════════════════════════════════════════\n  \n  // Antes de \"Abraço,\" ou \"Até breve!\"\n  formattedMessage = formattedMessage.replace(\n    /([.!?])(\\s*)(Abraço[,.]?)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /([.!?])(\\s*)(Até breve[!.]?)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // Antes de \"Fabio Ferraz\" quando não precedido por Abraço/Até breve\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Fabio Ferraz)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // Se tem \"Abraço,\" ou \"Até breve!\" seguido de \"Fabio Ferraz\", linha separada\n  formattedMessage = formattedMessage.replace(\n    /(Abraço[,.]?)(\\s*)(?!\\n)(Fabio Ferraz)/gi,\n    '$1\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(Até breve[!.]?)(\\s*)(?!\\n)(Fabio Ferraz)/gi,\n    '$1\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // LIMPEZA FINAL\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(/[ \\t]+\\n/g, '\\n');\n  formattedMessage = formattedMessage.replace(/\\n[ \\t]+/g, '\\n');\n  formattedMessage = formattedMessage.replace(/\\n{3,}/g, '\\n\\n');\n  formattedMessage = formattedMessage.trim();\n  \n  return formattedMessage;\n}\n\n// ═══════════════════════════════════════════════════════════════════════════════\n// PROCESSAMENTO PRINCIPAL\n// ═══════════════════════════════════════════════════════════════════════════════\n\nconst inputData = $input.all();\nconst results = [];\n\nfor (const item of inputData) {\n  let message = item.json.output?.message || item.json.message || '';\n  let subject = item.json.output?.subject || item.json.subject || '';\n  let to = item.json.output?.to || item.json.to || '';\n  \n  const formattedMessage = formatEmailWithLineBreaks(message);\n  const htmlMessage = formattedMessage.replace(/\\n/g, '<br>');\n  \n  results.push({\n    json: {\n      output: {\n        to: to,\n        subject: subject,\n        message: formattedMessage,\n        messageHtml: htmlMessage\n      },\n      originalMessage: message,\n      wasFormatted: message !== formattedMessage\n    }\n  });\n}\n\nreturn results;"
+       },
+       "id": "5320175c-f15d-4759-b73a-79a921c446ea",
+       "name": "Code in JavaScript1",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         1008,
+         144
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "jsCode": "// ═══════════════════════════════════════════════════════════════════════════════\n// CODE NODE: Formatador de Quebras de Linha para Emails - TT&Co (v2)\n// ═══════════════════════════════════════════════════════════════════════════════\n// Coloque este node ENTRE o Email Agent e o Send a message (Gmail)\n// ═══════════════════════════════════════════════════════════════════════════════\n\nfunction formatEmailWithLineBreaks(message) {\n  // Se já tem quebras de linha suficientes (mais de 3), retorna como está\n  const existingBreaks = (message.match(/\\n/g) || []).length;\n  if (existingBreaks >= 3) {\n    return message;\n  }\n  \n  let formattedMessage = message;\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 1: Separar saudação \"Olá [Nome], tudo bem?\"\n  // ═══════════════════════════════════════════════════════════════════════════\n  // Captura nomes simples ou compostos (Jose Renato, Maria Clara, etc.)\n  formattedMessage = formattedMessage.replace(\n    /^(Olá\\s+[A-Za-zÀ-ÿ]+(?:\\s+[A-Za-zÀ-ÿ]+)?,?\\s*tudo\\s+bem\\s*\\?)\\s*/i,\n    '$1\\n\\n'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 2: Separar após contexto inicial (problema/desafio do setor)\n  // ═══════════════════════════════════════════════════════════════════════════\n  const problemPatterns = [\n    'Empresas de tecnologia',\n    'Empresas como a sua',\n    'Sabemos que empresas',\n    'Sabemos que a complexidade',\n    'Com sua operação',\n    'Notei sua',\n    'Acompanhei o histórico',\n    'Na sua liderança',\n  ];\n  \n  problemPatterns.forEach(pattern => {\n    const regex = new RegExp(`(\\\\.)(\\\\s*)(${pattern})`, 'gi');\n    formattedMessage = formattedMessage.replace(regex, '$1\\n\\n$3');\n  });\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 3: Separar antes de \"A TT&Co\" ou \"Na TT&Co\"\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(A TT&Co)/g,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Na TT&Co)/g,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 4: Separar antes do convite/CTA principal\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Gostaria de convidá-lo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(por isso gostaria de convidá-lo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Gostaríamos de convidá-lo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 5: Separar antes de frases sobre agenda/exclusividade\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(A agenda para)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Essa conversa é exclusiva)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\?)(\\s*)(Tenho algumas vagas)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 6: Separar antes do fechamento/call-to-action final\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Se fizer sentido)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Se estiver disponível)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Caso tenha interesse)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\?)(\\s*)(Fico no aguardo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Fico no aguardo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 7: Separar assinatura\n  // ═══════════════════════════════════════════════════════════════════════════\n  \n  // Antes de \"Abraço,\" ou \"Até breve!\"\n  formattedMessage = formattedMessage.replace(\n    /([.!?])(\\s*)(Abraço[,.]?)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /([.!?])(\\s*)(Até breve[!.]?)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // Antes de \"Fabio Ferraz\" quando não precedido por Abraço/Até breve\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Fabio Ferraz)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // Se tem \"Abraço,\" ou \"Até breve!\" seguido de \"Fabio Ferraz\", linha separada\n  formattedMessage = formattedMessage.replace(\n    /(Abraço[,.]?)(\\s*)(?!\\n)(Fabio Ferraz)/gi,\n    '$1\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(Até breve[!.]?)(\\s*)(?!\\n)(Fabio Ferraz)/gi,\n    '$1\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // LIMPEZA FINAL\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(/[ \\t]+\\n/g, '\\n');\n  formattedMessage = formattedMessage.replace(/\\n[ \\t]+/g, '\\n');\n  formattedMessage = formattedMessage.replace(/\\n{3,}/g, '\\n\\n');\n  formattedMessage = formattedMessage.trim();\n  \n  return formattedMessage;\n}\n\n// ═══════════════════════════════════════════════════════════════════════════════\n// PROCESSAMENTO PRINCIPAL\n// ═══════════════════════════════════════════════════════════════════════════════\n\nconst inputData = $input.all();\nconst results = [];\n\nfor (const item of inputData) {\n  let message = item.json.output?.message || item.json.message || '';\n  let subject = item.json.output?.subject || item.json.subject || '';\n  let to = item.json.output?.to || item.json.to || '';\n  \n  const formattedMessage = formatEmailWithLineBreaks(message);\n  const htmlMessage = formattedMessage.replace(/\\n/g, '<br>');\n  \n  results.push({\n    json: {\n      output: {\n        to: to,\n        subject: subject,\n        message: formattedMessage,\n        messageHtml: htmlMessage\n      },\n      originalMessage: message,\n      wasFormatted: message !== formattedMessage\n    }\n  });\n}\n\nreturn results;"
+       },
+       "id": "8a9575e6-df81-4f57-8f72-745127bb9a00",
+       "name": "Code in JavaScript2",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         1008,
+         624
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "jsCode": "// ═══════════════════════════════════════════════════════════════════════════════\n// CODE NODE: Formatador de Quebras de Linha para Emails - TT&Co (v2)\n// ═══════════════════════════════════════════════════════════════════════════════\n// Coloque este node ENTRE o Email Agent e o Send a message (Gmail)\n// ═══════════════════════════════════════════════════════════════════════════════\n\nfunction formatEmailWithLineBreaks(message) {\n  // Se já tem quebras de linha suficientes (mais de 3), retorna como está\n  const existingBreaks = (message.match(/\\n/g) || []).length;\n  if (existingBreaks >= 3) {\n    return message;\n  }\n  \n  let formattedMessage = message;\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 1: Separar saudação \"Olá [Nome], tudo bem?\"\n  // ═══════════════════════════════════════════════════════════════════════════\n  // Captura nomes simples ou compostos (Jose Renato, Maria Clara, etc.)\n  formattedMessage = formattedMessage.replace(\n    /^(Olá\\s+[A-Za-zÀ-ÿ]+(?:\\s+[A-Za-zÀ-ÿ]+)?,?\\s*tudo\\s+bem\\s*\\?)\\s*/i,\n    '$1\\n\\n'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 2: Separar após contexto inicial (problema/desafio do setor)\n  // ═══════════════════════════════════════════════════════════════════════════\n  const problemPatterns = [\n    'Empresas de tecnologia',\n    'Empresas como a sua',\n    'Sabemos que empresas',\n    'Sabemos que a complexidade',\n    'Com sua operação',\n    'Notei sua',\n    'Acompanhei o histórico',\n    'Na sua liderança',\n  ];\n  \n  problemPatterns.forEach(pattern => {\n    const regex = new RegExp(`(\\\\.)(\\\\s*)(${pattern})`, 'gi');\n    formattedMessage = formattedMessage.replace(regex, '$1\\n\\n$3');\n  });\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 3: Separar antes de \"A TT&Co\" ou \"Na TT&Co\"\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(A TT&Co)/g,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Na TT&Co)/g,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 4: Separar antes do convite/CTA principal\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Gostaria de convidá-lo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(por isso gostaria de convidá-lo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Gostaríamos de convidá-lo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 5: Separar antes de frases sobre agenda/exclusividade\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(A agenda para)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Essa conversa é exclusiva)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\?)(\\s*)(Tenho algumas vagas)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 6: Separar antes do fechamento/call-to-action final\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Se fizer sentido)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Se estiver disponível)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Caso tenha interesse)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\?)(\\s*)(Fico no aguardo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Fico no aguardo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 7: Separar assinatura\n  // ═══════════════════════════════════════════════════════════════════════════\n  \n  // Antes de \"Abraço,\" ou \"Até breve!\"\n  formattedMessage = formattedMessage.replace(\n    /([.!?])(\\s*)(Abraço[,.]?)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /([.!?])(\\s*)(Até breve[!.]?)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // Antes de \"Fabio Ferraz\" quando não precedido por Abraço/Até breve\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Fabio Ferraz)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // Se tem \"Abraço,\" ou \"Até breve!\" seguido de \"Fabio Ferraz\", linha separada\n  formattedMessage = formattedMessage.replace(\n    /(Abraço[,.]?)(\\s*)(?!\\n)(Fabio Ferraz)/gi,\n    '$1\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(Até breve[!.]?)(\\s*)(?!\\n)(Fabio Ferraz)/gi,\n    '$1\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // LIMPEZA FINAL\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(/[ \\t]+\\n/g, '\\n');\n  formattedMessage = formattedMessage.replace(/\\n[ \\t]+/g, '\\n');\n  formattedMessage = formattedMessage.replace(/\\n{3,}/g, '\\n\\n');\n  formattedMessage = formattedMessage.trim();\n  \n  return formattedMessage;\n}\n\n// ═══════════════════════════════════════════════════════════════════════════════\n// PROCESSAMENTO PRINCIPAL\n// ═══════════════════════════════════════════════════════════════════════════════\n\nconst inputData = $input.all();\nconst results = [];\n\nfor (const item of inputData) {\n  let message = item.json.output?.message || item.json.message || '';\n  let subject = item.json.output?.subject || item.json.subject || '';\n  let to = item.json.output?.to || item.json.to || '';\n  \n  const formattedMessage = formatEmailWithLineBreaks(message);\n  const htmlMessage = formattedMessage.replace(/\\n/g, '<br>');\n  \n  results.push({\n    json: {\n      output: {\n        to: to,\n        subject: subject,\n        message: formattedMessage,\n        messageHtml: htmlMessage\n      },\n      originalMessage: message,\n      wasFormatted: message !== formattedMessage\n    }\n  });\n}\n\nreturn results;"
+       },
+       "id": "7e116a33-219a-4bef-9847-ad215a0927e2",
+       "name": "Code in JavaScript3",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         1040,
+         1120
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "jsCode": "// ═══════════════════════════════════════════════════════════════════════════════\n// CODE NODE: Formatador de Quebras de Linha para Emails - TT&Co (v2)\n// ═══════════════════════════════════════════════════════════════════════════════\n// Coloque este node ENTRE o Email Agent e o Send a message (Gmail)\n// ═══════════════════════════════════════════════════════════════════════════════\n\nfunction formatEmailWithLineBreaks(message) {\n  // Se já tem quebras de linha suficientes (mais de 3), retorna como está\n  const existingBreaks = (message.match(/\\n/g) || []).length;\n  if (existingBreaks >= 3) {\n    return message;\n  }\n  \n  let formattedMessage = message;\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 1: Separar saudação \"Olá [Nome], tudo bem?\"\n  // ═══════════════════════════════════════════════════════════════════════════\n  // Captura nomes simples ou compostos (Jose Renato, Maria Clara, etc.)\n  formattedMessage = formattedMessage.replace(\n    /^(Olá\\s+[A-Za-zÀ-ÿ]+(?:\\s+[A-Za-zÀ-ÿ]+)?,?\\s*tudo\\s+bem\\s*\\?)\\s*/i,\n    '$1\\n\\n'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 2: Separar após contexto inicial (problema/desafio do setor)\n  // ═══════════════════════════════════════════════════════════════════════════\n  const problemPatterns = [\n    'Empresas de tecnologia',\n    'Empresas como a sua',\n    'Sabemos que empresas',\n    'Sabemos que a complexidade',\n    'Com sua operação',\n    'Notei sua',\n    'Acompanhei o histórico',\n    'Na sua liderança',\n  ];\n  \n  problemPatterns.forEach(pattern => {\n    const regex = new RegExp(`(\\\\.)(\\\\s*)(${pattern})`, 'gi');\n    formattedMessage = formattedMessage.replace(regex, '$1\\n\\n$3');\n  });\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 3: Separar antes de \"A TT&Co\" ou \"Na TT&Co\"\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(A TT&Co)/g,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Na TT&Co)/g,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 4: Separar antes do convite/CTA principal\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Gostaria de convidá-lo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(por isso gostaria de convidá-lo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Gostaríamos de convidá-lo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 5: Separar antes de frases sobre agenda/exclusividade\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(A agenda para)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Essa conversa é exclusiva)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\?)(\\s*)(Tenho algumas vagas)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 6: Separar antes do fechamento/call-to-action final\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Se fizer sentido)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Se estiver disponível)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Caso tenha interesse)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\?)(\\s*)(Fico no aguardo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Fico no aguardo)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // PADRÃO 7: Separar assinatura\n  // ═══════════════════════════════════════════════════════════════════════════\n  \n  // Antes de \"Abraço,\" ou \"Até breve!\"\n  formattedMessage = formattedMessage.replace(\n    /([.!?])(\\s*)(Abraço[,.]?)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /([.!?])(\\s*)(Até breve[!.]?)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // Antes de \"Fabio Ferraz\" quando não precedido por Abraço/Até breve\n  formattedMessage = formattedMessage.replace(\n    /(\\.)(\\s*)(Fabio Ferraz)/gi,\n    '$1\\n\\n$3'\n  );\n  \n  // Se tem \"Abraço,\" ou \"Até breve!\" seguido de \"Fabio Ferraz\", linha separada\n  formattedMessage = formattedMessage.replace(\n    /(Abraço[,.]?)(\\s*)(?!\\n)(Fabio Ferraz)/gi,\n    '$1\\n$3'\n  );\n  \n  formattedMessage = formattedMessage.replace(\n    /(Até breve[!.]?)(\\s*)(?!\\n)(Fabio Ferraz)/gi,\n    '$1\\n$3'\n  );\n  \n  // ═══════════════════════════════════════════════════════════════════════════\n  // LIMPEZA FINAL\n  // ═══════════════════════════════════════════════════════════════════════════\n  formattedMessage = formattedMessage.replace(/[ \\t]+\\n/g, '\\n');\n  formattedMessage = formattedMessage.replace(/\\n[ \\t]+/g, '\\n');\n  formattedMessage = formattedMessage.replace(/\\n{3,}/g, '\\n\\n');\n  formattedMessage = formattedMessage.trim();\n  \n  return formattedMessage;\n}\n\n// ═══════════════════════════════════════════════════════════════════════════════\n// PROCESSAMENTO PRINCIPAL\n// ═══════════════════════════════════════════════════════════════════════════════\n\nconst inputData = $input.all();\nconst results = [];\n\nfor (const item of inputData) {\n  let message = item.json.output?.message || item.json.message || '';\n  let subject = item.json.output?.subject || item.json.subject || '';\n  let to = item.json.output?.to || item.json.to || '';\n  \n  const formattedMessage = formatEmailWithLineBreaks(message);\n  const htmlMessage = formattedMessage.replace(/\\n/g, '<br>');\n  \n  results.push({\n    json: {\n      output: {\n        to: to,\n        subject: subject,\n        message: formattedMessage,\n        messageHtml: htmlMessage\n      },\n      originalMessage: message,\n      wasFormatted: message !== formattedMessage\n    }\n  });\n}\n\nreturn results;"
+       },
+       "id": "1b510186-89af-4a82-b1fb-1a4b273e8247",
+       "name": "Code in JavaScript4",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         1040,
+         1600
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "httpMethod": "POST",
+         "path": "executor/PLACEHOLDER",
+         "options": {}
+       },
+       "id": "b24126a5-5674-4974-a51b-eb895c31d009",
+       "name": "Executor Webhook",
+       "type": "n8n-nodes-base.webhook",
+       "position": [
+         -1008,
+         416
+       ],
+       "typeVersion": 2,
+       "webhookId": "3f88b1b6-7e77-482a-a4be-5a2ca0943837"
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "f1cdbef4-4dea-4112-bb20-e2e89c002b57",
+               "name": "random_numb",
+               "value": "={{ Math.floor(Math.random() * 10) }}",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "26a212e5-0da1-4a21-bee3-ca8eddf7f360",
+       "name": "Edit Fields2",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         -816,
+         416
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "amount": "={{ $json.random_numb }}",
+         "unit": "minutes"
+       },
+       "id": "3f0e6180-1da1-41ea-9e1f-6ecac5ab422b",
+       "name": "Wait1",
+       "type": "n8n-nodes-base.wait",
+       "position": [
+         -608,
+         416
+       ],
+       "typeVersion": 1.1,
+       "webhookId": "294e1ec7-b325-4c71-94cc-c9978bac455c"
+     }
+   ],
+   "connections": {
+     "Get many rows": {
+       "main": [
+         [
+           {
+             "node": "If5",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Wait": {
+       "main": [
+         [
+           {
+             "node": "Loop Over Items6",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Structured Output Parser": {
+       "ai_outputParser": [
+         [
+           {
+             "node": "Email Agent1",
+             "type": "ai_outputParser",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "OpenAI Chat Model": {
+       "ai_languageModel": [
+         [
+           {
+             "node": "Email Agent1",
+             "type": "ai_languageModel",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "OpenRouter Chat Model": {
+       "ai_languageModel": [
+         [
+           {
+             "node": "Email Agent1",
+             "type": "ai_languageModel",
+             "index": 1
+           }
+         ]
+       ]
+     },
+     "Wait3": {
+       "main": [
+         [
+           {
+             "node": "Loop Over Items6",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Structured Output Parser3": {
+       "ai_outputParser": [
+         [
+           {
+             "node": "Email Agent",
+             "type": "ai_outputParser",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "OpenAI Chat Model3": {
+       "ai_languageModel": [
+         [
+           {
+             "node": "Email Agent",
+             "type": "ai_languageModel",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "OpenRouter Chat Model3": {
+       "ai_languageModel": [
+         [
+           {
+             "node": "Email Agent",
+             "type": "ai_languageModel",
+             "index": 1
+           }
+         ]
+       ]
+     },
+     "Wait6": {
+       "main": [
+         [
+           {
+             "node": "Loop Over Items6",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Structured Output Parser6": {
+       "ai_outputParser": [
+         [
+           {
+             "node": "Email Agent2",
+             "type": "ai_outputParser",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "OpenAI Chat Model6": {
+       "ai_languageModel": [
+         [
+           {
+             "node": "Email Agent2",
+             "type": "ai_languageModel",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "OpenRouter Chat Model6": {
+       "ai_languageModel": [
+         [
+           {
+             "node": "Email Agent2",
+             "type": "ai_languageModel",
+             "index": 1
+           }
+         ]
+       ]
+     },
+     "Wait9": {
+       "main": [
+         [
+           {
+             "node": "Loop Over Items6",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Structured Output Parser9": {
+       "ai_outputParser": [
+         [
+           {
+             "node": "Email Agent3",
+             "type": "ai_outputParser",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "OpenAI Chat Model9": {
+       "ai_languageModel": [
+         [
+           {
+             "node": "Email Agent3",
+             "type": "ai_languageModel",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "OpenRouter Chat Model9": {
+       "ai_languageModel": [
+         [
+           {
+             "node": "Email Agent3",
+             "type": "ai_languageModel",
+             "index": 1
+           }
+         ]
+       ]
+     },
+     "Wait12": {
+       "main": [
+         [
+           {
+             "node": "Loop Over Items6",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Structured Output Parser12": {
+       "ai_outputParser": [
+         [
+           {
+             "node": "Email Agent4",
+             "type": "ai_outputParser",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "OpenAI Chat Model12": {
+       "ai_languageModel": [
+         [
+           {
+             "node": "Email Agent4",
+             "type": "ai_languageModel",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "OpenRouter Chat Model12": {
+       "ai_languageModel": [
+         [
+           {
+             "node": "Email Agent4",
+             "type": "ai_languageModel",
+             "index": 1
+           }
+         ]
+       ]
+     },
+     "Email Agent": {
+       "main": [
+         [
+           {
+             "node": "Code in JavaScript",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Email Agent1": {
+       "main": [
+         [
+           {
+             "node": "Code in JavaScript1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Email Agent2": {
+       "main": [
+         [
+           {
+             "node": "Code in JavaScript2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Email Agent3": {
+       "main": [
+         [
+           {
+             "node": "Code in JavaScript3",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Email Agent4": {
+       "main": [
+         [
+           {
+             "node": "Code in JavaScript4",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Update a row": {
+       "main": [
+         [
+           {
+             "node": "Wait",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Update a row1": {
+       "main": [
+         [
+           {
+             "node": "Wait3",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Update a row2": {
+       "main": [
+         [
+           {
+             "node": "Wait9",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Update a row3": {
+       "main": [
+         [
+           {
+             "node": "Wait6",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Update a row4": {
+       "main": [
+         [
+           {
+             "node": "Wait12",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Sort": {
+       "main": [
+         [
+           {
+             "node": "Limit6",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "If5": {
+       "main": [
+         [
+           {
+             "node": "Sort",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Limit6": {
+       "main": [
+         [
+           {
+             "node": "Add index to each item",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Embeddings OpenAI": {
+       "ai_embedding": [
+         [
+           {
+             "node": "CONSULTA AO SCRIPT",
+             "type": "ai_embedding",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "CONSULTA AO SCRIPT": {
+       "ai_tool": [
+         [
+           {
+             "node": "Email Agent2",
+             "type": "ai_tool",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "CONSULTA AO SCRIPT1": {
+       "ai_tool": [
+         [
+           {
+             "node": "Email Agent3",
+             "type": "ai_tool",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "CONSULTA AO SCRIPT2": {
+       "ai_tool": [
+         [
+           {
+             "node": "Email Agent4",
+             "type": "ai_tool",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Embeddings OpenAI1": {
+       "ai_embedding": [
+         [
+           {
+             "node": "CONSULTA AO SCRIPT1",
+             "type": "ai_embedding",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Embeddings OpenAI2": {
+       "ai_embedding": [
+         [
+           {
+             "node": "CONSULTA AO SCRIPT2",
+             "type": "ai_embedding",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "CONSULTA AO SCRIPT3": {
+       "ai_tool": [
+         [
+           {
+             "node": "Email Agent",
+             "type": "ai_tool",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "CONSULTA AO SCRIPT4": {
+       "ai_tool": [
+         [
+           {
+             "node": "Email Agent1",
+             "type": "ai_tool",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Embeddings OpenAI3": {
+       "ai_embedding": [
+         [
+           {
+             "node": "CONSULTA AO SCRIPT3",
+             "type": "ai_embedding",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Embeddings OpenAI4": {
+       "ai_embedding": [
+         [
+           {
+             "node": "CONSULTA AO SCRIPT4",
+             "type": "ai_embedding",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Reranker Cohere": {
+       "ai_reranker": [
+         [
+           {
+             "node": "CONSULTA AO SCRIPT3",
+             "type": "ai_reranker",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Reranker Cohere1": {
+       "ai_reranker": [
+         [
+           {
+             "node": "CONSULTA AO SCRIPT4",
+             "type": "ai_reranker",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Reranker Cohere2": {
+       "ai_reranker": [
+         [
+           {
+             "node": "CONSULTA AO SCRIPT2",
+             "type": "ai_reranker",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Reranker Cohere3": {
+       "ai_reranker": [
+         [
+           {
+             "node": "CONSULTA AO SCRIPT1",
+             "type": "ai_reranker",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Reranker Cohere4": {
+       "ai_reranker": [
+         [
+           {
+             "node": "CONSULTA AO SCRIPT",
+             "type": "ai_reranker",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Switch": {
+       "main": [
+         [
+           {
+             "node": "If",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "If1",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "If2",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "If3",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "If4",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Add index to each item": {
+       "main": [
+         [
+           {
+             "node": "Loop Over Items6",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Loop Over Items6": {
+       "main": [
+         [],
+         [
+           {
+             "node": "Switch",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "If": {
+       "main": [
+         [
+           {
+             "node": "Email Agent",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "Loop Over Items6",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "If1": {
+       "main": [
+         [
+           {
+             "node": "Email Agent1",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "Loop Over Items6",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "If2": {
+       "main": [
+         [
+           {
+             "node": "Email Agent2",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "Loop Over Items6",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "If3": {
+       "main": [
+         [
+           {
+             "node": "Email Agent3",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "Loop Over Items6",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "If4": {
+       "main": [
+         [
+           {
+             "node": "Email Agent4",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "Loop Over Items6",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Send a message5": {
+       "main": [
+         [
+           {
+             "node": "Update a row1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Send a message6": {
+       "main": [
+         [
+           {
+             "node": "Update a row",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Send a message7": {
+       "main": [
+         [
+           {
+             "node": "Update a row3",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Send a message8": {
+       "main": [
+         [
+           {
+             "node": "Update a row2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Send a message9": {
+       "main": [
+         [
+           {
+             "node": "Update a row4",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Code in JavaScript": {
+       "main": [
+         [
+           {
+             "node": "Send a message5",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Code in JavaScript1": {
+       "main": [
+         [
+           {
+             "node": "Send a message6",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Code in JavaScript2": {
+       "main": [
+         [
+           {
+             "node": "Send a message7",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Code in JavaScript3": {
+       "main": [
+         [
+           {
+             "node": "Send a message8",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Code in JavaScript4": {
+       "main": [
+         [
+           {
+             "node": "Send a message9",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Executor Webhook": {
+       "main": [
+         [
+           {
+             "node": "Edit Fields2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Edit Fields2": {
+       "main": [
+         [
+           {
+             "node": "Wait1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Wait1": {
+       "main": [
+         [
+           {
+             "node": "Get many rows",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     }
+   },
+   "pinData": {},
+   "meta": {
+     "instanceId": "a0f7a305da35e849bafdb639b90f9c75f57bc77027e416642bf74993eb8cfaee"
+   }
+ }
