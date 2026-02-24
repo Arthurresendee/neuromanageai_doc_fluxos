@@ -117,7 +117,6 @@ Tabela vetorial: documents_email
 
 - Separa paragrafo em pontos-chave (saudacao, dor, proposta, CTA, assinatura)
 - Normaliza quebras de linha.
-- Cria versao HTML via replace(\n -> <br>)
 
 ## Send a message
 

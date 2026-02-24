@@ -1,0 +1,62 @@
+## Dúvidas
+
+## Possíveis correções/ melhorias:
+
+## Objetivo
+
+Enviar mensagem inicial de leads do likhedin, a partir da tabela qualified_leads_jobs_offers
+
+## Inicio (Schedule)
+
+- Cron: entre 8h e 12h, seg a sex.
+- Dispara o fluxo automaticamente no período configurado.
+
+## Credenciais
+
+- Define supabase_url, supabase_apikey, wa_instance.
+
+## Lista
+
+- Busca ate 10 leads onde Data Mensagem Whatsapp e nula.
+
+## Organiza contatos
+
+- Normaliza Telefone (só números, prefixo 55 se faltar).
+
+## Loop Over Items
+
+- Processa cada lead da lista individualmente. Ao acabar, sai acabar ao próximo node
+
+## Delay / Wait / Horario / If
+
+- Definimos um delay aleatório 30–60 s, depois esperamos esses segundos e verificamos se a hora é menor que 19:00, se for não fazemos nada.
+
+## Prepara dados para agente
+
+- É preparado para o agente o leadName, leadPhone, leadEmail, chatInput.
+
+## Agent
+
+- Gera mensagem de first approach SDR (persona Gabriel, NeuroManageAI). Modelo: gpt-4.1-mini.
+
+## whatsapp
+
+- Envia a mensagem gerada para o lead.
+
+## registra mensagem enviada
+
+- Formata telefone do retorno e data_envio.
+
+## If1
+
+- Sucesso: Registra Mensagem. Erro: Registra erro e volta ao Loop.
+
+## Registra Mensagem / Update Mensage / Update Data Mensage
+
+Tabela: qualified_leads_jobs_offers
+
+- Atualizam Data Mensagem Whatsapp e Mensagem Enviada Whatsapp.
+
+## Execute a SQL query
+
+- Atualiza mensagem_enviada_em em várias tabelas.

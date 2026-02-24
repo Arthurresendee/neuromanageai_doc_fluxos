@@ -1,0 +1,289 @@
+NeuroManageAI - Cadência Whatsapp
+
+Esta documentacao explica todo o fluxo em ordem de execucao, detalhando o papel tecnico de cada node e, principalmente, por que cada etapa existe no contexto da operacao comercial (cadência de follow-up por WhatsApp com base na tabela follow_up).
+
+====================================================================
+1) OBJETIVO DO FLUXO
+====================================================================
+
+Objetivo macro:
+
+Executar cadência de prospecção por WhatsApp: carregar registros da tabela follow_up (status pendente), calcular tempo desde a ultima mensagem, e enviar mensagens de follow-up em momentos definidos (10 min, dia 1, 3, 6, 10, 14) via Evolution API, atualizando flags de envio e status no Supabase.
+
+Em termos praticos, o fluxo faz:
+1. Dispara por Schedule Trigger (intervalo configurável).
+2. Get many rows: carrega todos os registros da tabela follow_up (Supabase).
+3. BUSCAR STATUS DO FOLLOWUP: nova leitura de follow_up (getAll) para garantir contexto por item.
+4. Loop Over Items: processa cada registro; ao acabar vai para UPDATE PROSPECÇÃO FINALIZADA; ao continuar vai para VERIFICAR STATUS.
+5. VERIFICAR STATUS (Switch): apenas itens com status = "pendente" seguem; "concluido" e "cancelado" nao disparam envio.
+6. CONVERTER TEMPO: passa só o primeiro item (indice 0).
+7. TEMPO: calcula minutes_passed (diferenca entre now e last_message) e repassa flags followup_*_sent.
+8. Condicoes por janela (10 MIN, DIA 1, DIA 3, DIA 6, DIA 10, DIA 14): se minutos decorridos >= limite e flag correspondente ainda false, segue para PROSPECÇÃO -> ENVIA -> UPDATE -> Wait2 -> Execute a SQL query -> volta ao Loop.
+9. Mensagem e enviada via HTTP POST (Evolution API: sendText, instancia Menthalis); apos envio, update em follow_up (flag followup_*_sent = true e, em alguns ramos, status = Concluido).
+10. Wait2 (3 unidades) e Execute a SQL query (script legado em outras tabelas) fecham o ciclo e retornam ao Loop Over Items.
+
+====================================================================
+2) TABELA SQL ENVOLVIDA
+====================================================================
+
+Tabela alvo do processo:
+- public.follow_up
+
+Campos mais usados pelo fluxo:
+- id
+- user_name
+- user_number
+- last_message (timestamp da ultima mensagem; base para minutes_passed)
+- status (pendente, concluido, cancelado)
+- followup_10_sent, followup_30_sent, followup_180_sent
+- followup_1440_sent, followup_2880_sent, followup_4320_sent, followup_5760_sent
+- followup_7200_sent, followup_8640_sent, followup_11520_sent, followup_14400_sent
+- followup_15840_sent, followup_17280_sent, followup_18720_sent, followup_20160_sent
+
+Campos atualizados no fluxo:
+- followup_10_sent (10 min, dia 1, finalizado)
+- followup_1440_sent (dia 3)
+- followup_2880_sent (dia 6)
+- followup_4320_sent (dia 10)
+- followup_5760_sent (dia 14)
+- status (ex.: Concluido em UPDATE PROSPECÇÃO DIA 6 e em UPDATE PROSPECÇÃO FINALIZADA)
+
+Leitura de negocio:
+- A tabela follow_up controla por user_number quem entrou na cadência, quando foi a ultima interacao e quais etapas da sequência (10 min, 1 dia, 3 dias, etc.) ja foram enviadas, evitando reenvio e permitindo marcar conclusao ou cancelamento.
+
+====================================================================
+3) SEQUENCIA EXECUTIVA COMPLETA (ALTO NIVEL)
+====================================================================
+
+Schedule Trigger
+-> Get many rows (follow_up)
+-> BUSCAR STATUS DO FOLLOWUP (follow_up, getAll)
+-> Loop Over Items
+   -> [fim do lote] UPDATE PROSPECÇÃO FINALIZADA (follow_up: followup_10_sent, status) -> (encerra ou segue conforme conexoes)
+   -> [proximo item] VERIFICAR STATUS (Switch: status pendente/concluido/cancelado)
+      -> segue: CONVERTER TEMPO (só item 0) -> TEMPO (minutes_passed, flags)
+         -> 10 MIN: se minutes_passed >= 10 e followup_30_sent == false -> PROSPECÇÃO DIA  -> ENVIA PROSPECÇÃO DIA  -> UPDATE PROSPECÇÃO DIA  -> Wait2 -> Execute a SQL query -> Loop
+         -> DIA 1:  se minutes_passed >= 1440 e followup_30_sent == false -> PROSPECÇÃO DIA 1 -> ENVIA DIA 1 -> UPDATE PROSPECÇÃO DIA 1 (followup_10_sent) -> Wait2 -> Execute a SQL query -> Loop
+         -> DIA 3:  se minutes_passed >= 4320 e followup_180_sent == false -> PROSPECÇÃO DIA 3 -> ENVIA DIA 3 -> UPDATE PROSPECÇÃO DIA 3 (followup_1440_sent) -> Wait2 -> Loop
+         -> DIA 6:  se minutes_passed >= 8640 e followup_1440_sent == false -> PROSPECÇÃO DIA 6 -> ENVIA DIA 6 -> UPDATE PROSPECÇÃO DIA 6 (followup_2880_sent + status Concluido) -> Wait2 -> Loop
+         -> DIA 10: se minutes_passed >= 14400 e followup_1440_sent == false -> PROSPECÇÃO DIA 10 -> ENVIA DIA 10 -> UPDATE PROSPECÇÃO DIA 10 (followup_4320_sent) -> Wait2 -> Loop
+         -> DIA 14: se minutes_passed >= 20160 e followup_1440_sent == false -> PROSPECÇÃO DIA 14 -> ENVIA DIA 14 -> UPDATE PROSPECÇÃO DIA 14 (followup_5760_sent) -> Wait2 -> Loop
+         -> (condicao false em cada If) -> Wait2 -> Execute a SQL query -> Loop
+
+====================================================================
+4) NODE POR NODE (DETALHAMENTO COM CONTEXTO)
+====================================================================
+
+--------------------------------------------------
+ETAPA 1 - Schedule Trigger
+Tipo: n8n-nodes-base.scheduleTrigger
+--------------------------------------------------
+Configuracao:
+- Intervalo configurável (no JSON pode estar vazio; definir cron/intervalo conforme necessidade).
+
+O que faz:
+- Dispara o fluxo em intervalos regulares.
+
+Por que existe:
+- Garante execucao recorrente para reavaliar follow_ups e enviar proximos passos da cadência.
+
+
+--------------------------------------------------
+ETAPA 2 - Get many rows
+Tipo: n8n-nodes-base.supabase (getAll)
+Tabela: follow_up
+--------------------------------------------------
+O que faz:
+- Carrega todos os registros da tabela follow_up.
+
+Por que existe:
+- Define o conjunto de contatos que serao avaliados para a cadência.
+
+
+--------------------------------------------------
+ETAPA 3 - BUSCAR STATUS DO FOLLOWUP
+Tipo: n8n-nodes-base.supabase (getAll)
+Tabela: follow_up
+--------------------------------------------------
+O que faz:
+- Nova leitura de follow_up (getAll, allFilters) para ter contexto atualizado por execucao.
+
+Por que existe:
+- Garantir que o Loop trabalhe com dados consistentes (status e flags) para decisao no Switch.
+
+
+--------------------------------------------------
+ETAPA 4 - Loop Over Items
+Tipo: n8n-nodes-base.splitInBatches
+--------------------------------------------------
+O que faz:
+- Processa cada item da lista; ao acabar sai para UPDATE PROSPECÇÃO FINALIZADA; ao continuar envia para VERIFICAR STATUS.
+
+Por que existe:
+- Permite tratar cada user_number individualmente e retornar ao loop apos Wait2 + Execute a SQL query.
+
+
+--------------------------------------------------
+ETAPA 5 - VERIFICAR STATUS
+Tipo: n8n-nodes-base.switch
+--------------------------------------------------
+Regras:
+- status == "pendente" -> saida "segue" (CONVERTER TEMPO).
+- status == "concluido" -> saida "nada".
+- status == "cancelado" -> saida "cancelado".
+
+O que faz:
+- Filtra apenas contatos ainda pendentes para prosseguir na cadência.
+
+Por que existe:
+- Evitar envio para quem ja foi concluido ou cancelado.
+
+
+--------------------------------------------------
+ETAPA 6 - CONVERTER TEMPO
+Tipo: n8n-nodes-base.code
+--------------------------------------------------
+O que faz:
+- Permite passar apenas o primeiro item ($itemIndex === 0); descarta os demais.
+
+Por que existe:
+- Reduzir a um unico item para o calculo de TEMPO (minutes_passed e flags) quando o Switch envia multiplos; evita duplicidade de envio por lote.
+
+
+--------------------------------------------------
+ETAPA 7 - TEMPO
+Tipo: n8n-nodes-base.set
+--------------------------------------------------
+O que faz:
+- Calcula minutes_passed: diferenca em minutos entre now e last_message (string convertida para Date).
+- Repassa flags: followup_10_sent, followup_1440_sent, followup_2880_sent, followup_4320_sent, followup_4760_sent (mapeado de followup_5760_sent), followup_7200_sent, followup_8640_sent, followup_11520_sent, followup_14400_sent, followup_15840_sent, followup_17280_sent, followup_18720_sent, followup_20160_sent.
+
+Por que existe:
+- Fornecer as condicoes necessarias aos nodes If (10 MIN, DIA 1, DIA 3, DIA 6, DIA 10, DIA 14) para decidir se envia ou nao naquela janela.
+
+
+--------------------------------------------------
+ETAPA 8 - 10 MIN / DIA 1 / DIA 3 / DIA 6 / DIA 10 / DIA 14
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+10 MIN: minutes_passed >= 10 e followup_30_sent == false -> PROSPECÇÃO DIA ; senao Wait2.
+DIA 1:  minutes_passed >= 1440 (24h) e followup_30_sent == false -> PROSPECÇÃO DIA 1; senao Wait2.
+DIA 3:  minutes_passed >= 4320 (72h) e followup_180_sent == false -> PROSPECÇÃO DIA 3; senao Wait2.
+DIA 6:  minutes_passed >= 8640 (6 dias) e followup_1440_sent == false -> PROSPECÇÃO DIA 6; senao Wait2.
+DIA 10: minutes_passed >= 14400 (10 dias) e followup_1440_sent == false -> PROSPECÇÃO DIA 10; senao Wait2.
+DIA 14: minutes_passed >= 20160 (14 dias) e followup_1440_sent == false -> PROSPECÇÃO DIA 14; senao Wait2.
+
+O que fazem:
+- Decidem se aquele contato deve receber a mensagem daquela etapa da cadência (tempo decorrido e flag ainda nao enviada).
+
+Por que existem:
+- Implementar a sequência temporal da cadência (10 min, 1 dia, 3, 6, 10, 14 dias) sem reenviar etapas ja cumpridas.
+
+
+--------------------------------------------------
+ETAPA 9 - PROSPECÇÃO DIA 1 / DIA 3 / DIA 6 / DIA 10 / DIA 14 (e PROSPECÇÃO DIA )
+Tipo: n8n-nodes-base.set
+--------------------------------------------------
+O que fazem:
+- Definem o campo "message" com o texto da prospecção daquele dia (valor configurado no node; pode estar vazio no template para preenchimento manual).
+
+Por que existem:
+- Separar o conteudo de cada etapa para envio via Evolution API.
+
+
+--------------------------------------------------
+ETAPA 10 - ENVIA PROSPECÇÃO DIA 1 / DIA 3 / DIA 6 / DIA 10 / DIA 14 (e ENVIA PROSPECÇÃO DIA )
+Tipo: n8n-nodes-base.httpRequest (POST)
+--------------------------------------------------
+URL: http://evolution-api:8080/message/sendText/Menthalis
+Headers: apikey (valor fixo no JSON).
+Body: number (user_number do BUSCAR STATUS DO FOLLOWUP ou Get many rows), text (message do node de PROSPECÇÃO).
+
+O que fazem:
+- Enviam a mensagem de WhatsApp via Evolution API (instancia Menthalis).
+
+Por que existem:
+- Canal efetivo de envio da cadência.
+
+
+--------------------------------------------------
+ETAPA 11 - UPDATE PROSPECÇÃO DIA 1 / DIA 3 / DIA 6 / DIA 10 / DIA 14 (e UPDATE PROSPECÇÃO DIA )
+Tipo: n8n-nodes-base.supabase (update)
+Tabela: follow_up
+--------------------------------------------------
+Filtro: user_number = valor do item (BUSCAR STATUS DO FOLLOWUP ou Get many rows, conforme node).
+Campos atualizados:
+- UPDATE DIA 1: followup_10_sent = true.
+- UPDATE DIA 3: followup_1440_sent = true.
+- UPDATE DIA 6: followup_2880_sent = true, status = Concluido.
+- UPDATE DIA 10: followup_4320_sent = true.
+- UPDATE DIA 14: followup_5760_sent = true.
+- UPDATE PROSPECÇÃO DIA : followup_10_sent = true.
+- UPDATE PROSPECÇÃO FINALIZADA: followup_10_sent = true (e status; tabela follow_up).
+
+Por que existem:
+- Registrar que aquela etapa da cadência foi enviada (e, quando aplicável, marcar conclusão) para nao reenviar e para auditoria.
+
+
+--------------------------------------------------
+ETAPA 12 - UPDATE PROSPECÇÃO FINALIZADA
+Tipo: n8n-nodes-base.supabase (update)
+Tabela: follow_up
+--------------------------------------------------
+O que faz:
+- Chamado quando o Loop Over Items termina (sem mais itens); atualiza follow_up (ex.: followup_10_sent, status) para o registro em questão.
+
+Por que existe:
+- Ajuste de estado ao finalizar o lote (evitar estado inconsistente).
+
+Atencao:
+- No JSON o tableId deve ser "follow_up" (nao "follow-up") para bater com o nome da tabela no Supabase.
+
+
+--------------------------------------------------
+ETAPA 13 - Wait2
+Tipo: n8n-nodes-base.wait
+--------------------------------------------------
+Configuracao: amount = 3 (unidade a confirmar no node; tipicamente minutos).
+
+O que faz:
+- Pausa antes de seguir para Execute a SQL query e retornar ao Loop.
+
+Por que existe:
+- Evitar burst de requisições e dar tempo entre ciclos.
+
+
+--------------------------------------------------
+ETAPA 14 - Execute a SQL query
+Tipo: n8n-nodes-base.postgres
+--------------------------------------------------
+O que faz:
+- Executa script SQL que atualiza mensagem_enviada_em em outras tabelas (Qualified Leads - ICP, Google Maps, Jobs Offers, Comments). Nao altera follow_up.
+
+Por que existe:
+- Integracao ou auditoria em outras bases; pode ser removido ou restrito se o fluxo for exclusivo de cadência follow_up.
+
+====================================================================
+5) PONTOS DE ATENCAO / RISCOS TECNICOS
+====================================================================
+
+1. tableId "follow-up" em UPDATE PROSPECÇÃO FINALIZADA
+   - Deve ser "follow_up" para corresponder à tabela no Supabase. Corrigido na documentação e recomendado no JSON.
+
+2. Consistência de referência de item (Get many rows vs BUSCAR STATUS DO FOLLOWUP)
+   - Alguns nodes usam $('Get many rows').item.json.user_number, outros $('BUSCAR STATUS DO FOLLOWUP').item.json.user_number. Manter padronizado para evitar erro em cenários de múltiplos itens.
+
+3. Colunas followup_30_sent e followup_180_sent
+   - Usadas nas condições DIA 1 e DIA 3; a tabela follow_up deve possuir essas colunas (ou as condições devem usar as flags existentes, ex.: followup_10_sent, followup_1440_sent). Schema SQL foi sugerido com followup_10_sent, followup_30_sent, followup_180_sent.
+
+4. Schedule Trigger sem intervalo
+   - Se o intervalo estiver vazio no JSON, o fluxo nao dispara automaticamente; configurar cron/intervalo no n8n.
+
+5. Execute a SQL query
+   - Script atual atualiza tabelas de qualified leads; para fluxo só de cadência, pode ser desativado ou restrito.
+
+====================================================================
+6) RESUMO FINAL
+====================================================================
+
+Este fluxo e uma cadência de prospecção por WhatsApp baseada na tabela follow_up: disparo agendado, carregamento de registros, filtro por status pendente, cálculo do tempo desde last_message, e envio em janelas (10 min, 1 dia, 3, 6, 10, 14 dias) via Evolution API (Menthalis), com atualização das flags followup_*_sent e status no Supabase. Inclui Wait2 e Execute a SQL query ao final de cada ramo antes de retornar ao Loop. Recomenda-se alinhar tableId (follow_up), referências de item (Get many rows vs BUSCAR STATUS DO FOLLOWUP) e schema da tabela (followup_10_sent, followup_30_sent, followup_180_sent) com as condições dos nodes If.

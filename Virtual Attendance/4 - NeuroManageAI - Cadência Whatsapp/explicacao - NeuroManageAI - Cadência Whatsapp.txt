@@ -1,0 +1,58 @@
+Dúvidas
+
+Possíveis correções/ melhorias:
+
+Objetivo
+Executar cadência de follow_ups por WhatsApp com base na tabela follow_up
+
+Schedule Trigger
+- Dispara o fluxo todos os dias as 00:00.
+
+Get many rows
+Tabela: follow_up
+- Carrega 50 registros da tabela follow_up.
+
+BUSCAR STATUS DO FOLLOWUP
+Tabela: follow_up
+- Nova leitura de follow_up, 50 itens.
+_ Não faz muito sentido a consulta se repetir
+
+Loop Over Items
+- Processa cada item; ao acabar vai para UPDATE PROSPECÇÃO FINALIZADA; ao continuar vai para VERIFICAR STATUS.
+
+VERIFICAR STATUS
+- verifica os status dos follow ups, temos 3: pendente, concluido, cancelado.
+
+CONVERTER TEMPO
+- Passa só o primeiro item (índice 0).
+
+TEMPO
+- Calcula minutes_passed (now - last_message) e repassa flags followup_*_sent.
+
+============================
+======== IMPORTANTE ========
+============================
+Como aqui são 4 caminho iguais, mudando apenas o tempo entre cada follow up, vamos ver apeans o primeiro exemplo
+
+If
+- Usado para verficaro tempo passado entre cada follow. Verificando os minutos.
+
+PROSPECÇÃO DIA 
+- Define o campo message com o texto da prospecção daquele dia.
+
+ENVIA PROSPECÇÃO DIA 
+- Envia uma mensagem usando as credenciais do supabase, instância, e a mensagem em sí através de um http POST.
+
+UPDATE PROSPECÇÃO DIA 
+Tabela: follow_up
+- Atualiza campo followup_10_sent, por exemplo e status Concluido em cada dia.
+
+UPDATE PROSPECÇÃO FINALIZADA
+Tabela: follow_up
+- Chamado ao acabar o Loop, altera o campo status para concluído.
+
+Wait2
+- Espera 3 unidades antes de Execute a SQL query.
+
+Execute a SQL query
+- Atualiza mensagem_enviada_em em outras tabelas.

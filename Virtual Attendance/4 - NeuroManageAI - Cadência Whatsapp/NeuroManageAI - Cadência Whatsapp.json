@@ -1,0 +1,1655 @@
+{
+   "nodes": [
+     {
+       "parameters": {
+         "rule": {
+           "interval": [
+             {}
+           ]
+         }
+       },
+       "id": "eaeb6104-3806-4774-b914-219930a0bddb",
+       "name": "Schedule Trigger",
+       "type": "n8n-nodes-base.scheduleTrigger",
+       "position": [
+         -576,
+         -48
+       ],
+       "typeVersion": 1.3
+     },
+     {
+       "parameters": {
+         "operation": "getAll",
+         "tableId": "follow_up"
+       },
+       "id": "63649bc9-e252-4dbe-865e-b7dee8749c2e",
+       "name": "Get many rows",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         -384,
+         -48
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "getAll",
+         "tableId": "follow_up",
+         "matchType": "allFilters"
+       },
+       "id": "6f900e2c-ba92-4bb4-8699-4eec85756033",
+       "name": "BUSCAR STATUS DO FOLLOWUP",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         -192,
+         -48
+       ],
+       "typeVersion": 1,
+       "alwaysOutputData": true,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "options": {}
+       },
+       "id": "ec4b8c42-d94e-46bf-817c-5aab03cfc80a",
+       "name": "Loop Over Items",
+       "type": "n8n-nodes-base.splitInBatches",
+       "position": [
+         0,
+         -48
+       ],
+       "typeVersion": 3
+     },
+     {
+       "parameters": {
+         "rules": {
+           "values": [
+             {
+               "conditions": {
+                 "options": {
+                   "caseSensitive": true,
+                   "leftValue": "",
+                   "typeValidation": "strict",
+                   "version": 2
+                 },
+                 "conditions": [
+                   {
+                     "leftValue": "={{ $json.status }}",
+                     "rightValue": "pendente",
+                     "operator": {
+                       "type": "string",
+                       "operation": "equals"
+                     },
+                     "id": "adc7f22a-f90d-4913-a4c5-b005b02a429c"
+                   }
+                 ],
+                 "combinator": "and"
+               },
+               "renameOutput": true,
+               "outputKey": "segue"
+             },
+             {
+               "conditions": {
+                 "options": {
+                   "caseSensitive": true,
+                   "leftValue": "",
+                   "typeValidation": "strict",
+                   "version": 2
+                 },
+                 "conditions": [
+                   {
+                     "id": "7b733412-7f1e-44ad-ba08-a42ebc0cec29",
+                     "leftValue": "={{$json.status}}",
+                     "rightValue": "concluido",
+                     "operator": {
+                       "type": "string",
+                       "operation": "equals",
+                       "name": "filter.operator.equals"
+                     }
+                   }
+                 ],
+                 "combinator": "and"
+               },
+               "renameOutput": true,
+               "outputKey": "nada"
+             },
+             {
+               "conditions": {
+                 "options": {
+                   "caseSensitive": true,
+                   "leftValue": "",
+                   "typeValidation": "strict",
+                   "version": 2
+                 },
+                 "conditions": [
+                   {
+                     "id": "f221cab0-30f1-42bf-b19e-f32ea804c6a7",
+                     "leftValue": "={{$json.status}}",
+                     "rightValue": "cancelado",
+                     "operator": {
+                       "type": "string",
+                       "operation": "equals",
+                       "name": "filter.operator.equals"
+                     }
+                   }
+                 ],
+                 "combinator": "and"
+               },
+               "renameOutput": true,
+               "outputKey": "cancelado"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "bd4f81c7-a5fe-44d8-97e8-c0ad6dbe0905",
+       "name": "VERIFICAR STATUS",
+       "type": "n8n-nodes-base.switch",
+       "position": [
+         288,
+         0
+       ],
+       "typeVersion": 3.2
+     },
+     {
+       "parameters": {
+         "jsCode": "// Só permite passar o primeiro item do fluxo\nif ($itemIndex === 0) {\n  return $input.item;\n} else {\n  return null; // descarta os outros\n}\n"
+       },
+       "id": "e5635d3b-91f3-4d40-a3df-c8464b18a34d",
+       "name": "CONVERTER TEMPO",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         608,
+         -16
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "b53900a6-535b-459a-a272-7094250f4e9b",
+               "name": "minutes_passed",
+               "value": "={{(() => {\n  if ($itemIndex !== 0) return null;\n\n  const last = new Date($json.last_message.replace(' ', 'T') + '-03:00');\n  const now = new Date();\n\n  const diffMinutes = Math.floor((now.getTime() - last.getTime()) / (1000 * 60));\n  return diffMinutes;\n})()}}",
+               "type": "string"
+             },
+             {
+               "id": "76a42641-5c19-43ef-aec4-19bbc499d284",
+               "name": "followup_10_sent",
+               "value": "={{ $json.followup_10_sent }}",
+               "type": "boolean"
+             },
+             {
+               "id": "81ba311f-f8e0-4379-8495-459a35411be0",
+               "name": "followup_1440_sent",
+               "value": "={{ $json.followup_1440_sent }}",
+               "type": "boolean"
+             },
+             {
+               "id": "3c1b69d0-fa83-44ba-a753-86ade430eec9",
+               "name": "followup_2880_sent",
+               "value": "={{ $json.followup_2880_sent }}",
+               "type": "boolean"
+             },
+             {
+               "id": "3ea841a5-f748-4ab6-af03-c9a8cffcc15c",
+               "name": "followup_4320_sent",
+               "value": "={{ $json.followup_4320_sent }}",
+               "type": "boolean"
+             },
+             {
+               "id": "3d9fd28d-8d18-450e-86e3-769c8028d9c2",
+               "name": "followup_4760_sent",
+               "value": "={{ $json.followup_5760_sent }}",
+               "type": "string"
+             },
+             {
+               "id": "51b33cd7-70d5-4e7e-ac1c-4db8dc29ea56",
+               "name": "followup_7200_sent",
+               "value": "={{ $json.followup_7200_sent }}",
+               "type": "string"
+             },
+             {
+               "id": "349328b1-68b9-42b0-91ea-37d4ba4b8e07",
+               "name": "followup_8640_sent",
+               "value": "={{ $json.followup_8640_sent }}",
+               "type": "string"
+             },
+             {
+               "id": "8f581774-58a4-49d9-a620-8d172a9936d3",
+               "name": "followup_11520_sent",
+               "value": "={{ $json.followup_11520_sent }}",
+               "type": "string"
+             },
+             {
+               "id": "61eadf1b-7b64-4d77-8e2e-fddfa0e16ca2",
+               "name": "followup_14400_sent",
+               "value": "={{ $json.followup_14400_sent }}",
+               "type": "boolean"
+             },
+             {
+               "id": "dc93e003-cc0d-4141-abe6-369b347fc0f6",
+               "name": "followup_15840_sent",
+               "value": "={{ $json.followup_15840_sent }}",
+               "type": "string"
+             },
+             {
+               "id": "b32b79ed-8e31-419c-9a2a-653023e829ce",
+               "name": "followup_17280_sent",
+               "value": "={{ $json.followup_17280_sent }}",
+               "type": "string"
+             },
+             {
+               "id": "83e7a132-855d-4e30-a545-2b5c36276f9c",
+               "name": "followup_18720_sent",
+               "value": "={{ $json.followup_18720_sent }}",
+               "type": "string"
+             },
+             {
+               "id": "6f8b5d93-90d7-4660-a186-f9e955b4f14b",
+               "name": "followup_20160_sent",
+               "value": "={{ $json.followup_20160_sent }}",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "9cf6780e-ac9d-49f9-942b-e2184080b041",
+       "name": "TEMPO",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         816,
+         -16
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "amount": 3
+       },
+       "id": "d117885b-629a-4d6c-843c-311a767b395b",
+       "name": "Wait2",
+       "type": "n8n-nodes-base.wait",
+       "position": [
+         2688,
+         -64
+       ],
+       "typeVersion": 1.1,
+       "webhookId": "9876372b-17d7-4d76-a85d-3397f394c1c8"
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "loose",
+             "version": 2
+           },
+           "conditions": [
+             {
+               "id": "cf1649cf-9c59-4168-8ff8-2d8c466dc93b",
+               "leftValue": "={{$json.minutes_passed}}",
+               "rightValue": 1440,
+               "operator": {
+                 "type": "number",
+                 "operation": "gte"
+               }
+             },
+             {
+               "id": "26155578-5151-4511-bc2d-17a41d890ca9",
+               "leftValue": "={{$json.followup_30_sent}}",
+               "rightValue": false,
+               "operator": {
+                 "type": "boolean",
+                 "operation": "equals"
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "looseTypeValidation": true,
+         "options": {}
+       },
+       "id": "db2137f0-c12e-461f-a6e1-886791c0e23b",
+       "name": "DIA 1",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         1264,
+         -288
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "loose",
+             "version": 2
+           },
+           "conditions": [
+             {
+               "id": "cf1649cf-9c59-4168-8ff8-2d8c466dc93b",
+               "leftValue": "={{$json.minutes_passed}}",
+               "rightValue": 4320,
+               "operator": {
+                 "type": "number",
+                 "operation": "gte"
+               }
+             },
+             {
+               "id": "d32d06dd-024c-4bbf-b36f-8611e11b01d6",
+               "leftValue": "={{$json.followup_180_sent}}",
+               "rightValue": false,
+               "operator": {
+                 "type": "boolean",
+                 "operation": "equals"
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "looseTypeValidation": true,
+         "options": {}
+       },
+       "id": "0622e234-f1e1-4b4b-9d36-4a613249a8a5",
+       "name": "DIA 3",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         1264,
+         -144
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "loose",
+             "version": 2
+           },
+           "conditions": [
+             {
+               "id": "cf1649cf-9c59-4168-8ff8-2d8c466dc93b",
+               "leftValue": "={{$json.minutes_passed}}",
+               "rightValue": 8640,
+               "operator": {
+                 "type": "number",
+                 "operation": "gte"
+               }
+             },
+             {
+               "id": "d1e16cf7-6678-4e82-aa9d-32ef22e976cd",
+               "leftValue": "={{$json.followup_1440_sent}}",
+               "rightValue": false,
+               "operator": {
+                 "type": "boolean",
+                 "operation": "equals"
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "looseTypeValidation": true,
+         "options": {}
+       },
+       "id": "fc2fbcf9-0f3e-4fb5-8400-55b265e07fae",
+       "name": "DIA 6",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         1264,
+         0
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "loose",
+             "version": 2
+           },
+           "conditions": [
+             {
+               "id": "cf1649cf-9c59-4168-8ff8-2d8c466dc93b",
+               "leftValue": "={{$json.minutes_passed}}",
+               "rightValue": 14400,
+               "operator": {
+                 "type": "number",
+                 "operation": "gte"
+               }
+             },
+             {
+               "id": "d1e16cf7-6678-4e82-aa9d-32ef22e976cd",
+               "leftValue": "={{$json.followup_1440_sent}}",
+               "rightValue": false,
+               "operator": {
+                 "type": "boolean",
+                 "operation": "equals"
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "looseTypeValidation": true,
+         "options": {}
+       },
+       "id": "68413e7d-fd0a-48a4-b6cb-855e1165b055",
+       "name": "DIA 10",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         1264,
+         128
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "loose",
+             "version": 2
+           },
+           "conditions": [
+             {
+               "id": "cf1649cf-9c59-4168-8ff8-2d8c466dc93b",
+               "leftValue": "={{$json.minutes_passed}}",
+               "rightValue": 20160,
+               "operator": {
+                 "type": "number",
+                 "operation": "gte"
+               }
+             },
+             {
+               "id": "d1e16cf7-6678-4e82-aa9d-32ef22e976cd",
+               "leftValue": "={{$json.followup_1440_sent}}",
+               "rightValue": false,
+               "operator": {
+                 "type": "boolean",
+                 "operation": "equals"
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "looseTypeValidation": true,
+         "options": {}
+       },
+       "id": "3f2a2f7a-420c-472d-853c-3604cf65bf94",
+       "name": "DIA 14",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         1264,
+         272
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "fa306050-a6d2-4c5f-8671-b606da171f08",
+               "name": "message",
+               "value": "=",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "44b4a18b-8430-4e1e-b282-ad856796ed5c",
+       "name": "PROSPECÇÃO DIA 1",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         1648,
+         -336
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "23ffe6e5-1d1c-4fa5-994f-25d656ab3e1e",
+               "name": "message",
+               "value": "=",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "95ef56c3-90f3-469e-9e5e-3ce3a0e2e2a0",
+       "name": "PROSPECÇÃO  DIA 3",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         1648,
+         -192
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "7f447d9b-abaf-4990-b391-bca5b9144c2f",
+               "name": "message",
+               "value": "=",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "9a0c85f3-6894-4d18-98fc-ffe2d3ea15e8",
+       "name": "PROSPECÇÃO DIA 6",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         1648,
+         -48
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "7f447d9b-abaf-4990-b391-bca5b9144c2f",
+               "name": "message",
+               "value": "=",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "6fd17cb6-a9eb-4214-98ba-30b0ac2b69a4",
+       "name": "PROSPECÇÃO DIA 10",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         1648,
+         128
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "7f447d9b-abaf-4990-b391-bca5b9144c2f",
+               "name": "message",
+               "value": "=",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "c04767a8-3f8d-4147-8ff7-a483297e80e7",
+       "name": "PROSPECÇÃO  DIA 14",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         1648,
+         304
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "method": "POST",
+         "url": "=http://evolution-api:8080/message/sendText/Menthalis",
+         "sendHeaders": true,
+         "headerParameters": {
+           "parameters": [
+             {
+               "name": "apikey",
+               "value": "=2098EC75B39E-4811-A05C-156F8E1BB770"
+             }
+           ]
+         },
+         "sendBody": true,
+         "bodyParameters": {
+           "parameters": [
+             {
+               "name": "number",
+               "value": "={{ $('BUSCAR STATUS DO FOLLOWUP').item.json.user_number }}"
+             },
+             {
+               "name": "text",
+               "value": "={{ $json.message }}"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "14526648-d397-4f43-b4b9-6d7ecc35b926",
+       "name": "ENVIA PROSPECÇÃO DIA 1",
+       "type": "n8n-nodes-base.httpRequest",
+       "position": [
+         1856,
+         -336
+       ],
+       "typeVersion": 4.2,
+       "onError": "continueErrorOutput"
+     },
+     {
+       "parameters": {
+         "method": "POST",
+         "url": "=http://evolution-api:8080/message/sendText/Menthalis",
+         "sendHeaders": true,
+         "headerParameters": {
+           "parameters": [
+             {
+               "name": "apikey",
+               "value": "=2098EC75B39E-4811-A05C-156F8E1BB770"
+             }
+           ]
+         },
+         "sendBody": true,
+         "bodyParameters": {
+           "parameters": [
+             {
+               "name": "number",
+               "value": "={{ $('BUSCAR STATUS DO FOLLOWUP').item.json.user_number }}"
+             },
+             {
+               "name": "text",
+               "value": "={{ $json.message }}"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "eb5f50fb-14b1-4fbb-a290-22245ee0df5f",
+       "name": "ENVIA PROSPECÇÃO  DIA 3",
+       "type": "n8n-nodes-base.httpRequest",
+       "position": [
+         1856,
+         -192
+       ],
+       "typeVersion": 4.2,
+       "onError": "continueErrorOutput"
+     },
+     {
+       "parameters": {
+         "method": "POST",
+         "url": "=http://evolution-api:8080/message/sendText/Menthalis",
+         "sendHeaders": true,
+         "headerParameters": {
+           "parameters": [
+             {
+               "name": "apikey",
+               "value": "=2098EC75B39E-4811-A05C-156F8E1BB770"
+             }
+           ]
+         },
+         "sendBody": true,
+         "bodyParameters": {
+           "parameters": [
+             {
+               "name": "number",
+               "value": "={{ $('BUSCAR STATUS DO FOLLOWUP').item.json.user_number }}"
+             },
+             {
+               "name": "text",
+               "value": "={{ $json.message }}"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "215aa493-b005-421e-9175-6f2694016a82",
+       "name": "ENVIA PROSPECÇÃO DIA 6",
+       "type": "n8n-nodes-base.httpRequest",
+       "position": [
+         1856,
+         -48
+       ],
+       "typeVersion": 4.2,
+       "onError": "continueErrorOutput"
+     },
+     {
+       "parameters": {
+         "method": "POST",
+         "url": "=http://evolution-api:8080/message/sendText/Menthalis",
+         "sendHeaders": true,
+         "headerParameters": {
+           "parameters": [
+             {
+               "name": "apikey",
+               "value": "=2098EC75B39E-4811-A05C-156F8E1BB770"
+             }
+           ]
+         },
+         "sendBody": true,
+         "bodyParameters": {
+           "parameters": [
+             {
+               "name": "number",
+               "value": "={{ $('Get many rows').item.json.user_number }}"
+             },
+             {
+               "name": "text",
+               "value": "={{ $json.message }}"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "6ee6256b-5aad-47dc-81bf-4e79c5db414f",
+       "name": "ENVIA PROSPECÇÃO DIA 10",
+       "type": "n8n-nodes-base.httpRequest",
+       "position": [
+         1856,
+         128
+       ],
+       "typeVersion": 4.2,
+       "onError": "continueErrorOutput"
+     },
+     {
+       "parameters": {
+         "method": "POST",
+         "url": "=http://evolution-api:8080/message/sendText/Menthalis",
+         "sendHeaders": true,
+         "headerParameters": {
+           "parameters": [
+             {
+               "name": "apikey",
+               "value": "=2098EC75B39E-4811-A05C-156F8E1BB770"
+             }
+           ]
+         },
+         "sendBody": true,
+         "bodyParameters": {
+           "parameters": [
+             {
+               "name": "number",
+               "value": "={{ $('Get many rows').item.json.user_number }}"
+             },
+             {
+               "name": "text",
+               "value": "={{ $json.message }}"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "da917901-b01a-4780-bc59-7486727fd49d",
+       "name": "ENVIA PROSPECÇÃO DIA 14",
+       "type": "n8n-nodes-base.httpRequest",
+       "position": [
+         1856,
+         304
+       ],
+       "typeVersion": 4.2,
+       "onError": "continueErrorOutput"
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "follow_up",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "user_number",
+               "condition": "eq",
+               "keyValue": "={{ $('BUSCAR STATUS DO FOLLOWUP').item.json.user_number }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "followup_10_sent",
+               "fieldValue": "true"
+             }
+           ]
+         }
+       },
+       "id": "68396f27-1861-4580-95d1-31d1c22bd45f",
+       "name": "UPDATE PROSPECÇÃO  DIA 1",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         2096,
+         -352
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "follow_up",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "user_number",
+               "condition": "eq",
+               "keyValue": "={{ $('Get many rows').item.json.user_number }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "followup_1440_sent",
+               "fieldValue": "true"
+             }
+           ]
+         }
+       },
+       "id": "76b349ba-1a0f-4319-9fa4-5bde51a7b815",
+       "name": "UPDATE PROSPECÇÃO DIA 3",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         2096,
+         -208
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "follow_up",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "user_number",
+               "condition": "eq",
+               "keyValue": "={{ $('Get many rows').item.json.user_number }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "followup_2880_sent",
+               "fieldValue": "true"
+             },
+             {
+               "fieldId": "status",
+               "fieldValue": "Concluido"
+             }
+           ]
+         }
+       },
+       "id": "8047d7ac-6fa0-4e6d-84de-34ecb3c40312",
+       "name": "UPDATE PROSPECÇÃO DIA 6",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         2096,
+         -48
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "follow_up",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "user_number",
+               "condition": "eq",
+               "keyValue": "={{ $('Get many rows').item.json.user_number }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "followup_4320_sent",
+               "fieldValue": "true"
+             }
+           ]
+         }
+       },
+       "id": "038f3517-93e1-4c60-b072-1d3c548e0a1d",
+       "name": "UPDATE PROSPECÇÃO DIA 10",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         2096,
+         112
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "follow_up",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "user_number",
+               "condition": "eq",
+               "keyValue": "={{ $('Get many rows').item.json.user_number }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "followup_5760_sent",
+               "fieldValue": "true"
+             }
+           ]
+         }
+       },
+       "id": "8822b1f1-bd30-4c8a-b888-10c463c5682a",
+       "name": "UPDATE PROSPECÇÃO DIA 14",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         2096,
+         288
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "follow-up",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "user_number",
+               "condition": "eq",
+               "keyValue": "={{ $('BUSCAR STATUS DO FOLLOWUP').item.json.user_number }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "followup_10_sent",
+               "fieldValue": "true"
+             }
+           ]
+         }
+       },
+       "id": "36504560-fb19-40c0-bbfa-a3571e424902",
+       "name": "UPDATE PROSPECÇÃO FINALIZADA",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         288,
+         -352
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "fa306050-a6d2-4c5f-8671-b606da171f08",
+               "name": "message",
+               "value": "=",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "48692c29-f025-41bb-94e9-f5a704134ccc",
+       "name": "PROSPECÇÃO DIA ",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         1648,
+         -512
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "method": "POST",
+         "url": "=http://evolution-api:8080/message/sendText/Menthalis",
+         "sendHeaders": true,
+         "headerParameters": {
+           "parameters": [
+             {
+               "name": "apikey",
+               "value": "=2098EC75B39E-4811-A05C-156F8E1BB770"
+             }
+           ]
+         },
+         "sendBody": true,
+         "bodyParameters": {
+           "parameters": [
+             {
+               "name": "number",
+               "value": "={{ $('BUSCAR STATUS DO FOLLOWUP').item.json.user_number }}"
+             },
+             {
+               "name": "text",
+               "value": "={{ $json.message }}"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "826282a4-0df6-49ae-9c5e-12b35bbe566e",
+       "name": "ENVIA PROSPECÇÃO DIA ",
+       "type": "n8n-nodes-base.httpRequest",
+       "position": [
+         1856,
+         -512
+       ],
+       "typeVersion": 4.2,
+       "onError": "continueErrorOutput"
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "follow_up",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "user_number",
+               "condition": "eq",
+               "keyValue": "={{ $('BUSCAR STATUS DO FOLLOWUP').item.json.user_number }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "followup_10_sent",
+               "fieldValue": "true"
+             }
+           ]
+         }
+       },
+       "id": "e61bd078-5790-4565-b0e9-ebfb2ace86c3",
+       "name": "UPDATE PROSPECÇÃO  DIA ",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         2096,
+         -528
+       ],
+       "typeVersion": 1,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "loose",
+             "version": 2
+           },
+           "conditions": [
+             {
+               "id": "cf1649cf-9c59-4168-8ff8-2d8c466dc93b",
+               "leftValue": "={{$json.minutes_passed}}",
+               "rightValue": 10,
+               "operator": {
+                 "type": "number",
+                 "operation": "gte"
+               }
+             },
+             {
+               "id": "26155578-5151-4511-bc2d-17a41d890ca9",
+               "leftValue": "={{$json.followup_30_sent}}",
+               "rightValue": false,
+               "operator": {
+                 "type": "boolean",
+                 "operation": "equals"
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "looseTypeValidation": true,
+         "options": {}
+       },
+       "id": "7230c028-e21b-41fb-8b0a-9f958823e965",
+       "name": "10 MIN",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         1264,
+         -464
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "operation": "executeQuery",
+         "query": "-- Atualiza a tabela \"Qualified Leads - ICP\"\nUPDATE \"Qualified Leads - ICP\"\nSET \"mensagem_enviada_em\" = TO_CHAR(NOW(), 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"')\nWHERE \"mensagem_enviada_em\" IS NULL;\n\n-- Atualiza a tabela \"Qualified Leads - Google Maps\"\nUPDATE \"Qualified Leads - Google Maps\"\nSET \"mensagem_enviada_em\" = TO_CHAR(NOW(), 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"')\nWHERE \"mensagem_enviada_em\" IS NULL;\n\n-- Atualiza a tabela \"Qualified Leads - Jobs Offers\"\nUPDATE \"Qualified Leads - Jobs Offers\"\nSET \"mensagem_enviada_em\" = TO_CHAR(NOW(), 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"')\nWHERE \"mensagem_enviada_em\" IS NULL;\n\n-- Atualiza a tabela \"Qualified Leads - Comments\"\nUPDATE \"Qualified Leads - Comments\"\nSET \"mensagem_enviada_em\" = TO_CHAR(NOW(), 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"')\nWHERE \"mensagem_enviada_em\" IS NULL;\n",
+         "options": {}
+       },
+       "id": "1c3f33a6-b6a4-4e68-8b61-bac6d97e53ac",
+       "name": "Execute a SQL query",
+       "type": "n8n-nodes-base.postgres",
+       "position": [
+         2816,
+         384
+       ],
+       "typeVersion": 2.6,
+       "alwaysOutputData": true,
+       "credentials": {
+         "postgres": {
+           "id": "mR54VAC5LGbGnCaT",
+           "name": "Development"
+         }
+       },
+       "onError": "continueErrorOutput"
+     }
+   ],
+   "connections": {
+     "Schedule Trigger": {
+       "main": [
+         [
+           {
+             "node": "Get many rows",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Get many rows": {
+       "main": [
+         [
+           {
+             "node": "BUSCAR STATUS DO FOLLOWUP",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "BUSCAR STATUS DO FOLLOWUP": {
+       "main": [
+         [
+           {
+             "node": "Loop Over Items",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Loop Over Items": {
+       "main": [
+         [
+           {
+             "node": "UPDATE PROSPECÇÃO FINALIZADA",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "VERIFICAR STATUS",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "VERIFICAR STATUS": {
+       "main": [
+         [
+           {
+             "node": "CONVERTER TEMPO",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "CONVERTER TEMPO": {
+       "main": [
+         [
+           {
+             "node": "TEMPO",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "TEMPO": {
+       "main": [
+         [
+           {
+             "node": "DIA 1",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "DIA 3",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "DIA 6",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "DIA 10",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "DIA 14",
+             "type": "main",
+             "index": 0
+           },
+           {
+             "node": "10 MIN",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Wait2": {
+       "main": [
+         [
+           {
+             "node": "Execute a SQL query",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "DIA 1": {
+       "main": [
+         [
+           {
+             "node": "PROSPECÇÃO DIA 1",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "Wait2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "DIA 3": {
+       "main": [
+         [
+           {
+             "node": "PROSPECÇÃO  DIA 3",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "Wait2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "DIA 6": {
+       "main": [
+         [
+           {
+             "node": "PROSPECÇÃO DIA 6",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "Wait2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "DIA 10": {
+       "main": [
+         [
+           {
+             "node": "PROSPECÇÃO DIA 10",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "Wait2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "DIA 14": {
+       "main": [
+         [
+           {
+             "node": "PROSPECÇÃO  DIA 14",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "Wait2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "PROSPECÇÃO DIA 1": {
+       "main": [
+         [
+           {
+             "node": "ENVIA PROSPECÇÃO DIA 1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "PROSPECÇÃO  DIA 3": {
+       "main": [
+         [
+           {
+             "node": "ENVIA PROSPECÇÃO  DIA 3",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "PROSPECÇÃO DIA 6": {
+       "main": [
+         [
+           {
+             "node": "ENVIA PROSPECÇÃO DIA 6",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "PROSPECÇÃO DIA 10": {
+       "main": [
+         [
+           {
+             "node": "ENVIA PROSPECÇÃO DIA 10",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "PROSPECÇÃO  DIA 14": {
+       "main": [
+         [
+           {
+             "node": "ENVIA PROSPECÇÃO DIA 14",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "ENVIA PROSPECÇÃO DIA 1": {
+       "main": [
+         [
+           {
+             "node": "UPDATE PROSPECÇÃO  DIA 1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "ENVIA PROSPECÇÃO  DIA 3": {
+       "main": [
+         [
+           {
+             "node": "UPDATE PROSPECÇÃO DIA 3",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "ENVIA PROSPECÇÃO DIA 6": {
+       "main": [
+         [
+           {
+             "node": "UPDATE PROSPECÇÃO DIA 6",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "ENVIA PROSPECÇÃO DIA 10": {
+       "main": [
+         [
+           {
+             "node": "UPDATE PROSPECÇÃO DIA 10",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "ENVIA PROSPECÇÃO DIA 14": {
+       "main": [
+         [
+           {
+             "node": "UPDATE PROSPECÇÃO DIA 14",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "UPDATE PROSPECÇÃO  DIA 1": {
+       "main": [
+         [
+           {
+             "node": "Wait2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "UPDATE PROSPECÇÃO DIA 3": {
+       "main": [
+         [
+           {
+             "node": "Wait2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "UPDATE PROSPECÇÃO DIA 6": {
+       "main": [
+         [
+           {
+             "node": "Wait2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "UPDATE PROSPECÇÃO DIA 10": {
+       "main": [
+         [
+           {
+             "node": "Wait2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "UPDATE PROSPECÇÃO DIA 14": {
+       "main": [
+         [
+           {
+             "node": "Wait2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "PROSPECÇÃO DIA ": {
+       "main": [
+         [
+           {
+             "node": "ENVIA PROSPECÇÃO DIA ",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "ENVIA PROSPECÇÃO DIA ": {
+       "main": [
+         [
+           {
+             "node": "UPDATE PROSPECÇÃO  DIA ",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "UPDATE PROSPECÇÃO  DIA ": {
+       "main": [
+         [
+           {
+             "node": "Wait2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "10 MIN": {
+       "main": [
+         [
+           {
+             "node": "PROSPECÇÃO DIA ",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "Wait2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Execute a SQL query": {
+       "main": [
+         [
+           {
+             "node": "Loop Over Items",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "Loop Over Items",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     }
+   },
+   "pinData": {},
+   "meta": {
+     "instanceId": "a0f7a305da35e849bafdb639b90f9c75f57bc77027e416642bf74993eb8cfaee"
+   }
+ }

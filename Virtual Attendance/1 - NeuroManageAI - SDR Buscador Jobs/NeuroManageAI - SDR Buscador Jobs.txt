@@ -1,0 +1,252 @@
+NeuroManageAI - SDR Buscador Jobs
+
+Esta documentacao explica todo o fluxo em ordem de execucao, detalhando o papel tecnico de cada node e, principalmente, por que cada etapa existe no contexto da operacao comercial (atendimento virtual por WhatsApp para leads da base Open Jobs).
+
+====================================================================
+1) OBJETIVO DO FLUXO
+====================================================================
+
+Objetivo macro:
+
+Executar atendimento virtual por WhatsApp para leads da base Open Jobs (vagas/jobs): buscar leads ainda nao contactados por WhatsApp, gerar mensagem com agente IA (SDR), enviar via WhatsApp e registrar data/mensagem no Supabase, respeitando janela comercial e intervalo entre envios.
+
+Em termos praticos, o fluxo faz:
+1. Dispara em horario agendado (8h-12h, seg-sex).
+2. Carrega leads com "Data Mensagem Whatsapp" nula (ate 10) via requisicao HTTP ao Supabase.
+3. Normaliza telefone (padrao 55 + DDD + numero).
+4. Processa item a item em loop: delay aleatorio (30-60 s), verifica horario de Brasilia.
+5. Se dentro da janela (hora < 19): prepara dados do lead, chama agente IA (SDR) para gerar mensagem, envia via WhatsApp.
+6. Apos envio: formata telefone do retorno, testa sucesso/erro; atualiza Supabase (Data Mensagem Whatsapp e Mensagem Enviada Whatsapp) ou registra erro e volta ao loop.
+7. Ao final do ramo de sucesso: atualiza mensagem enviada, data, e executa query SQL que atualiza mensagem_enviada_em em varias tabelas; retorna ao loop.
+
+====================================================================
+2) TABELA SQL ENVOLVIDA
+====================================================================
+
+Tabela alvo do processo:
+- public.qualified_leads_jobs_offers
+
+Campos mais usados pelo fluxo:
+- Telefone
+- Email
+- Empresa (usado como leadName no agente)
+- Nome
+- Data Mensagem Whatsapp
+- Mensagem Enviada Whatsapp
+
+Campos atualizados no fluxo:
+- Data Mensagem Whatsapp
+- Mensagem Enviada Whatsapp
+
+Leitura de negocio:
+- O fluxo garante que cada lead da base Jobs seja abordado por WhatsApp uma vez, com mensagem gerada por IA (SDR) e registro de auditoria.
+
+====================================================================
+3) SEQUENCIA EXECUTIVA COMPLETA (ALTO NIVEL)
+====================================================================
+
+Inicio (Schedule Trigger: 0 8-12 * * 1-5)
+-> Credenciais (supabase_url, supabase_apikey, wa_instance)
+-> Lista (HTTP GET Supabase: leads com Data Mensagem Whatsapp=is.null, limit 10)
+-> Organiza contatos (Code: normaliza Telefone para 55...)
+-> Loop Over Items
+   -> [fim do lote] No Operation
+   -> [proximo item] Delay (random 30-60 s) -> Wait (delayInSeconds) -> Horario (hora Brasilia)
+      -> If (horaAtual < 19)
+         -> false: No Operation
+         -> true: Prepara dados para agente -> Agent (OpenAI SDR prompt) -> whatsapp (send)
+            -> registra mensagem enviada (Code: telefone_formatado, telefone_limpo, data_envio)
+            -> If1 (sucesso?)
+               -> false: Registra erro (update Data Mensagem Whatsapp = "... - Erro") -> Loop
+               -> true: Registra Mensagem (update Data Mensagem Whatsapp) -> Update Mensage (Mensagem Enviada Whatsapp) -> Update Data Mensage (Data Mensagem Whatsapp) -> Execute a SQL query -> Loop
+
+====================================================================
+4) NODE POR NODE (DETALHAMENTO COM CONTEXTO)
+====================================================================
+
+--------------------------------------------------
+ETAPA 1 - Inicio
+Tipo: n8n-nodes-base.scheduleTrigger
+--------------------------------------------------
+Configuracao:
+- Cron: 0 8-12 * * 1-5 (todo dia, entre 8h e 12h, seg-sex).
+
+O que faz:
+- Dispara o fluxo automaticamente na janela configurada.
+
+Por que existe:
+- Garante execucao recorrente em horario comercial para atendimento virtual.
+
+
+--------------------------------------------------
+ETAPA 2 - Credenciais
+Tipo: n8n-nodes-base.set
+--------------------------------------------------
+O que faz:
+- Define supabase_url (URL REST do Supabase), supabase_apikey, wa_instance (ex.: NMAI_Gabriel).
+
+Por que existe:
+- Centraliza credenciais e identificador da instancia WhatsApp para os nodes seguintes.
+
+
+--------------------------------------------------
+ETAPA 3 - Lista
+Tipo: n8n-nodes-base.httpRequest
+--------------------------------------------------
+URL/filtro:
+- GET Supabase REST: .../Qualified Leads - ICP?Data Mensagem Whatsapp=is.null, limit 10.
+- Headers: apikey e Authorization com supabase_apikey.
+
+O que faz:
+- Busca ate 10 leads onde Data Mensagem Whatsapp e nula.
+
+Por que existe:
+- Define o lote de leads a serem contactados por WhatsApp nesta execucao.
+
+Atencao:
+- No JSON do fluxo a URL aponta para "Qualified Leads - ICP". Para SDR Buscador Jobs a tabela correta e qualified_leads_jobs_offers (Open Jobs). Ajustar a URL para a tabela Jobs se o fluxo for usado exclusivamente para essa base.
+
+
+--------------------------------------------------
+ETAPA 4 - Organiza contatos
+Tipo: n8n-nodes-base.code
+--------------------------------------------------
+O que faz:
+- Normaliza o campo Telefone: remove nao numeros, adiciona 55 se nao comecar com 55.
+
+Por que existe:
+- Garante formato padrao para envio e para match no update (telefone_limpo).
+
+
+--------------------------------------------------
+ETAPA 5 - Loop Over Items
+Tipo: n8n-nodes-base.splitInBatches
+--------------------------------------------------
+O que faz:
+- Processa cada lead um a um; ao acabar retorna para No Operation.
+
+Por que existe:
+- Permite delay e janela de horario por item, e retorno ao loop apos cada envio/erro.
+
+
+--------------------------------------------------
+ETAPA 6 - Delay / Wait / Horario / If
+--------------------------------------------------
+Delay (Code): Gera delayInSeconds aleatorio (30 a 60).
+Wait: Espera delayInSeconds (segundos).
+Horario (Code): Calcula hora atual em Brasilia (GMT-3).
+If: Condicao horaAtual < 19 (evita envio apos 19h).
+
+O que fazem:
+- Introduzem intervalo entre contatos e restringem envio ao horario comercial.
+
+Por que existem:
+- Reduz risco de bloqueio e mantem imagem de horario comercial.
+
+
+--------------------------------------------------
+ETAPA 7 - Prepara dados para agente
+Tipo: n8n-nodes-base.set
+--------------------------------------------------
+O que faz:
+- Monta leadName (Empresa), leadPhone (Telefone do item), leadEmail (Email), chatInput (texto fixo para gerar mensagem).
+
+Por que existe:
+- Entrega contexto padrao ao Agent para gerar mensagem de SDR.
+
+
+--------------------------------------------------
+ETAPA 8 - Agent
+Tipo: @n8n/n8n-nodes-langchain.agent
+--------------------------------------------------
+Modelo: OpenAI (gpt-4.1-mini).
+
+O que faz:
+- Gera mensagem de first approach/atendimento SDR com base no prompt (persona Gabriel, NeuroManageAI, qualificacao, SPIN, regras de tom).
+
+Por que existe:
+- Personaliza a mensagem enviada por WhatsApp sem script fixo.
+
+
+--------------------------------------------------
+ETAPA 9 - whatsapp
+Tipo: n8n-nodes-base.whatsApp
+--------------------------------------------------
+O que faz:
+- Envia a mensagem gerada pelo Agent para o lead via WhatsApp (instancia configurada).
+
+Por que existe:
+- Canal efetivo de contato com o lead.
+
+
+--------------------------------------------------
+ETAPA 10 - registra mensagem enviada
+Tipo: n8n-nodes-base.code
+--------------------------------------------------
+O que faz:
+- Extrai remoteJid do retorno, formata telefone (telefone_formatado, telefone_limpo), define data_envio (ISO).
+
+Por que existe:
+- Padroniza dados para o If1 e para os updates no Supabase (match por telefone_limpo).
+
+
+--------------------------------------------------
+ETAPA 11 - If1 / Registra Mensagem / Registra erro
+--------------------------------------------------
+If1: Condicao de sucesso (ex.: !$json.error).
+- Saida true: Registra Mensagem (Supabase update em qualified_leads_jobs_offers: Telefone = telefone_limpo, Data Mensagem Whatsapp = data_envio).
+- Saida false: Registra erro (update por leadPhone, Data Mensagem Whatsapp = "... - Erro"); retorna ao Loop.
+
+Por que existem:
+- Diferenciar sucesso de falha e gravar auditoria ou marcacao de erro.
+
+
+--------------------------------------------------
+ETAPA 12 - Update Mensage / Update Data Mensage
+Tipo: n8n-nodes-base.supabase (update)
+Tabela: qualified_leads_jobs_offers
+--------------------------------------------------
+Update Mensage: Atualiza Mensagem Enviada Whatsapp com o texto da conversa enviada (conversation).
+Update Data Mensage: Atualiza Data Mensagem Whatsapp (data_envio).
+
+Filtro nos updates:
+- Match por Telefone (ou por Nome, conforme configuracao no JSON; o ideal e Telefone para evitar ambiguidade).
+
+Por que existem:
+- Deixar registro completo do que foi enviado e quando, para evitar reenvio e para analise.
+
+
+--------------------------------------------------
+ETAPA 13 - Execute a SQL query
+Tipo: n8n-nodes-base.postgres
+--------------------------------------------------
+O que faz:
+- Executa UPDATE em varias tabelas (qualified_leads_icp, qualified_leads_google_maps, qualified_leads_jobs_offers, qualified_leads_comments) definindo mensagem_enviada_em = NOW() onde mensagem_enviada_em IS NULL.
+
+Por que existe:
+- Sincroniza campo de controle mensagem_enviada_em em multiplas bases (uso global ou auditoria).
+
+Atencao:
+- O script atual atualiza as quatro tabelas; para um fluxo apenas Jobs, pode ser restrito a qualified_leads_jobs_offers.
+
+====================================================================
+5) PONTOS DE ATENCAO / RISCOS TECNICOS
+====================================================================
+
+1. Lista aponta para "Qualified Leads - ICP"
+   - Para SDR Buscador Jobs, a origem esperada e qualified_leads_jobs_offers. Ajustar URL do node Lista para a tabela Jobs.
+
+2. Filtro por Nome em alguns updates
+   - No JSON, "Update Mensage" e "Update Data Mensage" usam filtro por Nome = telefone_limpo, o que e incoerente (telefone_limpo e numero). Recomendado: usar Telefone = telefone_limpo em todos os updates de registro.
+
+3. Janela de horario
+   - If (horaAtual < 19) evita envio apos 19h; o cron 8-12 so dispara entre 8h e 12h. Verificar se a janela desejada e essa.
+
+4. Limite de 10 e delay 30-60 s
+   - Controla volume por execucao; ajustar conforme capacidade da instancia WhatsApp e politica de uso.
+
+====================================================================
+6) RESUMO FINAL
+====================================================================
+
+Este fluxo e uma esteira de atendimento virtual (WhatsApp) para leads Open Jobs: disparo agendado, carregamento de leads ainda nao contactados por WhatsApp, normalizacao de telefone, delay e janela de horario, geracao de mensagem com agente SDR, envio via WhatsApp e registro de data e mensagem no Supabase (qualified_leads_jobs_offers). Ajustes recomendados: alinhar Lista com a tabela Jobs e corrigir filtros de update para Telefone em vez de Nome onde aplicavel.
