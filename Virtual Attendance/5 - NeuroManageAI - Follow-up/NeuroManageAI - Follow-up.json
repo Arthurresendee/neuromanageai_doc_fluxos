@@ -1,0 +1,3260 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cf1649cf-9c59-4168-8ff8-2d8c466dc93b",
+              "leftValue": "={{$json.minutes_passed}}",
+              "rightValue": 10,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "26155578-5151-4511-bc2d-17a41d890ca9",
+              "leftValue": "={{$json.followup_30_sent}}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "4cfe0654-ffda-47ef-b520-d9a74b542364",
+      "name": "10",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1712,
+        736
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cf1649cf-9c59-4168-8ff8-2d8c466dc93b",
+              "leftValue": "={{$json.minutes_passed}}",
+              "rightValue": 8640,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "d1e16cf7-6678-4e82-aa9d-32ef22e976cd",
+              "leftValue": "={{$json.followup_1440_sent}}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "2ee93bf3-e166-4c25-a4d4-dcbab5341cbd",
+      "name": "8640",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1712,
+        1616
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cf1649cf-9c59-4168-8ff8-2d8c466dc93b",
+              "leftValue": "={{$json.minutes_passed}}",
+              "rightValue": 15840,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "d1e16cf7-6678-4e82-aa9d-32ef22e976cd",
+              "leftValue": "={{$json.followup_1440_sent}}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "c324609e-e257-4649-8c78-8671a7d1a715",
+      "name": "15840",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1712,
+        2096
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cf1649cf-9c59-4168-8ff8-2d8c466dc93b",
+              "leftValue": "={{$json.minutes_passed}}",
+              "rightValue": 17280,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "d1e16cf7-6678-4e82-aa9d-32ef22e976cd",
+              "leftValue": "={{$json.followup_1440_sent}}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "a2e28d46-cfa2-4475-86ff-042bb3843551",
+      "name": "17280",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1712,
+        2256
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cf1649cf-9c59-4168-8ff8-2d8c466dc93b",
+              "leftValue": "={{$json.minutes_passed}}",
+              "rightValue": 18720,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "d1e16cf7-6678-4e82-aa9d-32ef22e976cd",
+              "leftValue": "={{$json.followup_1440_sent}}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "b8ec0090-5579-4f93-a261-2fb1c4b30d0d",
+      "name": "18720",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1712,
+        2416
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cf1649cf-9c59-4168-8ff8-2d8c466dc93b",
+              "leftValue": "={{$json.minutes_passed}}",
+              "rightValue": 20160,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "d1e16cf7-6678-4e82-aa9d-32ef22e976cd",
+              "leftValue": "={{$json.followup_1440_sent}}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "a2ad5dd4-48b3-44e1-91dc-e9747bf68a9c",
+      "name": "20160",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1712,
+        2576
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "jsCode": "const last = new Date($json.last_message.replace(' ', 'T') + '-03:00');\nconst now = new Date();\nconst diffMinutes = Math.floor((now.getTime() - last.getTime()) / (1000 * 60));\nreturn diffMinutes;\n"
+      },
+      "id": "4daad841-9391-4fd0-91db-74512ebf52eb",
+      "name": "CONVERTER TEMPO1",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1200,
+        2656
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b53900a6-535b-459a-a272-7094250f4e9b",
+              "name": "minutes_passed",
+              "value": "={{(() => {\n  if ($itemIndex !== 0) return null;\n\n  const last = new Date($json.last_message.replace(' ', 'T') + '-03:00');\n  const now = new Date();\n\n  const diffMinutes = Math.floor((now.getTime() - last.getTime()) / (1000 * 60));\n  return diffMinutes;\n})()}}",
+              "type": "string"
+            },
+            {
+              "id": "76a42641-5c19-43ef-aec4-19bbc499d284",
+              "name": "followup_30_sent",
+              "value": "={{ $('BUSCAR TABELA FOLLOWUP').item.json.followup_30_sent }}",
+              "type": "boolean"
+            },
+            {
+              "id": "81ba311f-f8e0-4379-8495-459a35411be0",
+              "name": "followup_180_sent",
+              "value": "={{ $('BUSCAR TABELA FOLLOWUP').item.json.followup_180_sent }}",
+              "type": "boolean"
+            },
+            {
+              "id": "3c1b69d0-fa83-44ba-a753-86ade430eec9",
+              "name": "followup_1440_sent",
+              "value": "={{ $('BUSCAR TABELA FOLLOWUP').item.json.followup_1440_sent }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "83d61fb8-fb79-4de9-955e-20486cbec587",
+      "name": "TEMPO 2",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1424,
+        2656
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "follow_up",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_number",
+              "condition": "eq",
+              "keyValue": "={{ $('Get many rows').item.json.user_number }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "followup_4320_sent",
+              "fieldValue": "true"
+            }
+          ]
+        }
+      },
+      "id": "74472ae1-780e-4e34-9b59-c54139bb046b",
+      "name": "UPDATE_FOLLOWP_",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        2560,
+        1136
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "supabaseApi": {
+          "id": "LZfJPVmUc6wxgUeC",
+          "name": "Development"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "40719d7e-3e50-47f3-b23c-e0416e518bb4",
+      "name": "Wait1",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        576,
+        1840
+      ],
+      "typeVersion": 1.1,
+      "webhookId": "37745a12-4a03-4582-bf41-31cb5f8791f5"
+    },
+    {
+      "parameters": {
+        "tableId": "follow_up",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_number",
+              "fieldValue": "={{ $item(\"0\").$node[\"Start\"].json[\"user_number\"] }}"
+            },
+            {
+              "fieldId": "last_message",
+              "fieldValue": "={{ new Date().toLocaleString('sv-SE', { timeZone: 'America/Sao_Paulo' }).replace(' ', 'T') + '-03:00' }}"
+            }
+          ]
+        }
+      },
+      "id": "570217cd-b684-4320-bead-a7c99d7bef24",
+      "name": "CRIAR TABELA FOLLOWUP",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        400,
+        1840
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "supabaseApi": {
+          "id": "LZfJPVmUc6wxgUeC",
+          "name": "Development"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "follow_up",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_number",
+              "condition": "eq",
+              "keyValue": "={{ $('Get many rows').item.json.user_number }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "followup_2880_sent",
+              "fieldValue": "true"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "Concluido"
+            }
+          ]
+        }
+      },
+      "id": "4f301124-884d-4234-af80-65c1b39caf59",
+      "name": "UPDATE_FOLLOWP_1440",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        2544,
+        976
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "supabaseApi": {
+          "id": "LZfJPVmUc6wxgUeC",
+          "name": "Development"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "04afe929-8ab8-429c-a323-7fa3fbf54d5b",
+              "leftValue": "={{ $json.user_number }}",
+              "rightValue": "={{ $json.user_number }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "6099171b-b600-481f-a179-321b8cafd448",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        80,
+        1712
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "follow_up",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_number",
+              "condition": "eq",
+              "keyValue": "={{ $('Start').item.json.user_number }}"
+            }
+          ]
+        }
+      },
+      "id": "5336e94e-bcfe-4a15-83d0-96c9aabdf4cb",
+      "name": "BUSCAR TABELA FOLLOWUP",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        -80,
+        1712
+      ],
+      "typeVersion": 1,
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "LZfJPVmUc6wxgUeC",
+          "name": "Development"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "follow_up",
+        "matchType": "allFilters"
+      },
+      "id": "69c19541-8251-43d7-a682-e74955e7289c",
+      "name": "BUSCAR STATUS DO FOLLOWUP",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        256,
+        1632
+      ],
+      "typeVersion": 1,
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "LZfJPVmUc6wxgUeC",
+          "name": "Development"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Só permite passar o primeiro item do fluxo\nif ($itemIndex === 0) {\n  return $input.item;\n} else {\n  return null; // descarta os outros\n}\n"
+      },
+      "id": "ab27b395-7492-4229-8526-d329da21b71c",
+      "name": "CONVERTER TEMPO",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        960,
+        1632
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "cff06228-3f2d-4682-9099-49a05dce1423",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        464,
+        1632
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "id": "3b41cfbd-486d-4a69-b6e8-1693abf26d1c",
+      "name": "Wait2",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        3248,
+        1616
+      ],
+      "typeVersion": 1.1,
+      "webhookId": "3c570263-bc15-475b-8600-1da6a782dd4f"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "pendente",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "adc7f22a-f90d-4913-a4c5-b005b02a429c"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "segue"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "7b733412-7f1e-44ad-ba08-a42ebc0cec29",
+                    "leftValue": "={{$json.status}}",
+                    "rightValue": "Concluido",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "nada"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f221cab0-30f1-42bf-b19e-f32ea804c6a7",
+                    "leftValue": "={{$json.status}}",
+                    "rightValue": "cancelado",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "cancelado"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ec7b3a57-ea14-44da-bc92-8f7fc2832b79",
+      "name": "VERIFICAR STATUS",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        704,
+        1616
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "follow_up",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_number",
+              "condition": "eq",
+              "keyValue": "={{ $('Get many rows').item.json.user_number }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "followup_1440_sent",
+              "fieldValue": "true"
+            }
+          ]
+        }
+      },
+      "id": "99ba3b06-5eed-4680-896e-4a3fc6310a78",
+      "name": "UPDATE_FOLLOWP_180",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        2544,
+        816
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "supabaseApi": {
+          "id": "LZfJPVmUc6wxgUeC",
+          "name": "Development"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "follow_up"
+      },
+      "id": "47456124-9fc2-4500-952b-6c7526f92d4f",
+      "name": "Get many rows",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        112,
+        1472
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "supabaseApi": {
+          "id": "LZfJPVmUc6wxgUeC",
+          "name": "Development"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "ea05f129-b750-4184-b2d5-56694a9f2f28",
+      "name": "No Operation, do nothing1",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        960,
+        1440
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "follow_up",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_number",
+              "condition": "eq",
+              "keyValue": "={{ $('BUSCAR STATUS DO FOLLOWUP').item.json.user_number }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "followup_10_sent",
+              "fieldValue": "true"
+            }
+          ]
+        }
+      },
+      "id": "8aeb7260-17d7-4beb-9b6d-56c6ef5ba347",
+      "name": "UPDATE_FOLLOWP_30",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        2544,
+        672
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "supabaseApi": {
+          "id": "LZfJPVmUc6wxgUeC",
+          "name": "Development"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "user_number",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "id": "94dcd0ad-c0ce-44df-b894-a5074844bd98",
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -304,
+        1712
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "99ab6a79-6c72-4db5-b84f-74c040c58628",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -112,
+        1360
+      ],
+      "typeVersion": 1.2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "follow_up",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_number",
+              "condition": "eq",
+              "keyValue": "={{ $('Get many rows').item.json.user_number }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "followup_5760_sent",
+              "fieldValue": "true"
+            }
+          ]
+        }
+      },
+      "id": "8ecb0746-24a3-4681-9ec3-86ccd57c1233",
+      "name": "UPDATE_FOLLOWP_1",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        2560,
+        1312
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "supabaseApi": {
+          "id": "LZfJPVmUc6wxgUeC",
+          "name": "Development"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://evolution-api:8080/message/sendText/Menthalis",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=2098EC75B39E-4811-A05C-156F8E1BB770"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Get many rows').item.json.user_number }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "02fe602c-2b08-440f-819a-da9c1a7c0dbf",
+      "name": "ENVIA_FOLLOWUP_",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2304,
+        1328
+      ],
+      "typeVersion": 4.2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "follow_up",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_number",
+              "condition": "eq",
+              "keyValue": "={{ $('Get many rows').item.json.user_number }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "followup_7200_sent",
+              "fieldValue": "true"
+            }
+          ]
+        }
+      },
+      "id": "b862f013-86d5-49ff-a376-1abd4d6c0a41",
+      "name": "UPDATE_FOLLOWP_2",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        2560,
+        1472
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "supabaseApi": {
+          "id": "LZfJPVmUc6wxgUeC",
+          "name": "Development"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://evolution-api:8080/message/sendText/Menthalis",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=2098EC75B39E-4811-A05C-156F8E1BB770"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Get many rows').item.json.user_number }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4cf040f0-fcc3-4f03-90b0-701ddcd3364a",
+      "name": "ENVIA_FOLLOWUP_1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2304,
+        1488
+      ],
+      "typeVersion": 4.2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "follow_up",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_number",
+              "condition": "eq",
+              "keyValue": "={{ $('Get many rows').item.json.user_number }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "followup_8640_sent",
+              "fieldValue": "true"
+            }
+          ]
+        }
+      },
+      "id": "62d6ff58-c455-45ba-a4a5-c61d5530e595",
+      "name": "UPDATE_FOLLOWP_3",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        2560,
+        1632
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "supabaseApi": {
+          "id": "LZfJPVmUc6wxgUeC",
+          "name": "Development"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://evolution-api:8080/message/sendText/Menthalis",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=2098EC75B39E-4811-A05C-156F8E1BB770"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Get many rows').item.json.user_number }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f97bf68b-5b87-4a17-9b77-855f1646fa1c",
+      "name": "ENVIA_FOLLOWUP_2",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2304,
+        1648
+      ],
+      "typeVersion": 4.2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "follow_up",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_number",
+              "condition": "eq",
+              "keyValue": "={{ $('Get many rows').item.json.user_number }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "followup_11520_sent",
+              "fieldValue": "true"
+            }
+          ]
+        }
+      },
+      "id": "fcd3e7e1-82b0-454d-bf0d-98544f1d19b6",
+      "name": "UPDATE_FOLLOWP_4",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        2560,
+        1808
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "supabaseApi": {
+          "id": "LZfJPVmUc6wxgUeC",
+          "name": "Development"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://evolution-api:8080/message/sendText/Menthalis",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=2098EC75B39E-4811-A05C-156F8E1BB770"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Get many rows').item.json.user_number }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cdb22305-388d-46a4-9887-5fc2d21c1d5d",
+      "name": "ENVIA_FOLLOWUP_3",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2304,
+        1808
+      ],
+      "typeVersion": 4.2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "content": " # CRIA FOLLOWUP",
+        "height": 2176,
+        "width": 3872,
+        "color": 6
+      },
+      "id": "699ce29d-e51e-46b9-9a30-540edb7fcca2",
+      "name": "Sticky Note14",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -432,
+        624
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "follow_up",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_number",
+              "condition": "eq",
+              "keyValue": "={{ $('Get many rows').item.json.user_number }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "followup_14400_sent",
+              "fieldValue": "true"
+            }
+          ]
+        }
+      },
+      "id": "f191db6f-f747-491a-9538-cd8f631796b9",
+      "name": "UPDATE_FOLLOWP_5",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        2560,
+        1968
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "supabaseApi": {
+          "id": "LZfJPVmUc6wxgUeC",
+          "name": "Development"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://evolution-api:8080/message/sendText/Menthalis",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=2098EC75B39E-4811-A05C-156F8E1BB770"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Get many rows').item.json.user_number }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "170ca65f-487c-4b4a-94bb-03a3c6abc0c5",
+      "name": "ENVIA_FOLLOWUP_4",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2304,
+        1968
+      ],
+      "typeVersion": 4.2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "follow_up",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_number",
+              "condition": "eq",
+              "keyValue": "={{ $('Get many rows').item.json.user_number }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "followup_15840_sent",
+              "fieldValue": "true"
+            }
+          ]
+        }
+      },
+      "id": "2fe3db11-0455-450f-8db1-78a64c6859b3",
+      "name": "UPDATE_FOLLOWP_6",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        2560,
+        2128
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "supabaseApi": {
+          "id": "LZfJPVmUc6wxgUeC",
+          "name": "Development"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://evolution-api:8080/message/sendText/Menthalis",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=2098EC75B39E-4811-A05C-156F8E1BB770"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Get many rows').item.json.user_number }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f30bb772-7912-478e-99f2-dfb6936f4a01",
+      "name": "ENVIA_FOLLOWUP_5",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2304,
+        2128
+      ],
+      "typeVersion": 4.2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "follow_up",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_number",
+              "condition": "eq",
+              "keyValue": "={{ $('Get many rows').item.json.user_number }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "followup_17280_sent",
+              "fieldValue": "true"
+            }
+          ]
+        }
+      },
+      "id": "26731ddc-6cde-4a2a-b1f2-e2778141e0d1",
+      "name": "UPDATE_FOLLOWP_7",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        2560,
+        2288
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "supabaseApi": {
+          "id": "LZfJPVmUc6wxgUeC",
+          "name": "Development"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://evolution-api:8080/message/sendText/Menthalis",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=2098EC75B39E-4811-A05C-156F8E1BB770"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Get many rows').item.json.user_number }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e1efd8a8-d69e-494e-90d1-f5f864bd4e2a",
+      "name": "ENVIA_FOLLOWUP_6",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2304,
+        2288
+      ],
+      "typeVersion": 4.2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "follow_up",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_number",
+              "condition": "eq",
+              "keyValue": "={{ $('Get many rows').item.json.user_number }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "followup_18720_sent",
+              "fieldValue": "true"
+            }
+          ]
+        }
+      },
+      "id": "df7aeb94-d4ec-482f-9ab4-1893c2c0246c",
+      "name": "UPDATE_FOLLOWP_8",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        2560,
+        2448
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "supabaseApi": {
+          "id": "LZfJPVmUc6wxgUeC",
+          "name": "Development"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://evolution-api:8080/message/sendText/Menthalis",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=2098EC75B39E-4811-A05C-156F8E1BB770"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Get many rows').item.json.user_number }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "143d9b66-4b9a-40c7-86b3-a6e02ed7776a",
+      "name": "ENVIA_FOLLOWUP_7",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2304,
+        2448
+      ],
+      "typeVersion": 4.2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "follow_up",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_number",
+              "condition": "eq",
+              "keyValue": "={{ $('Get many rows').item.json.user_number }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "followup_20160_sent",
+              "fieldValue": "true"
+            }
+          ]
+        }
+      },
+      "id": "9d6b5060-fce1-4022-817d-b1b65cb317c1",
+      "name": "UPDATE_FOLLOWP_9",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        2560,
+        2608
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "supabaseApi": {
+          "id": "LZfJPVmUc6wxgUeC",
+          "name": "Development"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://evolution-api:8080/message/sendText/Menthalis",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=2098EC75B39E-4811-A05C-156F8E1BB770"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Get many rows').item.json.user_number }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4cdb4e74-0fda-463e-b922-c948d7d9da75",
+      "name": "ENVIA_FOLLOWUP_8",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2304,
+        2608
+      ],
+      "typeVersion": 4.2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://evolution-api:8080/message/sendText/Menthalis",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=2098EC75B39E-4811-A05C-156F8E1BB770"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('BUSCAR STATUS DO FOLLOWUP').item.json.user_number }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b31b28d8-7d29-4422-be62-06ab39b9fc12",
+      "name": "ENVIA_FOLLOWUP_9",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2304,
+        688
+      ],
+      "typeVersion": 4.2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://evolution-api:8080/message/sendText/Menthalis",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=2098EC75B39E-4811-A05C-156F8E1BB770"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('BUSCAR STATUS DO FOLLOWUP').item.json.user_number }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5c88d295-6552-4b24-a2e2-dbe114ed519d",
+      "name": "ENVIA_FOLLOWUP_30",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2304,
+        832
+      ],
+      "typeVersion": 4.2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://evolution-api:8080/message/sendText/Menthalis",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=2098EC75B39E-4811-A05C-156F8E1BB770"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('BUSCAR STATUS DO FOLLOWUP').item.json.user_number }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8fb7264f-5613-4f69-9225-06df06d33539",
+      "name": "ENVIA_FOLLOWUP_180",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2304,
+        976
+      ],
+      "typeVersion": 4.2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://evolution-api:8080/message/sendText/Menthalis",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "=2098EC75B39E-4811-A05C-156F8E1BB770"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Get many rows').item.json.user_number }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "216513a4-25cb-4e50-a0b6-462333c58764",
+      "name": "ENVIA_FOLLOWUP_1440",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2304,
+        1152
+      ],
+      "typeVersion": 4.2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cf1649cf-9c59-4168-8ff8-2d8c466dc93b",
+              "leftValue": "={{$json.minutes_passed}}",
+              "rightValue": 1440,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "d32d06dd-024c-4bbf-b36f-8611e11b01d6",
+              "leftValue": "={{$json.followup_180_sent}}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "8ff9d58d-8bfe-46d1-ae85-d085b971e596",
+      "name": "1440-1",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1712,
+        880
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cf1649cf-9c59-4168-8ff8-2d8c466dc93b",
+              "leftValue": "={{$json.minutes_passed}}",
+              "rightValue": 2880,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "d1e16cf7-6678-4e82-aa9d-32ef22e976cd",
+              "leftValue": "={{$json.followup_1440_sent}}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "22d8c7c2-bc5d-42d9-9e50-bff229f5a441",
+      "name": "2880-1",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1712,
+        1024
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fa306050-a6d2-4c5f-8671-b606da171f08",
+              "name": "message",
+              "value": "=“Tranquilo, [Nome]. Quando puder me sinaliza.”",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8cf1a3fe-959a-4527-81b7-2542ccc8ed85",
+      "name": "FOLLOWUP 10",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2096,
+        688
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7f447d9b-abaf-4990-b391-bca5b9144c2f",
+              "name": "message",
+              "value": "=“Empresas parecidas com a sua começaram a revisar algumas frentes internas.\n\nAí também está rolando algo do tipo?”",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4f7b5804-fc05-4f4a-805c-9e78685a98c1",
+      "name": "FOLLOWUP 2880",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2096,
+        976
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cf1649cf-9c59-4168-8ff8-2d8c466dc93b",
+              "leftValue": "={{$json.minutes_passed}}",
+              "rightValue": 4320,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "d1e16cf7-6678-4e82-aa9d-32ef22e976cd",
+              "leftValue": "={{$json.followup_1440_sent}}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "1066d0ca-383c-4786-b45e-83353214aaa2",
+      "name": "4320-1",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1712,
+        1152
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7f447d9b-abaf-4990-b391-bca5b9144c2f",
+              "name": "message",
+              "value": "=“Consigo te mandar um resumo bem claro sobre o impacto no seu segmento.\n\nPrefere que eu envie aqui ou no seu WhatsApp principal de trabalho?”",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "464f2031-83ac-4bda-ba74-c7cafc160367",
+      "name": "FOLLOWUP  4320",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2096,
+        1152
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cf1649cf-9c59-4168-8ff8-2d8c466dc93b",
+              "leftValue": "={{$json.minutes_passed}}",
+              "rightValue": 5760,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "d1e16cf7-6678-4e82-aa9d-32ef22e976cd",
+              "leftValue": "={{$json.followup_1440_sent}}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "569a3590-5452-4dec-9f1e-a8cfe96416b9",
+      "name": "5760-1",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1712,
+        1296
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7f447d9b-abaf-4990-b391-bca5b9144c2f",
+              "name": "message",
+              "value": "=“Só pra alinhar: o que tem pesado mais pra vocês ultimamente? Margem, concorrência ou custo?”",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "113a76bf-914d-4fcd-a6ee-0670184466d3",
+      "name": "FOLLOWUP 5760",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2096,
+        1328
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cf1649cf-9c59-4168-8ff8-2d8c466dc93b",
+              "leftValue": "={{$json.minutes_passed}}",
+              "rightValue": 7200,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "d1e16cf7-6678-4e82-aa9d-32ef22e976cd",
+              "leftValue": "={{$json.followup_1440_sent}}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "4bbc361d-62ad-4842-a97b-5c3e2005b4a0",
+      "name": "7200-1",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1712,
+        1456
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7f447d9b-abaf-4990-b391-bca5b9144c2f",
+              "name": "message",
+              "value": "=“Te falo isso porque algumas empresas estão descobrindo impactos diferentes do que imaginaram.\n\nAí vocês esperam algo mais positivo ou mais desafiador?”",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8517c20c-0dc6-431c-86f1-c0052448081a",
+      "name": "FOLLOWUP 7200",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2096,
+        1488
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7f447d9b-abaf-4990-b391-bca5b9144c2f",
+              "name": "message",
+              "value": "=“Se ficar mais fácil, te mando um cenário comparativo do que muda no setor.\"",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "22adda7d-7bb0-4cb5-87b9-a6d49e863328",
+      "name": "FOLLOWUP 8640",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2096,
+        1648
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cf1649cf-9c59-4168-8ff8-2d8c466dc93b",
+              "leftValue": "={{$json.minutes_passed}}",
+              "rightValue": 11520,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "d1e16cf7-6678-4e82-aa9d-32ef22e976cd",
+              "leftValue": "={{$json.followup_1440_sent}}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "b8b398b9-8e82-4e7b-8c95-204307658a27",
+      "name": "11520-1",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1712,
+        1776
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7f447d9b-abaf-4990-b391-bca5b9144c2f",
+              "name": "message",
+              "value": "=“Percebi que muita empresa está revisando precificação por causa da Reforma.\n\nVocês cogitaram isso ou ainda não mexeram?”",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f0018ac9-ba86-4c89-8ec8-b55158ccccb5",
+      "name": "FOLLOWUP 11520",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2096,
+        1808
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cf1649cf-9c59-4168-8ff8-2d8c466dc93b",
+              "leftValue": "={{$json.minutes_passed}}",
+              "rightValue": 14400,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "d1e16cf7-6678-4e82-aa9d-32ef22e976cd",
+              "leftValue": "={{$json.followup_1440_sent}}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "74755a93-8cd0-4715-8844-8bb53653e409",
+      "name": "14400-1",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1712,
+        1936
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7f447d9b-abaf-4990-b391-bca5b9144c2f",
+              "name": "message",
+              "value": "=“Tem um ponto específico que está pegando forte em empresas do seu tamanho.\n\nQuer que eu te mande em 1 mensagem o que mais deve mexer na operação?”",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "01948899-b32c-4b1a-9e17-29ec31f24a02",
+      "name": "FOLLOWUP 14400",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2096,
+        1968
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7f447d9b-abaf-4990-b391-bca5b9144c2f",
+              "name": "message",
+              "value": "=“Me diz uma coisa: prefira que eu te envie essas análises curtas pelo Whatsapp que usa para trabalho? Fica mais organizado pra você. Só me passar aqui.”",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "13e6660b-06b9-4702-af5b-44541f56bf37",
+      "name": "FOLLOWUP 15840",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2096,
+        2128
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7f447d9b-abaf-4990-b391-bca5b9144c2f",
+              "name": "message",
+              "value": "=“De curiosidade: vocês atendem mais localmente ou vários estados? A Reforma tem mudado mais pra quem opera em múltiplos pontos.”",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "537ce826-9cb7-4338-b8a7-9603a2ac0b91",
+      "name": "FOLLOWUP 17280",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2096,
+        2288
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7f447d9b-abaf-4990-b391-bca5b9144c2f",
+              "name": "message",
+              "value": "=“Tenho um resumo final do que mais afeta empresas do seu setor em 2025.\n\nQuer que eu te envie aqui ou posso te mandar no seu número direto?”",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "73f8931d-3ea9-4eeb-a2d9-356f387bbf74",
+      "name": "FOLLOWUP 18720",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2096,
+        2448
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7f447d9b-abaf-4990-b391-bca5b9144c2f",
+              "name": "message",
+              "value": "=“Fechando aqui, [Nome]: se quiser, te deixo só com o essencial do que muda no seu segmento para 2025.\n\nTe ajuda ou prefere que eu te procure mais perto da virada da Reforma?”",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "12d2e0fa-5ab0-4cb6-8a71-fb0d10f64244",
+      "name": "FOLLOWUP 20160",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2096,
+        2608
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b53900a6-535b-459a-a272-7094250f4e9b",
+              "name": "minutes_passed",
+              "value": "={{(() => {\n  if ($itemIndex !== 0) return null;\n\n  const last = new Date($json.last_message.replace(' ', 'T') + '-03:00');\n  const now = new Date();\n\n  const diffMinutes = Math.floor((now.getTime() - last.getTime()) / (1000 * 60));\n  return diffMinutes;\n})()}}",
+              "type": "string"
+            },
+            {
+              "id": "76a42641-5c19-43ef-aec4-19bbc499d284",
+              "name": "followup_10_sent",
+              "value": "={{ $json.followup_10_sent }}",
+              "type": "boolean"
+            },
+            {
+              "id": "81ba311f-f8e0-4379-8495-459a35411be0",
+              "name": "followup_1440_sent",
+              "value": "={{ $json.followup_1440_sent }}",
+              "type": "boolean"
+            },
+            {
+              "id": "3c1b69d0-fa83-44ba-a753-86ade430eec9",
+              "name": "followup_2880_sent",
+              "value": "={{ $json.followup_2880_sent }}",
+              "type": "boolean"
+            },
+            {
+              "id": "3ea841a5-f748-4ab6-af03-c9a8cffcc15c",
+              "name": "followup_4320_sent",
+              "value": "={{ $json.followup_4320_sent }}",
+              "type": "boolean"
+            },
+            {
+              "id": "3d9fd28d-8d18-450e-86e3-769c8028d9c2",
+              "name": "followup_4760_sent",
+              "value": "={{ $json.followup_5760_sent }}",
+              "type": "string"
+            },
+            {
+              "id": "51b33cd7-70d5-4e7e-ac1c-4db8dc29ea56",
+              "name": "followup_7200_sent",
+              "value": "={{ $json.followup_7200_sent }}",
+              "type": "string"
+            },
+            {
+              "id": "349328b1-68b9-42b0-91ea-37d4ba4b8e07",
+              "name": "followup_8640_sent",
+              "value": "={{ $json.followup_8640_sent }}",
+              "type": "string"
+            },
+            {
+              "id": "8f581774-58a4-49d9-a620-8d172a9936d3",
+              "name": "followup_11520_sent",
+              "value": "={{ $json.followup_11520_sent }}",
+              "type": "string"
+            },
+            {
+              "id": "61eadf1b-7b64-4d77-8e2e-fddfa0e16ca2",
+              "name": "followup_14400_sent",
+              "value": "={{ $json.followup_14400_sent }}",
+              "type": "boolean"
+            },
+            {
+              "id": "dc93e003-cc0d-4141-abe6-369b347fc0f6",
+              "name": "followup_15840_sent",
+              "value": "={{ $json.followup_15840_sent }}",
+              "type": "string"
+            },
+            {
+              "id": "b32b79ed-8e31-419c-9a2a-653023e829ce",
+              "name": "followup_17280_sent",
+              "value": "={{ $json.followup_17280_sent }}",
+              "type": "string"
+            },
+            {
+              "id": "83e7a132-855d-4e30-a545-2b5c36276f9c",
+              "name": "followup_18720_sent",
+              "value": "={{ $json.followup_18720_sent }}",
+              "type": "string"
+            },
+            {
+              "id": "6f8b5d93-90d7-4660-a186-f9e955b4f14b",
+              "name": "followup_20160_sent",
+              "value": "={{ $json.followup_20160_sent }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "47543896-5d13-4eb4-a809-f092c8acdf15",
+      "name": "TEMPO",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1168,
+        1632
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "23ffe6e5-1d1c-4fa5-994f-25d656ab3e1e",
+              "name": "message",
+              "value": "=“Uma coisa rápida: vocês já sentiram algum efeito da Reforma aí dentro ou ainda não mexeu em nada?”",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3fd92a1e-3fa4-45c8-b271-3f1dcaccee33",
+      "name": "FOLLOWUP 1440",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2096,
+        832
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "additionalFields": {}
+      },
+      "id": "59c06727-06fa-48b9-b4fe-b1cc0fad7dc1",
+      "name": "Send message",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        1920,
+        544
+      ],
+      "typeVersion": 1.1,
+      "webhookId": "f444a622-5a49-4385-b88e-1fe233301c03",
+      "credentials": {}
+    }
+  ],
+  "connections": {
+    "10": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "8640": {
+      "main": [
+        [
+          {
+            "node": "FOLLOWUP 8640",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "15840": {
+      "main": [
+        [
+          {
+            "node": "FOLLOWUP 15840",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "17280": {
+      "main": [
+        [
+          {
+            "node": "FOLLOWUP 17280",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "18720": {
+      "main": [
+        [
+          {
+            "node": "FOLLOWUP 18720",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "20160": {
+      "main": [
+        [
+          {
+            "node": "FOLLOWUP 20160",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CONVERTER TEMPO1": {
+      "main": [
+        [
+          {
+            "node": "TEMPO 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE_FOLLOWP_": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "BUSCAR TABELA FOLLOWUP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRIAR TABELA FOLLOWUP": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE_FOLLOWP_1440": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "BUSCAR STATUS DO FOLLOWUP",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CRIAR TABELA FOLLOWUP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BUSCAR TABELA FOLLOWUP": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BUSCAR STATUS DO FOLLOWUP": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CONVERTER TEMPO": {
+      "main": [
+        [
+          {
+            "node": "TEMPO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "VERIFICAR STATUS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VERIFICAR STATUS": {
+      "main": [
+        [
+          {
+            "node": "CONVERTER TEMPO",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "CONVERTER TEMPO1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE_FOLLOWP_180": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows": {
+      "main": [
+        [
+          {
+            "node": "BUSCAR STATUS DO FOLLOWUP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE_FOLLOWP_30": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "BUSCAR TABELA FOLLOWUP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE_FOLLOWP_1": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENVIA_FOLLOWUP_": {
+      "main": [
+        [
+          {
+            "node": "UPDATE_FOLLOWP_1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE_FOLLOWP_2": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENVIA_FOLLOWUP_1": {
+      "main": [
+        [
+          {
+            "node": "UPDATE_FOLLOWP_2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE_FOLLOWP_3": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENVIA_FOLLOWUP_2": {
+      "main": [
+        [
+          {
+            "node": "UPDATE_FOLLOWP_3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE_FOLLOWP_4": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENVIA_FOLLOWUP_3": {
+      "main": [
+        [
+          {
+            "node": "UPDATE_FOLLOWP_4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE_FOLLOWP_5": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENVIA_FOLLOWUP_4": {
+      "main": [
+        [
+          {
+            "node": "UPDATE_FOLLOWP_5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE_FOLLOWP_6": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENVIA_FOLLOWUP_5": {
+      "main": [
+        [
+          {
+            "node": "UPDATE_FOLLOWP_6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE_FOLLOWP_7": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENVIA_FOLLOWUP_6": {
+      "main": [
+        [
+          {
+            "node": "UPDATE_FOLLOWP_7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE_FOLLOWP_8": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENVIA_FOLLOWUP_7": {
+      "main": [
+        [
+          {
+            "node": "UPDATE_FOLLOWP_8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE_FOLLOWP_9": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENVIA_FOLLOWUP_8": {
+      "main": [
+        [
+          {
+            "node": "UPDATE_FOLLOWP_9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENVIA_FOLLOWUP_9": {
+      "main": [
+        [
+          {
+            "node": "UPDATE_FOLLOWP_30",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENVIA_FOLLOWUP_30": {
+      "main": [
+        [
+          {
+            "node": "UPDATE_FOLLOWP_180",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENVIA_FOLLOWUP_180": {
+      "main": [
+        [
+          {
+            "node": "UPDATE_FOLLOWP_1440",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENVIA_FOLLOWUP_1440": {
+      "main": [
+        [
+          {
+            "node": "UPDATE_FOLLOWP_",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1440-1": {
+      "main": [
+        [
+          {
+            "node": "FOLLOWUP 1440",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2880-1": {
+      "main": [
+        [
+          {
+            "node": "FOLLOWUP 2880",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FOLLOWUP 10": {
+      "main": [
+        [
+          {
+            "node": "ENVIA_FOLLOWUP_9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FOLLOWUP 2880": {
+      "main": [
+        [
+          {
+            "node": "ENVIA_FOLLOWUP_180",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4320-1": {
+      "main": [
+        [
+          {
+            "node": "FOLLOWUP  4320",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FOLLOWUP  4320": {
+      "main": [
+        [
+          {
+            "node": "ENVIA_FOLLOWUP_1440",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5760-1": {
+      "main": [
+        [
+          {
+            "node": "FOLLOWUP 5760",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FOLLOWUP 5760": {
+      "main": [
+        [
+          {
+            "node": "ENVIA_FOLLOWUP_",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7200-1": {
+      "main": [
+        [
+          {
+            "node": "FOLLOWUP 7200",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FOLLOWUP 7200": {
+      "main": [
+        [
+          {
+            "node": "ENVIA_FOLLOWUP_1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FOLLOWUP 8640": {
+      "main": [
+        [
+          {
+            "node": "ENVIA_FOLLOWUP_2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "11520-1": {
+      "main": [
+        [
+          {
+            "node": "FOLLOWUP 11520",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FOLLOWUP 11520": {
+      "main": [
+        [
+          {
+            "node": "ENVIA_FOLLOWUP_3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "14400-1": {
+      "main": [
+        [
+          {
+            "node": "FOLLOWUP 14400",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FOLLOWUP 14400": {
+      "main": [
+        [
+          {
+            "node": "ENVIA_FOLLOWUP_4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FOLLOWUP 15840": {
+      "main": [
+        [
+          {
+            "node": "ENVIA_FOLLOWUP_5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FOLLOWUP 17280": {
+      "main": [
+        [
+          {
+            "node": "ENVIA_FOLLOWUP_6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FOLLOWUP 18720": {
+      "main": [
+        [
+          {
+            "node": "ENVIA_FOLLOWUP_7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FOLLOWUP 20160": {
+      "main": [
+        [
+          {
+            "node": "ENVIA_FOLLOWUP_8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TEMPO": {
+      "main": [
+        [
+          {
+            "node": "20160",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "18720",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "17280",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "15840",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "14400-1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "11520-1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "8640",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "7200-1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "5760-1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "4320-1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "1440-1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "2880-1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FOLLOWUP 1440": {
+      "main": [
+        [
+          {
+            "node": "ENVIA_FOLLOWUP_30",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "a0f7a305da35e849bafdb639b90f9c75f57bc77027e416642bf74993eb8cfaee"
+  }
+}

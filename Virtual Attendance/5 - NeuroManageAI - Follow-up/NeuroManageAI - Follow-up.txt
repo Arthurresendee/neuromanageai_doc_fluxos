@@ -1,0 +1,241 @@
+NeuroManageAI - Follow-up
+
+Esta documentacao explica todo o fluxo em ordem de execucao, detalhando o papel tecnico de cada node e por que cada etapa existe no contexto da cadencia de follow-up por WhatsApp com base na tabela follow_up.
+
+====================================================================
+1) OBJETIVO DO FLUXO
+====================================================================
+
+Objetivo macro:
+
+Executar uma cadencia automatizada de follow-up por WhatsApp para contatos da tabela follow_up, avaliando tempo desde a ultima mensagem (minutes_passed), status do contato e flags followup_*_sent para decidir a proxima mensagem e registrar o envio no Supabase.
+
+Em termos praticos, o fluxo faz:
+1. Dispara por agendamento (Schedule Trigger).
+2. Carrega registros da tabela follow_up (Get many rows / BUSCAR STATUS DO FOLLOWUP).
+3. Faz loop item a item e filtra por status (pendente, concluido, cancelado).
+4. Calcula minutes_passed e expõe flags followup_*_sent para as condicoes.
+5. Avalia janelas de follow-up (10, 30, 180, 1440, 2880, 4320, 5760, 7200, 8640, 11520, 14400, 15840, 17280, 18720, 20160 minutos).
+6. Monta mensagem da etapa e envia via Evolution API (sendText / Menthalis).
+7. Atualiza a flag correspondente no follow_up e, quando aplicavel, o status.
+8. Aguarda (Wait) e retorna ao loop.
+
+====================================================================
+2) TABELA SQL ENVOLVIDA
+====================================================================
+
+Tabela alvo do processo:
+- public.follow_up
+
+Campos estruturais:
+- id (PK)
+- user_name
+- user_number (UNIQUE)
+- last_message
+- created_at
+- status (default: pendente)
+
+Flags de cadencia presentes no schema:
+- followup_10_sent
+- followup_30_sent
+- followup_180_sent
+- followup_1440_sent
+- followup_2880_sent
+- followup_4320_sent
+- followup_5760_sent
+- followup_7200_sent
+- followup_8640_sent
+- followup_11520_sent
+- followup_14400_sent
+- followup_15840_sent
+- followup_17280_sent
+- followup_18720_sent
+- followup_20160_sent
+
+Leitura de negocio:
+- A tabela follow_up controla quem esta na cadencia, qual o momento da jornada e quais etapas ja foram enviadas, evitando reenvio e mantendo rastreabilidade.
+
+====================================================================
+3) SEQUENCIA EXECUTIVA (ALTO NIVEL)
+====================================================================
+
+Schedule Trigger
+-> Get many rows (follow_up)
+-> BUSCAR STATUS DO FOLLOWUP (follow_up)
+-> Loop Over Items
+   -> VERIFICAR STATUS (Switch)
+      -> pendente: CONVERTER TEMPO -> TEMPO / TEMPO 2
+         -> If por janela de minutos
+            -> FOLLOWUP X (Set message)
+            -> ENVIA_FOLLOWUP_X (HTTP Request -> Evolution API)
+            -> UPDATE_FOLLOWP_X (Supabase update flag)
+            -> Wait
+            -> retorno ao Loop
+      -> concluido/cancelado: nao envia
+
+Obs.: o JSON contem blocos com nomes tecnicos repetidos (ex.: UPDATE_FOLLOWP_1..9, ENVIA_FOLLOWUP_1..9, CONVERTER TEMPO e CONVERTER TEMPO1), o que indica evolucao incremental do fluxo.
+
+====================================================================
+4) NODE POR NODE (DETALHAMENTO)
+====================================================================
+
+--------------------------------------------------
+ETAPA 1 - Schedule Trigger / Start
+Tipo: n8n-nodes-base.scheduleTrigger
+--------------------------------------------------
+O que faz:
+- Inicia a execucao automatica da cadencia em intervalos definidos no n8n.
+
+Por que existe:
+- Garante recorrencia para avaliar novos tempos e disparar follow-ups no momento correto.
+
+
+--------------------------------------------------
+ETAPA 2 - Get many rows / BUSCAR TABELA FOLLOWUP / BUSCAR STATUS DO FOLLOWUP
+Tipo: n8n-nodes-base.supabase (getAll)
+Tabela: follow_up
+--------------------------------------------------
+O que faz:
+- Le os contatos e seus estados atuais na tabela follow_up.
+
+Por que existe:
+- Alimenta o loop com status, last_message e flags para tomada de decisao.
+
+
+--------------------------------------------------
+ETAPA 3 - Loop Over Items
+Tipo: n8n-nodes-base.splitInBatches
+--------------------------------------------------
+O que faz:
+- Processa cada contato individualmente.
+
+Por que existe:
+- Permite decisao e envio controlado por contato, sem misturar estado entre itens.
+
+
+--------------------------------------------------
+ETAPA 4 - VERIFICAR STATUS
+Tipo: n8n-nodes-base.switch
+--------------------------------------------------
+Criterios:
+- pendente -> segue para calculo de tempo e condicoes.
+- concluido -> nao envia.
+- cancelado -> nao envia.
+
+Por que existe:
+- Evita mensagens indevidas para contatos encerrados.
+
+
+--------------------------------------------------
+ETAPA 5 - CONVERTER TEMPO / TEMPO / TEMPO 2
+Tipo: code + set
+--------------------------------------------------
+O que faz:
+- Calcula minutes_passed com base em last_message.
+- Expõe flags followup_*_sent para os nodes If.
+
+Ponto tecnico observado:
+- Existe mapeamento followup_4760_sent recebendo followup_5760_sent (inconsistencia nominal).
+
+Por que existe:
+- Centraliza os dados usados pelas regras de disparo por janela.
+
+
+--------------------------------------------------
+ETAPA 6 - CONDICOES DE JANELA (nodes If numericos)
+Tipo: n8n-nodes-base.if
+--------------------------------------------------
+O que faz:
+- Verifica se minutes_passed passou do limite e se a flag da etapa ainda esta false.
+
+Janelas mapeadas no fluxo:
+- 10, 30, 180, 1440, 2880, 4320, 5760, 7200, 8640, 11520, 14400, 15840, 17280, 18720, 20160 minutos.
+
+Por que existe:
+- Implementa cadencia temporal sem reenvio da mesma etapa.
+
+
+--------------------------------------------------
+ETAPA 7 - FOLLOWUP X (montagem de mensagem)
+Tipo: n8n-nodes-base.set
+--------------------------------------------------
+O que faz:
+- Define o texto da mensagem da etapa (campo message).
+
+Por que existe:
+- Separa claramente conteudo por etapa e simplifica manutencao da copy.
+
+
+--------------------------------------------------
+ETAPA 8 - ENVIA_FOLLOWUP_X
+Tipo: n8n-nodes-base.httpRequest (POST)
+--------------------------------------------------
+Endpoint:
+- http://evolution-api:8080/message/sendText/Menthalis
+
+Payload:
+- number: user_number
+- text: message
+
+Por que existe:
+- Realiza envio no canal WhatsApp via Evolution API.
+
+
+--------------------------------------------------
+ETAPA 9 - UPDATE_FOLLOWP_X
+Tipo: n8n-nodes-base.supabase (update)
+Tabela: follow_up
+--------------------------------------------------
+O que faz:
+- Atualiza a flag da etapa enviada (followup_*_sent = true).
+- Em alguns ramos, atualiza status.
+
+Por que existe:
+- Evita reenvio e garante trilha de auditoria da cadencia.
+
+
+--------------------------------------------------
+ETAPA 10 - Wait1 / Wait2
+Tipo: n8n-nodes-base.wait
+--------------------------------------------------
+O que faz:
+- Aplica pausa entre operacoes.
+
+Por que existe:
+- Reduz burst de requisicoes e torna execucao mais controlada.
+
+
+--------------------------------------------------
+ETAPA 11 - CRIAR TABELA FOLLOWUP / Execute a SQL query (blocos auxiliares)
+Tipo: postgres/supabase auxiliares
+--------------------------------------------------
+O que faz:
+- Existem blocos auxiliares no JSON relacionados a inicializacao/rotinas tecnicas.
+
+Por que existe:
+- Suporte operacional e historico de evolucao do workflow.
+
+====================================================================
+5) PONTOS DE ATENCAO / RISCOS TECNICOS
+====================================================================
+
+1. Inconsistencia de nome de campo
+   - O fluxo usa followup_4760_sent em um ponto, enquanto o schema usa followup_5760_sent.
+
+2. Duplicidade de blocos
+   - Ha blocos com nomes muito parecidos (TEMPO/TEMPO 2, CONVERTER TEMPO/CONVERTER TEMPO1, multiplos UPDATE_FOLLOWP_* e ENVIA_FOLLOWUP_*). Vale revisar para reduzir risco de ramo morto ou comportamento duplicado.
+
+3. Padronizacao de fonte de dados
+   - Alguns nodes referenciam dados de nodes diferentes para user_number e flags. Padronizar a origem por ramo reduz chance de mismatch.
+
+4. Status e encerramento
+   - Revisar quando status deve virar concluido para manter regra de negocio consistente com a ultima etapa desejada.
+
+5. Segurança
+   - Confirmar que apikey e endpoint Evolution API estao protegidos por credenciais/variaveis seguras no ambiente.
+
+====================================================================
+6) RESUMO FINAL
+====================================================================
+
+O fluxo NeuroManageAI - Follow-up implementa uma cadencia completa de WhatsApp baseada na tabela follow_up, com decisao por tempo decorrido e flags de envio por etapa. O desenho geral esta correto para automacao de follow-up, e a documentacao deve ser mantida com foco em: consistencia das flags, simplificacao de blocos duplicados e padronizacao de referencias de dados entre os nodes.
