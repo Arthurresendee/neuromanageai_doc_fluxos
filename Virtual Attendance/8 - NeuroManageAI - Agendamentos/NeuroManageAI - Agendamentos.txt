@@ -1,0 +1,270 @@
+NeuroManageAI - Agendamentos
+
+Esta documentacao explica todo o fluxo em ordem de execucao, detalhando o papel tecnico de cada node e por que cada etapa existe no contexto do sub-workflow de agendamentos. Este fluxo e chamado pelas tools (criar_reuniao, reagendar_reuniao, cancelar_reuniao) do agente SDR principal e gerencia operacoes no Google Calendar + Supabase + WhatsApp.
+
+====================================================================
+1) OBJETIVO DO FLUXO
+====================================================================
+
+Objetivo macro:
+
+Receber chamadas do workflow principal via Execute Workflow Trigger, rotear por tipo de evento (agendamento, cancelamento, reagendamento), interagir com Google Calendar para criar/cancelar/reagendar reunioes, atualizar status do lead na tabela `contatos_agente` e enviar confirmacao via WhatsApp.
+
+Em termos praticos, o fluxo faz:
+1. Recebe trigger do workflow pai com dados: Evento, Remotejid, query (nome, email, start, end, resumo).
+2. Formata datas ISO para pt-BR no node `Code`.
+3. Roteia por tipo de evento no `[87] Switch4`: agendamento, cancelamento ou reagendamento.
+4. Para agendamento: busca reuniao existente, verifica disponibilidade, cria evento no Google Calendar, atualiza status para "concluido".
+5. Para cancelamento: busca evento, deleta do Google Calendar, atualiza status para "Cancelado".
+6. Para reagendamento: verifica disponibilidade, cria novo evento, atualiza status para "reagendado".
+7. Envia confirmacao via WhatsApp nativo apos cada operacao.
+8. Retorna resposta formatada para o agente principal.
+
+====================================================================
+2) TABELA SQL ENVOLVIDA
+====================================================================
+
+SQL fornecido e tabela usada no JSON:
+- public.contatos_agente
+
+Campos da tabela:
+- id (serial, PK)
+- user_number (text, unique) - numero do usuario
+- user_name (text) - nome do usuario
+- user_profile (text) - perfil
+- agente (text, default 'recepcionista') - tipo de agente
+- role (text) - papel
+- status (text) - status atualizado pelo fluxo: "concluido", "Cancelado", "reagendado"
+- email (text) - email do usuario
+- interesse_duvida (text) - interesse ou duvida registrada
+- created_at (timestamp, default now())
+
+Nodes Supabase que interagem com esta tabela:
+- Update a row: status = "reagendado" (filtro por user_number)
+- Update a row1: status = "concluido" (filtro por user_number + email)
+- Update a row2: status = "Cancelado" (filtro por user_number)
+- Get a row: busca por email apos agendamento concluido
+
+Credencial Supabase: Development (id: LZfJPVmUc6wxgUeC)
+
+====================================================================
+3) SEQUENCIA EXECUTIVA COMPLETA (ALTO NIVEL)
+====================================================================
+
+[86] Execute Workflow Trigger
+-> Code (formata datas start/end para pt-BR)
+-> [87] Switch4
+   |
+   |-- agendamento:
+   |   -> BUSCAR REUNIAO (Google Calendar - busca eventos no horario)
+   |   -> [89] If5 (reuniao ja existe?)
+   |      -> existe: [90] Edit Fields6 ("Voce ja tem uma consulta agendada...")
+   |      -> nao existe: Get availability in a calendar
+   |         -> [92] If (disponivel?)
+   |            -> disponivel: [93] Marca1 (cria evento com Google Meet)
+   |               -> Reuniao agendada (formata resposta)
+   |               -> Update a row1 (status = "concluido")
+   |               -> whatsapp (envia confirmacao)
+   |               -> Get a row (busca lead por email)
+   |               -> Edit Fields3 (retorna resposta)
+   |            -> indisponivel: [98] Edit Fields9 ("horario nao disponivel")
+   |
+   |-- cancelamento:
+   |   -> [95] Verifica evento1 (busca evento no horario)
+   |   -> [96] Google Calendar1 (deleta evento)
+   |   -> Reuniao cancelada (mensagem de cancelamento)
+   |   -> Update a row2 (status = "Cancelado")
+   |   -> whatsapp1 (envia confirmacao)
+   |   -> Edit Fields1 (retorna resposta)
+   |
+   |-- reagendamento:
+   |   -> [99] Disponibilidade (verifica disponibilidade)
+   |   -> [101] Verifica evento1 (cria evento no calendario gabriel)
+   |   -> Get many events (lista eventos gabriel)
+   |   -> [103] Edit Fields (formata resposta reagendamento)
+   |   -> Update a row (status = "reagendado")
+   |   -> whatsapp2 (envia confirmacao)
+   |   -> Edit Fields (retorna resposta)
+
+====================================================================
+4) NODE POR NODE (DETALHAMENTO COM CONTEXTO)
+====================================================================
+
+--------------------------------------------------
+ETAPA 1 - [86] Execute Workflow Trigger
+Tipo: n8n-nodes-base.executeWorkflowTrigger
+--------------------------------------------------
+O que faz:
+- Ponto de entrada do sub-workflow. Recebe dados do workflow pai:
+  - Evento: "agendamento", "cancelamento" ou "reagendamento"
+  - Remotejid: numero do usuario (WhatsApp)
+  - query.nome, query.email, query.instagram, query.resumo
+  - query.start, query.end (ISO 8601, ex: 2025-10-18T14:30:00-03:00)
+
+
+--------------------------------------------------
+ETAPA 2 - Code
+Tipo: n8n-nodes-base.code
+--------------------------------------------------
+O que faz:
+- Formata datas `start` e `end` de ISO 8601 para formato pt-BR (dd/mm/yyyy HH:mm) usando timezone America/Sao_Paulo.
+- Retorna: startFormatted, endFormatted.
+
+
+--------------------------------------------------
+ETAPA 3 - [87] Switch4
+Tipo: n8n-nodes-base.switch
+--------------------------------------------------
+Saidas mapeadas:
+- agendamento (Evento == "agendamento")
+- cancelamento (Evento == "cancelamento")
+- reagendamento (Evento == "reagendamento")
+
+Objetivo:
+- Rotear para o fluxo correto conforme tipo de operacao.
+
+
+--------------------------------------------------
+ETAPA 4 - Ramo de Agendamento
+--------------------------------------------------
+
+4a) BUSCAR REUNIAO
+Tipo: n8n-nodes-base.googleCalendar (getAll)
+- Calendario: vitor.rc@neuromanage.ai
+- Busca eventos entre start e end
+- Verifica se ja existe reuniao no horario
+
+4b) [89] If5
+- Se items.length nao vazio: reuniao ja existe
+  -> [90] Edit Fields6: retorna "Voce ja tem uma consulta agendada para o dia..."
+- Se vazio: horario livre
+  -> Get availability in a calendar
+
+4c) Get availability in a calendar
+Tipo: n8n-nodes-base.googleCalendar (calendar resource)
+- Calendario: vitor.rc@neuromanage.ai
+- Retorna disponibilidade (available: true/false)
+
+4d) [92] If
+- Se available == true: horario disponivel
+  -> [93] Marca1: cria evento no Google Calendar
+- Se false: horario ocupado
+  -> [98] Edit Fields9: retorna "horario nao disponivel, peca outro horario"
+
+4e) [93] Marca1
+Tipo: n8n-nodes-base.googleCalendar (create)
+- Calendario: vitor.rc@neuromanage.ai
+- Cria evento com:
+  - start/end do trigger
+  - attendees: email do lead
+  - conferenceData: Google Meet (hangoutsMeet)
+  - description: Remotejid (numero do lead)
+  - summary: email do lead
+  - sendUpdates: all
+  - reminder: email 10 min antes
+
+4f) Reuniao agendada
+- Formata resposta: "Agendamento concluido para a data..."
+- Retorna: Nome, Telefone, E-mail, Link do Google Meet
+
+4g) Update a row1
+- Supabase: atualiza `contatos_agente` com status = "concluido" (filtro: user_number + email)
+
+4h) whatsapp
+- Envia confirmacao via WhatsApp nativo (n8n-nodes-base.whatsApp)
+
+4i) Get a row
+- Busca lead em `contatos_agente` por email
+
+4j) Edit Fields3
+- Retorna resposta final para o workflow pai
+
+
+--------------------------------------------------
+ETAPA 5 - Ramo de Cancelamento
+--------------------------------------------------
+
+5a) [95] Verifica evento1
+Tipo: n8n-nodes-base.googleCalendar (getAll)
+- Calendario: vitor.rc@neuromanage.ai
+- Busca evento no horario start/end
+
+5b) [96] Google Calendar1
+Tipo: n8n-nodes-base.googleCalendar (delete)
+- Calendario: gabriel.neuromanage@gmail.com
+- Deleta evento encontrado (por id)
+
+5c) Reuniao cancelada
+- Retorna mensagem: "Informe o usuario que o agendamento foi cancelado e que estara sempre a disposicao para um novo agendamento."
+
+5d) Update a row2
+- Supabase: atualiza `contatos_agente` com status = "Cancelado" (filtro: user_number)
+
+5e) whatsapp1
+- Envia confirmacao de cancelamento via WhatsApp nativo
+
+5f) Edit Fields1
+- Retorna resposta para o workflow pai
+
+
+--------------------------------------------------
+ETAPA 6 - Ramo de Reagendamento
+--------------------------------------------------
+
+6a) [99] Disponibilidade
+Tipo: n8n-nodes-base.googleCalendar (calendar resource)
+- Calendario: vitor.rc@neuromanage.ai
+- Verifica disponibilidade no novo horario
+
+6b) [101] Verifica evento1
+Tipo: n8n-nodes-base.googleCalendar (create)
+- Calendario: gabriel.neuromanage@gmail.com
+- Cria evento no novo horario com reminder de 10 min
+
+6c) Get many events
+Tipo: n8n-nodes-base.googleCalendar (getAll)
+- Calendario: gabriel.neuromanage@gmail.com
+- Lista eventos das proximas 4 semanas
+
+6d) [103] Edit Fields
+- Formata resposta: "sua reuniao foi remarcada para: dia..."
+- Retorna: Nome, Telefone
+
+6e) Update a row
+- Supabase: atualiza `contatos_agente` com status = "reagendado" (filtro: user_number)
+
+6f) whatsapp2
+- Envia confirmacao de reagendamento via WhatsApp nativo
+
+6g) Edit Fields
+- Retorna resposta para o workflow pai
+
+====================================================================
+5) PONTOS DE ATENCAO / RISCOS TECNICOS
+====================================================================
+
+1. Dois calendarios distintos
+   - vitor.rc@neuromanage.ai: usado para verificar disponibilidade, buscar e criar eventos de agendamento.
+   - gabriel.neuromanage@gmail.com: usado para criar eventos no reagendamento e deletar no cancelamento.
+   - Essa separacao pode causar inconsistencias se os calendarios nao estiverem sincronizados.
+
+2. Credenciais do Google Calendar
+   - Os nodes de Google Calendar nao mostram credenciais configuradas no JSON (credentials: {}). Verificar se estao configuradas no n8n.
+
+3. WhatsApp nativo
+   - Os nodes `whatsapp`, `whatsapp1`, `whatsapp2` usam o node nativo `n8n-nodes-base.whatsApp` (nao Unipile). Verificar se as credenciais da API do WhatsApp Business estao configuradas.
+
+4. Status inconsistente
+   - Agendamento marca "concluido", cancelamento marca "Cancelado" (com C maiusculo), reagendamento marca "reagendado". Padronizar casing.
+
+5. Credencial Supabase: Development
+   - Todos os nodes Supabase usam credencial "Development". Verificar se deve ser alterada para "Production" em ambiente final.
+
+6. Tabela SQL x JSON alinhados
+   - Diferente dos fluxos anteriores, aqui o SQL (`contatos_agente`) e o JSON estao alinhados: os nodes Supabase realmente usam `contatos_agente`.
+
+====================================================================
+6) RESUMO FINAL
+====================================================================
+
+O fluxo NeuroManageAI - Agendamentos e um sub-workflow chamado pelas tools do agente SDR principal. Recebe tipo de evento (agendamento, cancelamento ou reagendamento), interage com Google Calendar (vitor.rc@neuromanage.ai e gabriel.neuromanage@gmail.com) para criar, cancelar ou reagendar reunioes com Google Meet, atualiza status do lead na tabela `contatos_agente` no Supabase e envia confirmacao via WhatsApp nativo. As principais pendencias sao padronizar o casing dos status, verificar credenciais de Google Calendar e WhatsApp, e confirmar se a credencial Supabase deve ser "Production" em vez de "Development".

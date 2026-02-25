@@ -1,0 +1,308 @@
+NeuroManageAI - LinkedIn Comment to WhatsApp SDR Agent Automation
+
+Esta documentacao explica todo o fluxo em ordem de execucao, detalhando o papel tecnico de cada node e por que cada etapa existe no contexto de atendimento SDR: comentario no LinkedIn, com envio da resposta via API Unipile. O canal de envio e sempre a Unipile (que pode rotear para WhatsApp ou LinkedIn conforme a conta e o chat_id). A mensagem e formatada com regras de markdown do WhatsApp.
+
+====================================================================
+1) OBJETIVO DO FLUXO
+====================================================================
+
+Objetivo macro:
+
+Receber comentarios de posts no LinkedIn via webhook, listar comentaristas, buscar leads na base `ttco_qualified_leads_icp`, iniciar chat via Unipile, acumular contexto em buffer Redis, gerar resposta com agente de IA (TT&Co) e enviar a resposta pela API Unipile. A Unipile usa o mesmo endpoint para WhatsApp ou LinkedIn; o canal efetivo depende da configuracao da conta e do tipo do chat_id. A resposta e formatada para WhatsApp (markdown, blocos curtos).
+
+Em termos praticos, o fluxo faz:
+1. Recebe evento no endpoint webhook `LinkedIn Comment Webhook`.
+2. Lista comentarios do post via Unipile (`Listar Comentarios`).
+3. Verifica e atualiza lead na tabela `ttco_qualified_leads_icp`.
+4. Inicia chat via Unipile (`INICIAR CHAT`).
+5. Parseia body do webhook em `Code in JavaScript`.
+6. Extrai variaveis do lead em `SET_VARIAVEIS`.
+7. Gerencia usuario no Supabase (GET_USER / IF_USER / CREATE_USER / SET_USER).
+8. Roteia tipo de mensagem em `Rotas de Mensagens` (texto, audio, imagem, pdf, erro).
+9. Acumula entradas em buffers Redis individuais por tipo.
+10. Aguarda janela e compara mensagens (`Comparando Lista Mensagens`).
+11. Consolida contexto em `CONCATENAR DADOS`.
+12. Executa agente SDR (`Agent`) com tools de reuniao e RAG (vector store LinkedIn).
+13. Formata resposta em `Split de Mensagem` (LLM Chain + OutputParser).
+14. Envia mensagem em loop via API Unipile (`LOOP_SLIT` / no `Send Message via Linkedin`). O destino final (WhatsApp ou LinkedIn) depende da conta Unipile.
+
+====================================================================
+2) TABELA SQL ENVOLVIDA
+====================================================================
+
+Tabela efetivamente usada no JSON:
+- ttco_qualified_leads_icp (Supabase nodes `Update Qualified Leads Linkedin`, `Update Qualified Leads Linkedin1`, `Create a row1`, `GET_USER`, `CREATE_USER`)
+
+Campos atualizados/criados nesta tabela:
+- resposta_linkedin: texto da resposta ao comentario
+- Conectado LinkedIn: flag de conexao
+- Mensagem Enviada LinkedIn: mensagem enviada ao lead
+
+Observacao:
+- Nao foi fornecido arquivo `.sql` especifico para este fluxo. A DDL da tabela `ttco_qualified_leads_icp` deve ser verificada no Supabase para confirmar todos os campos necessarios.
+
+====================================================================
+3) SEQUENCIA EXECUTIVA COMPLETA (ALTO NIVEL)
+====================================================================
+
+Ramo 1 - Entrada via comentario no LinkedIn:
+LinkedIn Comment Webhook (POST)
+-> Listar Comentarios (GET Unipile posts/comments)
+-> If2 (verifica condicao)
+   -> Update Qualified Leads Linkedin (atualiza resposta_linkedin e Conectado LinkedIn)
+-> INICIAR CHAT (POST Unipile /chats)
+-> If1
+   -> Create a row1 (Supabase - cria lead)
+   -> Update Qualified Leads Linkedin1 (atualiza Mensagem Enviada LinkedIn)
+
+Ramo 2 - Entrada via mensagem direta (Unipile webhook; canal pode ser WhatsApp ou LinkedIn):
+LinkedIn Comment Webhook (POST)
+-> Code in JavaScript (parse do body)
+-> SET_VARIAVEIS (extrai user.name, chat_id, fromMe, account_id, etc.)
+-> Switch (AGENTE_OFF)
+   -> ativo: Rotas de Mensagens
+      -> Texto1/Texto2 -> Mensagem Texto1/Texto2 -> Redis Buffer Texto
+      -> Audio -> Mensagem Audio -> Converso de Audio -> Transcrever Audio -> Redis Buffer Audio
+      -> Imagem -> Mensagem Imagem -> Converso Imagem -> Analisar Imagem -> Redis Buffer Imagem
+      -> Documento/pdf -> Mensagem pdf -> Converso pdf -> Extrator pdf -> Redis Buffer pdf
+      -> Erro -> Mensagem Erro -> Redis Buffer Erro
+-> Redis Buffer (get lista consolidada)
+-> Wait1
+-> Redis Buffer1 (get lista pos-espera)
+-> Comparando Lista Mensagens
+   -> igual: CONCATENAR DADOS
+   -> diferente: No Operation, do nothing
+-> GET_USER (busca usuario Supabase)
+-> IF_USER
+   -> existe: SET_USER -> WAIT_USER
+   -> nao existe: CREATE_USER -> WAIT_USER -> SET_USER
+-> Agent (SDR TT&Co com tools: criar_reuniao, reagendar_reuniao, cancelar_reuniao, verificar_disponibilidade)
+   - OpenAI Chat Model (gpt)
+   - Postgres Chat Memory
+   - Embeddings OpenAI + Vector Store Supabase (neuromanageai_documents_linkedin)
+   - Redis (status do agente)
+-> output -> Split de Mensagem (LLM Chain + OutputParser)
+-> LOOP_SLIT -> WAIT_SPLIT -> Send Message via Linkedin (POST Unipile /chats/{chat_id}/messages). Canal efetivo: WhatsApp ou LinkedIn conforme conta Unipile.
+
+====================================================================
+4) NODE POR NODE (DETALHAMENTO COM CONTEXTO)
+====================================================================
+
+--------------------------------------------------
+ETAPA 1 - LinkedIn Comment Webhook
+Tipo: n8n-nodes-base.webhook
+--------------------------------------------------
+Configuracao:
+- Metodo POST
+- Dois webhooks configurados: entrada de comentarios e entrada de mensagens diretas
+
+O que faz:
+- Recebe payload do LinkedIn via Unipile e inicia o fluxo.
+
+
+--------------------------------------------------
+ETAPA 2 - Listar Comentarios
+Tipo: n8n-nodes-base.httpRequest
+--------------------------------------------------
+Endpoint:
+- GET https://api23.unipile.com:15389/api/v1/posts/urn:li:activity:.../comments
+
+O que faz:
+- Busca a lista de comentarios do post no LinkedIn para identificar o comentarista.
+
+
+--------------------------------------------------
+ETAPA 3 - If2 / Update Qualified Leads Linkedin
+Tipo: n8n-nodes-base.if + n8n-nodes-base.supabase
+--------------------------------------------------
+O que faz:
+- Verifica condicao pos-comentario.
+- Atualiza campos `resposta_linkedin` e `Conectado LinkedIn` na tabela `ttco_qualified_leads_icp`.
+
+
+--------------------------------------------------
+ETAPA 4 - INICIAR CHAT / If1 / Create a row1 / Update Qualified Leads Linkedin1
+Tipo: n8n-nodes-base.httpRequest + supabase
+--------------------------------------------------
+Endpoint Unipile:
+- POST https://api23.unipile.com:15389/api/v1/chats
+- Body: attendees_ids, account_id, text
+
+O que faz:
+- Inicia uma conversa direta com o comentarista no LinkedIn.
+- Se lead ja existe, atualiza `Mensagem Enviada LinkedIn`.
+- Se nao existe, cria registro na tabela `ttco_qualified_leads_icp`.
+
+
+--------------------------------------------------
+ETAPA 5 - Code in JavaScript
+Tipo: n8n-nodes-base.code
+--------------------------------------------------
+O que faz:
+- Parseia o body bruto do webhook (JSON quebrado em chaves) para extrair:
+  event, account_id, chat_id, message, message_id, timestamp, attendee_name, attendee_id, is_sender.
+
+
+--------------------------------------------------
+ETAPA 6 - SET_VARIAVEIS
+Tipo: n8n-nodes-base.set
+--------------------------------------------------
+Extrai e padroniza:
+- user.name
+- message.sender
+- message.origem
+- chat_id
+- fromMe
+- account_id
+- user_provider_id
+
+Objetivo:
+- Padronizar variaveis para os demais nodes do fluxo de atendimento.
+
+
+--------------------------------------------------
+ETAPA 7 - Rotas de Mensagens (Switch)
+Tipo: n8n-nodes-base.switch
+--------------------------------------------------
+Saidas mapeadas:
+- Texto (conversation / reactionMessage)
+- Audio (audioMessage)
+- Imagem (imageMessage)
+- Documento/pdf
+- Erro (fallback)
+
+Objetivo:
+- Direcionar cada tipo de entrada para o tratamento correto.
+
+
+--------------------------------------------------
+ETAPA 8 - Tratamento multimidia
+Tipo: set + conversao + IA
+--------------------------------------------------
+Audio:
+- Mensagem Audio -> Converso de Audio -> Transcrever Audio -> Redis Buffer Audio
+
+Imagem:
+- Mensagem Imagem -> Converso Imagem -> Analisar Imagem -> Redis Buffer Imagem
+
+PDF:
+- Mensagem pdf -> Converso pdf -> Extrator pdf -> Redis Buffer pdf
+
+Texto:
+- Mensagem Texto1/2 -> Redis Buffer Texto
+
+Erro/Fallback:
+- Mensagem Erro -> Redis Buffer Erro
+
+Objetivo:
+- Transformar entradas diferentes em texto para contexto unificado.
+
+
+--------------------------------------------------
+ETAPA 9 - Bufferizacao e controle de concorrencia
+Tipo: Redis + Wait + Switch
+--------------------------------------------------
+Nodes:
+- Redis Buffer / Redis Buffer Texto / Audio / Imagem / pdf / Erro (push por tipo)
+- Wait1 (aguarda janela de acumulacao)
+- Redis Buffer1 (get lista pos-espera)
+- Comparando Lista Mensagens (compara lista antes/depois)
+- CONCATENAR DADOS (consolida todas as entradas do buffer)
+
+Objetivo:
+- Agrupar mensagens proximas no tempo e responder com contexto consolidado.
+
+
+--------------------------------------------------
+ETAPA 10 - Gerenciamento de usuario (Supabase)
+Tipo: n8n-nodes-base.supabase
+--------------------------------------------------
+Nodes:
+- GET_USER (busca por user_provider_id na tabela)
+- IF_USER (verifica se existe)
+- CREATE_USER (cria registro quando nao existe)
+- WAIT_USER (aguarda criacao)
+- SET_USER (define variaveis apos lookup/create)
+
+Objetivo:
+- Garantir persistencia e identificacao do usuario no Supabase.
+
+
+--------------------------------------------------
+ETAPA 11 - Agente de IA (SDR TT&Co)
+Tipo: LangChain (agent, chain, memory, parser, vector store)
+--------------------------------------------------
+Nodes principais:
+- Agent (agente SDR principal - TT&Co Renttax, consultoria tributaria)
+- OpenAI Chat Model (gpt)
+- Postgres Chat Memory (memoria por chat_id)
+- encaminhar_humano (tool para handoff)
+- criar_reuniao / reagendar_reuniao / cancelar_reuniao / verificar_disponibilidade (tools de calendario)
+- Embeddings OpenAI + Vector Store Supabase (neuromanageai_documents_linkedin)
+- Redis (controle de status do agente - AGENTE_OFF)
+
+Prompt do agente:
+- Persona: SDR senior da TT&Co - Renttax
+- Canal: WhatsApp e LinkedIn
+- Objetivo: conduzir lead para conversa estrategica sobre impacto da Reforma Tributaria
+
+Objetivo:
+- Gerar resposta consultiva, contextual e humanizada, com tools de agenda e RAG de documentos LinkedIn.
+
+
+--------------------------------------------------
+ETAPA 12 - Formatacao e envio de resposta
+Tipo: LLM Chain + Loop + HTTP Request
+--------------------------------------------------
+Nodes:
+- Split de Mensagem (Basic LLM Chain + OutputParser): divide output em ate 4 mensagens curtas (max 150 chars cada), com regras de markdown do WhatsApp
+- LOOP_SLIT (loop sobre array de mensagens)
+- WAIT_SPLIT (pausa entre envios)
+- Send Message via Linkedin (POST Unipile)
+
+Endpoint usado:
+- https://api23.unipile.com:15389/api/v1/chats/{{chat_id}}/messages
+
+Canal de envio:
+- O envio e sempre pela API Unipile. O canal efetivo (WhatsApp ou LinkedIn) depende da configuracao da conta Unipile e do tipo do chat_id. A mensagem e formatada para WhatsApp; o no mantem o nome "Send Message via Linkedin" por legado, mas o mesmo endpoint Unipile pode entregar em WhatsApp ou LinkedIn.
+
+Headers:
+- X-API-KEY
+- accept: application/json
+
+Objetivo:
+- Enviar resposta humanizada em blocos curtos, simulando digitacao real.
+
+====================================================================
+5) PONTOS DE ATENCAO / RISCOS TECNICOS
+====================================================================
+
+1. Ausencia de arquivo SQL
+   - Nenhum arquivo `.sql` foi fornecido para este fluxo. A DDL da tabela `ttco_qualified_leads_icp` deve ser verificada diretamente no Supabase.
+
+2. Segredos hardcoded em HTTP nodes
+   - `X-API-KEY` aparece diretamente no JSON (Unipile). Recomendado mover para credenciais/variaveis seguras.
+
+3. Dependencia do urn do post LinkedIn
+   - O endpoint `Listar Comentarios` usa um URN fixo (`urn:li:activity:...`). Se o post mudar, o fluxo nao capturara os comentarios corretos.
+
+4. Dois pontos de entrada (dois webhooks)
+   - O fluxo possui dois ramos distintos: um para comentarios publicos e outro para mensagens diretas. Manutencao deve considerar ambos os ramos separadamente.
+
+5. Vector Store / RAG LinkedIn
+   - O agente usa `neuromanageai_documents_linkedin` como base de conhecimento. Documentos desatualizados afetam a qualidade das respostas.
+
+6. Tools de calendario
+   - As tools `criar_reuniao`, `reagendar_reuniao`, `cancelar_reuniao`, `verificar_disponibilidade` requerem integracao externa (Google Calendar ou similar). Verificar se credenciais estao configuradas.
+
+7. Mensagem Texto2 com referencia a `$('Webhook')`
+   - O node referencia o nome `Webhook` que pode divergir do nome real `LinkedIn Comment Webhook`; revisar no n8n para evitar erro de referencia.
+
+8. Canal de envio (Unipile)
+   - Todo envio e via API Unipile (endpoint /chats/{id}/messages). O destino real (WhatsApp ou LinkedIn) depende da conta e do chat_id. A mensagem e formatada para WhatsApp no node Split de Mensagem.
+
+====================================================================
+6) RESUMO FINAL
+====================================================================
+
+O fluxo NeuroManageAI - LinkedIn Comment to WhatsApp SDR Agent Automation e um pipeline de atendimento SDR que monitora comentarios em posts do LinkedIn, inicia conversas via Unipile, gerencia leads na tabela `ttco_qualified_leads_icp`, acumula contexto em buffer Redis, e responde com agente de IA consultivo (TT&Co - Renttax) com acesso a RAG de documentos e tools de agenda. O envio da resposta e sempre pela API Unipile; o canal efetivo (WhatsApp ou LinkedIn) depende da configuracao da conta Unipile. A principal pendencia e garantir o arquivo SQL da tabela, remover segredos hardcoded e manter o URN do post LinkedIn atualizado.

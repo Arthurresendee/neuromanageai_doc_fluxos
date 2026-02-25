@@ -1,11 +1,5 @@
-Database Formation
 
-Por que tem tabelas que usamos em desenvolvimento e em produção?
-Quando eu sei quando criar em um ambiente ou em outro? Sei que eu seguir o padrão é 
-de boa descobrir, mas e quando fo algo novo? 
-
-Esses fluxos são específicos de alguns clientes?? Pois eles possuem dados 
-pré-definidos nos nodes 
+os fluxos de desenvolvimento já estarem com mapeamento de clientes não interferem em nada na hora de replicar para os demais?
 
 Os leads de misturam né, dentro dessa pasta de criação de prospecção.
 
@@ -17,9 +11,16 @@ Não localizei onde os webhooks são executados.
 
 Essas tabelas todas se completam, são os mesmos leads em várias tabelas, certo? pois quando é enviado a mensagem de primeira abordagem, atualiza em várias tabelas.
 
+Diferença do banco de produção e development
+Por que tem tabelas que usamos em desenvolvimento e em produção?
+Quando eu sei quando criar em um ambiente ou em outro? Sei que eu seguir o padrão é 
+de boa descobrir, mas e quando fo algo novo? 
 
+n8n da vps faz o que? pois já tem o n8n cloud. 
+E o supabase? Pois já tem o supabase cloud producao e development
 
-
+Não achei a tabela ttco_qualified_leads_icp, em producao, nem em desenvolvimento.
+fluxo> NeuroManageAI - LinkedIn Comment to WhatsApp SDR Agent Automation
 
 
 

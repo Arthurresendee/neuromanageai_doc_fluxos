@@ -1,0 +1,1112 @@
+{
+   "nodes": [
+     {
+       "parameters": {
+         "rules": {
+           "values": [
+             {
+               "conditions": {
+                 "options": {
+                   "caseSensitive": true,
+                   "leftValue": "",
+                   "typeValidation": "strict",
+                   "version": 2
+                 },
+                 "conditions": [
+                   {
+                     "leftValue": "={{ $item(\"0\").$node[\"[86] Execute Workflow Trigger\"].json[\"Evento\"] }}",
+                     "rightValue": "agendamento",
+                     "operator": {
+                       "type": "string",
+                       "operation": "equals"
+                     },
+                     "id": "2c2a52fe-afdf-4820-a124-84c549cd6fe9"
+                   }
+                 ],
+                 "combinator": "and"
+               },
+               "renameOutput": true,
+               "outputKey": "agendamento"
+             },
+             {
+               "conditions": {
+                 "options": {
+                   "caseSensitive": true,
+                   "leftValue": "",
+                   "typeValidation": "strict",
+                   "version": 2
+                 },
+                 "conditions": [
+                   {
+                     "id": "7a57e8e8-5227-4cde-8d58-7b447cd55a17",
+                     "leftValue": "={{ $item(\"0\").$node[\"[86] Execute Workflow Trigger\"].json[\"Evento\"] }}",
+                     "rightValue": "cancelamento",
+                     "operator": {
+                       "type": "string",
+                       "operation": "equals",
+                       "name": "filter.operator.equals"
+                     }
+                   }
+                 ],
+                 "combinator": "and"
+               },
+               "renameOutput": true,
+               "outputKey": "cancelamento"
+             },
+             {
+               "conditions": {
+                 "options": {
+                   "caseSensitive": true,
+                   "leftValue": "",
+                   "typeValidation": "strict",
+                   "version": 2
+                 },
+                 "conditions": [
+                   {
+                     "id": "d788021f-29ab-41f2-b355-2b18963d30f2",
+                     "leftValue": "={{ $item(\"0\").$node[\"[86] Execute Workflow Trigger\"].json[\"Evento\"] }}",
+                     "rightValue": "reagendamento",
+                     "operator": {
+                       "type": "string",
+                       "operation": "equals",
+                       "name": "filter.operator.equals"
+                     }
+                   }
+                 ],
+                 "combinator": "and"
+               },
+               "renameOutput": true,
+               "outputKey": "reagendamento"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "01f08d9c-20c0-415b-884f-5b7476d4ca3d",
+       "name": "[87] Switch4",
+       "type": "n8n-nodes-base.switch",
+       "position": [
+         528,
+         400
+       ],
+       "typeVersion": 3.2
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 2
+           },
+           "conditions": [
+             {
+               "id": "8d192ed0-aebd-404e-8339-daab0d29651f",
+               "leftValue": "={{ $node[\"BUSCAR REUNIÃO\"].json.items.length }}",
+               "rightValue": "",
+               "operator": {
+                 "type": "string",
+                 "operation": "notEmpty",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "cf067794-0d79-4c39-bb19-2c3955cda853",
+       "name": "[89] If5",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         1008,
+         160
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "86ff282a-3ede-4417-98c1-0d10858bc5dc",
+               "name": "response",
+               "value": "=Você já tem uma consulta agendada para o dia: {{(() => { \n    const data = new Date($json.start.dateTime);\n    const opcoes = { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' };\n    return `dia ${data.toLocaleDateString('pt-BR', opcoes).replace(' ', ' de ').replace(',', ' às')}`;\n})()}} gostaria de reagendar? ",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "d165b3fd-8345-494b-9615-faef8fc2ad36",
+       "name": "[90] Edit Fields6",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         1264,
+         64
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "conditions": {
+           "options": {
+             "caseSensitive": true,
+             "leftValue": "",
+             "typeValidation": "strict",
+             "version": 2
+           },
+           "conditions": [
+             {
+               "id": "be5649a9-7624-4621-bd2d-84c25577c0ce",
+               "leftValue": "={{ $json.available }}",
+               "rightValue": "0",
+               "operator": {
+                 "type": "boolean",
+                 "operation": "true",
+                 "singleValue": true
+               }
+             }
+           ],
+           "combinator": "and"
+         },
+         "options": {}
+       },
+       "id": "cc8d52cc-2e94-4a38-a8d9-0319361a4dfb",
+       "name": "[92] If",
+       "type": "n8n-nodes-base.if",
+       "position": [
+         1504,
+         208
+       ],
+       "typeVersion": 2.2
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "04c6ca35-7572-4699-bcb7-bbf2f2a6e6a4",
+               "name": "response",
+               "value": "horário não disponivel, peça outro horário",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "43bbf5c5-d6e5-4909-a8d0-90f18d33fb9a",
+       "name": "[98] Edit Fields9",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         2240,
+         320
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "7f842ffa-cd8f-40ab-a0a7-40dc173357a7",
+               "name": "response",
+               "value": "={{ (() => {\n  const nome = $('[86] Execute Workflow Trigger').item.json.query.nome\n  const data = new Date($('Code').item.json.startFormatted);\n  const opcoes = { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' };\n  const dataFormatada = $('Code').item.json.startFormatted\n  return `${nome}, sua reunião foi remarcada para: dia ${dataFormatada}. Dá uma olhadinha no seu Google Calendar pra ver os detalhes, tá bom? 😉`;\n})() }}\n",
+               "type": "string"
+             },
+             {
+               "id": "1df6fd58-1226-4eb7-9c3e-20a195e34491",
+               "name": "response",
+               "value": "=Nome: {{ $('[86] Execute Workflow Trigger').item.json.query.nome }} \nTelefone: {{ $('[86] Execute Workflow Trigger').item.json.Remotejid }}",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "4f4bbbb2-00f3-41ea-ba94-24259e59627a",
+       "name": "[103] Edit Fields",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         1440,
+         608
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "jsCode": "const isoStart = $json.query.start;\nconst isoEnd = $json.query.end;\n\nconst timeZone = 'America/Sao_Paulo';\n\nfunction formatDateInSP(dateString) {\n  if (!dateString) return 'Data inválida';\n\n  const timestamp = Date.parse(dateString);\n  if (isNaN(timestamp)) return 'Data inválida';\n\n  const date = new Date(timestamp);\n\n  const formatter = new Intl.DateTimeFormat('pt-BR', {\n    timeZone,\n    day: '2-digit',\n    month: '2-digit',\n    year: 'numeric',\n    hour: '2-digit',\n    minute: '2-digit',\n    hour12: false,\n  });\n\n  return formatter.format(date);\n}\n\nreturn {\n  startFormatted: formatDateInSP(isoStart),\n  endFormatted: formatDateInSP(isoEnd),\n};\n"
+       },
+       "id": "ce0c14d3-05c6-44d4-b550-6befaa4232ed",
+       "name": "Code",
+       "type": "n8n-nodes-base.code",
+       "position": [
+         352,
+         416
+       ],
+       "typeVersion": 2
+     },
+     {
+       "parameters": {
+         "content": "# Agendamento",
+         "height": 860,
+         "width": 3267,
+         "color": 4
+       },
+       "id": "8e4a213c-f72c-44fe-9925-97b7cb06e89c",
+       "name": "Sticky Note15",
+       "type": "n8n-nodes-base.stickyNote",
+       "position": [
+         0,
+         0
+       ],
+       "typeVersion": 1
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "19c8f23c-3137-4fbd-96e8-8c1068886456",
+               "name": "response",
+               "value": "={{ $('Reunião cancelada').item.json.response }}",
+               "type": "string"
+             }
+           ]
+         },
+         "includeOtherFields": true,
+         "options": {}
+       },
+       "id": "3c8d4214-be01-4b11-a293-3fe5b3038fd5",
+       "name": "Edit Fields1",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         1808,
+         400
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "19c8f23c-3137-4fbd-96e8-8c1068886456",
+               "name": "response",
+               "value": "={{ $('[103] Edit Fields').item.json.response }}",
+               "type": "string"
+             }
+           ]
+         },
+         "includeOtherFields": true,
+         "options": {}
+       },
+       "id": "b10bfc3f-5dd4-4c49-8153-bec2e04a5263",
+       "name": "Edit Fields",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         2064,
+         608
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "contatos_agente",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "user_number",
+               "condition": "eq",
+               "keyValue": "={{ $('[86] Execute Workflow Trigger').item.json.Remotejid }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "status",
+               "fieldValue": "reagendado"
+             }
+           ]
+         }
+       },
+       "id": "2bf53eb0-ec6c-44b2-ac28-9e29d8971d20",
+       "name": "Update a row",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         1664,
+         608
+       ],
+       "typeVersion": 1,
+       "alwaysOutputData": true,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       },
+       "onError": "continueRegularOutput"
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "contatos_agente",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "user_number",
+               "condition": "eq",
+               "keyValue": "={{ $('[86] Execute Workflow Trigger').item.json.Remotejid }}"
+             },
+             {
+               "keyName": "email",
+               "condition": "eq",
+               "keyValue": "={{ $('[86] Execute Workflow Trigger').item.json.query.email }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "status",
+               "fieldValue": "concluido"
+             }
+           ]
+         }
+       },
+       "id": "fd500fbf-1067-4884-b3b7-c6513f154779",
+       "name": "Update a row1",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         2224,
+         112
+       ],
+       "typeVersion": 1,
+       "alwaysOutputData": true,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       },
+       "onError": "continueRegularOutput"
+     },
+     {
+       "parameters": {
+         "operation": "update",
+         "tableId": "contatos_agente",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "user_number",
+               "condition": "eq",
+               "keyValue": "={{ $('[86] Execute Workflow Trigger').item.json.Remotejid }}"
+             }
+           ]
+         },
+         "fieldsUi": {
+           "fieldValues": [
+             {
+               "fieldId": "status",
+               "fieldValue": "Cancelado"
+             }
+           ]
+         }
+       },
+       "id": "a1d7d15e-c9cd-4955-b04b-a3e7136d09c5",
+       "name": "Update a row2",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         1408,
+         400
+       ],
+       "typeVersion": 1,
+       "alwaysOutputData": true,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       },
+       "onError": "continueRegularOutput"
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "86ff282a-3ede-4417-98c1-0d10858bc5dc",
+               "name": "response",
+               "value": "=Agendamento concluído para a data {{(() => { \n    const data = new Date($json.start.dateTime);\n    const opcoes = { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' };\n    return `dia ${data.toLocaleDateString('pt-BR', opcoes).replace(' ', ' de ').replace(',', ' às')}`;\n})()}}\n",
+               "type": "string"
+             },
+             {
+               "id": "025b4fff-7590-4d55-979a-e42c36df55cd",
+               "name": "response",
+               "value": "=Nome: {{ $json.summary }}\nTelefone: {{ $json.description }}\nE-mail: {{ $json.attendees[0].email }}\nLink: {{ $json.conferenceData.entryPoints[1].uri }}\n",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "bfdd8eda-157d-4852-b9dd-725ac2daab68",
+       "name": "Reunião agendada",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         1936,
+         112
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "7f842ffa-cd8f-40ab-a0a7-40dc173357a7",
+               "name": "response",
+               "value": "Informe o usuário que o agendamento foi cancelado e que estará sempre à disposição para um novo agendamento.",
+               "type": "string"
+             }
+           ]
+         },
+         "options": {}
+       },
+       "id": "1b583564-0c61-44fb-9242-f0d77f23669c",
+       "name": "Reunião cancelada",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         1216,
+         400
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "operation": "getAll",
+         "calendar": {
+           "__rl": true,
+           "value": "gabriel.neuromanage@gmail.com",
+           "mode": "list",
+           "cachedResultName": "gabriel.neuromanage@gmail.com"
+         },
+         "returnAll": true,
+         "timeMax": "={{ $now.plus({ week: 4 }) }}",
+         "options": {}
+       },
+       "id": "9312956e-bb2a-475d-ad91-d5e06849af2a",
+       "name": "Get many events",
+       "type": "n8n-nodes-base.googleCalendar",
+       "position": [
+         1232,
+         608
+       ],
+       "typeVersion": 1.3,
+       "alwaysOutputData": true,
+       "credentials": {}
+     },
+     {
+       "parameters": {
+         "operation": "getAll",
+         "calendar": {
+           "__rl": true,
+           "value": "vitor.rc@neuromanage.ai",
+           "mode": "list",
+           "cachedResultName": "vitor.rc@neuromanage.ai"
+         },
+         "returnAll": true,
+         "timeMin": "={{ $('[86] Execute Workflow Trigger').item.json.query.start }}",
+         "timeMax": "={{ $('[86] Execute Workflow Trigger').item.json.query.end }}",
+         "options": {
+           "timeZone": {
+             "__rl": true,
+             "value": "America/Sao_Paulo",
+             "mode": "list",
+             "cachedResultName": "America/Sao_Paulo"
+           }
+         }
+       },
+       "id": "709f2f4c-061e-4160-98c7-e754b81434a1",
+       "name": "[95] Verifica evento1",
+       "type": "n8n-nodes-base.googleCalendar",
+       "position": [
+         784,
+         400
+       ],
+       "typeVersion": 1.3,
+       "credentials": {}
+     },
+     {
+       "parameters": {
+         "operation": "get",
+         "tableId": "contatos_agente",
+         "filters": {
+           "conditions": [
+             {
+               "keyName": "email",
+               "keyValue": "={{ $('Update a row1').item.json.email }}"
+             }
+           ]
+         }
+       },
+       "id": "1726d8af-7897-4067-b38e-99a06a411b0e",
+       "name": "Get a row",
+       "type": "n8n-nodes-base.supabase",
+       "position": [
+         2656,
+         112
+       ],
+       "typeVersion": 1,
+       "alwaysOutputData": true,
+       "credentials": {
+         "supabaseApi": {
+           "id": "LZfJPVmUc6wxgUeC",
+           "name": "Development"
+         }
+       }
+     },
+     {
+       "parameters": {
+         "calendar": {
+           "__rl": true,
+           "value": "vitor.rc@neuromanage.ai",
+           "mode": "list",
+           "cachedResultName": "vitor.rc@neuromanage.ai"
+         },
+         "start": "={{ $('[86] Execute Workflow Trigger').item.json.query.start }}",
+         "end": "={{ $('[86] Execute Workflow Trigger').item.json.query.end }}",
+         "useDefaultReminders": false,
+         "additionalFields": {
+           "attendees": [
+             "={{ $('[86] Execute Workflow Trigger').item.json.query.email }}"
+           ],
+           "conferenceDataUi": {
+             "conferenceDataValues": {
+               "conferenceSolution": "hangoutsMeet"
+             }
+           },
+           "description": "={{ $('[86] Execute Workflow Trigger').item.json.Remotejid }}",
+           "sendUpdates": "all",
+           "summary": "={{ $('[86] Execute Workflow Trigger').item.json.query.email }}"
+         },
+         "remindersUi": {
+           "remindersValues": [
+             {
+               "method": "email",
+               "minutes": 10
+             }
+           ]
+         }
+       },
+       "id": "dc8c2d01-6d42-4526-98cf-9bdc15d27d36",
+       "name": "[93] Marca1",
+       "type": "n8n-nodes-base.googleCalendar",
+       "position": [
+         1712,
+         112
+       ],
+       "typeVersion": 1.3,
+       "credentials": {}
+     },
+     {
+       "parameters": {
+         "resource": "calendar",
+         "calendar": {
+           "__rl": true,
+           "value": "vitor.rc@neuromanage.ai",
+           "mode": "list",
+           "cachedResultName": "vitor.rc@neuromanage.ai"
+         },
+         "options": {}
+       },
+       "id": "fc16cf76-8919-4842-9603-ede55c6dbae7",
+       "name": "Get availability in a calendar",
+       "type": "n8n-nodes-base.googleCalendar",
+       "position": [
+         1280,
+         208
+       ],
+       "typeVersion": 1.3,
+       "credentials": {}
+     },
+     {
+       "parameters": {
+         "operation": "getAll",
+         "calendar": {
+           "__rl": true,
+           "value": "vitor.rc@neuromanage.ai",
+           "mode": "list",
+           "cachedResultName": "vitor.rc@neuromanage.ai"
+         },
+         "returnAll": true,
+         "timeMin": "={{ $('[86] Execute Workflow Trigger').item.json.query.start }}",
+         "timeMax": "={{ $('[86] Execute Workflow Trigger').item.json.query.end }}",
+         "options": {}
+       },
+       "id": "83f1c73c-7da5-4985-aa43-a71c545a26bc",
+       "name": "BUSCAR REUNIÃO",
+       "type": "n8n-nodes-base.googleCalendar",
+       "position": [
+         784,
+         160
+       ],
+       "typeVersion": 1.3,
+       "alwaysOutputData": true,
+       "credentials": {}
+     },
+     {
+       "parameters": {
+         "inputSource": "passthrough"
+       },
+       "id": "d6eafd52-cbed-4bd1-a38f-69b22d4b7a6b",
+       "name": "[86] Execute Workflow Trigger",
+       "type": "n8n-nodes-base.executeWorkflowTrigger",
+       "position": [
+         176,
+         416
+       ],
+       "typeVersion": 1.1
+     },
+     {
+       "parameters": {
+         "operation": "delete",
+         "calendar": {
+           "__rl": true,
+           "value": "gabriel.neuromanage@gmail.com",
+           "mode": "list",
+           "cachedResultName": "gabriel.neuromanage@gmail.com"
+         },
+         "eventId": "={{ $item(\"0\").$node[\"[95] Verifica evento1\"].json[\"id\"] }}",
+         "options": {}
+       },
+       "id": "b1019807-6600-4b7f-b9d7-e6d1284cd3dd",
+       "name": "[96] Google Calendar1",
+       "type": "n8n-nodes-base.googleCalendar",
+       "position": [
+         992,
+         400
+       ],
+       "typeVersion": 1.3,
+       "credentials": {}
+     },
+     {
+       "parameters": {
+         "resource": "calendar",
+         "calendar": {
+           "__rl": true,
+           "value": "vitor.rc@neuromanage.ai",
+           "mode": "list",
+           "cachedResultName": "vitor.rc@neuromanage.ai"
+         },
+         "timeMin": "={{ $('[86] Execute Workflow Trigger').item.json.query.start }}",
+         "timeMax": "={{ $('[86] Execute Workflow Trigger').item.json.query.end }}",
+         "options": {}
+       },
+       "id": "098ea724-5de4-4e07-940d-5ad500b22ab9",
+       "name": "[99] Disponibilidade",
+       "type": "n8n-nodes-base.googleCalendar",
+       "position": [
+         784,
+         608
+       ],
+       "typeVersion": 1.3,
+       "credentials": {}
+     },
+     {
+       "parameters": {
+         "calendar": {
+           "__rl": true,
+           "value": "gabriel.neuromanage@gmail.com",
+           "mode": "list",
+           "cachedResultName": "gabriel.neuromanage@gmail.com"
+         },
+         "start": "={{ $('[86] Execute Workflow Trigger').item.json.query.start }}",
+         "end": "={{ $('[86] Execute Workflow Trigger').item.json.query.end }}",
+         "useDefaultReminders": false,
+         "additionalFields": {
+           "sendUpdates": "all"
+         },
+         "remindersUi": {
+           "remindersValues": [
+             {
+               "method": "email",
+               "minutes": 10
+             }
+           ]
+         }
+       },
+       "id": "6dc19672-0961-4324-817e-0e1606268cbe",
+       "name": "[101] Verifica evento1",
+       "type": "n8n-nodes-base.googleCalendar",
+       "position": [
+         1008,
+         608
+       ],
+       "typeVersion": 1.3,
+       "credentials": {}
+     },
+     {
+       "parameters": {
+         "assignments": {
+           "assignments": [
+             {
+               "id": "19c8f23c-3137-4fbd-96e8-8c1068886456",
+               "name": "response",
+               "value": "={{ $('Reunião agendada').last().json.response }}",
+               "type": "string"
+             }
+           ]
+         },
+         "includeOtherFields": true,
+         "options": {}
+       },
+       "id": "177930c5-ee27-4d74-9cab-07c5114e810b",
+       "name": "Edit Fields3",
+       "type": "n8n-nodes-base.set",
+       "position": [
+         2848,
+         112
+       ],
+       "typeVersion": 3.4
+     },
+     {
+       "parameters": {
+         "operation": "send",
+         "additionalFields": {}
+       },
+       "id": "ec4b3c0a-d86b-49bf-a27c-4b44d8097fc8",
+       "name": "whatsapp",
+       "type": "n8n-nodes-base.whatsApp",
+       "position": [
+         2432,
+         112
+       ],
+       "typeVersion": 1.1,
+       "webhookId": "6c23eb3b-dfbb-4a04-a7b7-ab5eb42081a9",
+       "credentials": {}
+     },
+     {
+       "parameters": {
+         "operation": "send",
+         "additionalFields": {}
+       },
+       "id": "db29655c-8dc1-4a86-9b95-72df665f8c1e",
+       "name": "whatsapp1",
+       "type": "n8n-nodes-base.whatsApp",
+       "position": [
+         1616,
+         400
+       ],
+       "typeVersion": 1.1,
+       "webhookId": "6c23eb3b-dfbb-4a04-a7b7-ab5eb42081a9",
+       "credentials": {}
+     },
+     {
+       "parameters": {
+         "operation": "send",
+         "additionalFields": {}
+       },
+       "id": "6d802422-32f9-4843-a583-011c54d8e74d",
+       "name": "whatsapp2",
+       "type": "n8n-nodes-base.whatsApp",
+       "position": [
+         1856,
+         608
+       ],
+       "typeVersion": 1.1,
+       "webhookId": "6c23eb3b-dfbb-4a04-a7b7-ab5eb42081a9",
+       "credentials": {}
+     }
+   ],
+   "connections": {
+     "[87] Switch4": {
+       "main": [
+         [
+           {
+             "node": "BUSCAR REUNIÃO",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "[95] Verifica evento1",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "[99] Disponibilidade",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "[89] If5": {
+       "main": [
+         [
+           {
+             "node": "[90] Edit Fields6",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "Get availability in a calendar",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "[92] If": {
+       "main": [
+         [
+           {
+             "node": "[93] Marca1",
+             "type": "main",
+             "index": 0
+           }
+         ],
+         [
+           {
+             "node": "[98] Edit Fields9",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "[103] Edit Fields": {
+       "main": [
+         [
+           {
+             "node": "Update a row",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Code": {
+       "main": [
+         [
+           {
+             "node": "[87] Switch4",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Update a row": {
+       "main": [
+         [
+           {
+             "node": "whatsapp2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Update a row1": {
+       "main": [
+         [
+           {
+             "node": "whatsapp",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Update a row2": {
+       "main": [
+         [
+           {
+             "node": "whatsapp1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Reunião agendada": {
+       "main": [
+         [
+           {
+             "node": "Update a row1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Reunião cancelada": {
+       "main": [
+         [
+           {
+             "node": "Update a row2",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Get many events": {
+       "main": [
+         [
+           {
+             "node": "[103] Edit Fields",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "[95] Verifica evento1": {
+       "main": [
+         [
+           {
+             "node": "[96] Google Calendar1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Get a row": {
+       "main": [
+         [
+           {
+             "node": "Edit Fields3",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "[93] Marca1": {
+       "main": [
+         [
+           {
+             "node": "Reunião agendada",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "Get availability in a calendar": {
+       "main": [
+         [
+           {
+             "node": "[92] If",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "BUSCAR REUNIÃO": {
+       "main": [
+         [
+           {
+             "node": "[89] If5",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "[86] Execute Workflow Trigger": {
+       "main": [
+         [
+           {
+             "node": "Code",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "[96] Google Calendar1": {
+       "main": [
+         [
+           {
+             "node": "Reunião cancelada",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "[99] Disponibilidade": {
+       "main": [
+         [
+           {
+             "node": "[101] Verifica evento1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "[101] Verifica evento1": {
+       "main": [
+         [
+           {
+             "node": "Get many events",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "whatsapp": {
+       "main": [
+         [
+           {
+             "node": "Get a row",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "whatsapp1": {
+       "main": [
+         [
+           {
+             "node": "Edit Fields1",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     },
+     "whatsapp2": {
+       "main": [
+         [
+           {
+             "node": "Edit Fields",
+             "type": "main",
+             "index": 0
+           }
+         ]
+       ]
+     }
+   },
+   "pinData": {},
+   "meta": {
+     "instanceId": "a0f7a305da35e849bafdb639b90f9c75f57bc77027e416642bf74993eb8cfaee"
+   }
+ }

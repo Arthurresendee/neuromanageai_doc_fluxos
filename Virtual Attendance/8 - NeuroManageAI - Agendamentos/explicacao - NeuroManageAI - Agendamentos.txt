@@ -1,0 +1,112 @@
+Dúvidas
+
+Possíveis correções/ melhorias:
+
+Objetivo
+Sub-workflow de agendamentos chamado pelas tools do agente SDR principal. Recebe tipo de evento (agendamento, cancelamento, reagendamento).
+
+[86] Execute Workflow Trigger
+- Ponto de entrada.
+
+Code
+- Formata datas start/end de ISO 8601 para pt-BR (dd/mm/yyyy HH:mm), timezone America/Sao_Paulo.
+
+[87] Switch4
+- agendamento (Evento == "agendamento")
+- cancelamento (Evento == "cancelamento")
+- reagendamento (Evento == "reagendamento")
+
+-----------------------
+Ramo de Agendamento
+-----------------------
+
+BUSCAR REUNIÃO
+- Busca eventos entre start e end
+- Verifica se ja existe reuniao no horario
+
+[89] If5
+- Se items.length nao vazio: reuniao ja existe
+- Se vazio: horario livre
+
+[92] If
+- Se available == true: horario disponivel
+- Se false: horario ocupado
+
+[93] Marca1
+- Cria evento
+
+Reuniao agendada
+- Formata resposta: "Agendamento concluido para a data..."
+- Retorna: Nome, Telefone, E-mail, Link do Google Meet
+
+Update a row1
+- Atualiza status para concluído.
+
+whatsapp
+- Envia confirmacao via WhatsApp nativo
+
+Get a row
+- Busca lead em na tabela contatos_agente por email
+
+Edit Fields3
+- Retorna resposta final para o workflow pai, ou seja, para quem chamou esse subworkflow de agendamento
+
+-----------------------
+Ramo de Cancelamento
+-----------------------
+
+[95] Verifica evento1
+- Busca evento no horario start/end
+
+[96] Google Calendar1
+- Deleta evento encontrado (por id)
+
+Reuniao cancelada
+- Retorna mensagem: "Informe o usuario que o agendamento foi cancelado e que estara sempre a disposicao para um novo agendamento."
+
+Update a row2
+- Supabase: atualiza tabela contatos_agente com status = "Cancelado"
+
+whatsapp1
+- Envia confirmacao de cancelamento via WhatsApp
+
+Edit Fields1
+- Retorna resposta para o workflow pai
+
+------------------------
+Ramo de Reagendamento
+------------------------
+
+[99] Disponibilidade
+- Verifica disponibilidade no novo horario
+
+[101] Verifica evento1
+- Cria evento no novo horario com reminder de 10 min
+
+Get many events
+- Lista eventos das proximas 4 semanas
+
+[103] Edit Fields
+
+- Formata resposta: "sua reuniao foi remarcada para: dia..."
+- Retorna: Nome, Telefone
+
+Update a row
+- Supabase: atualiza tabela contatos_agente com status = "reagendado"
+
+whatsapp2
+- Envia confirmacao de reagendamento via WhatsApp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
